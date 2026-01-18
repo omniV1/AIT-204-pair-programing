@@ -18,8 +18,9 @@ In Linear Regression dy/dx shows how steep the loss function is at a particular 
 The sign tells me which direction to move the weights, either left or right on the curve. The magnitude tells me how steep the slope is, larger values result in steeper slopes. 
 
 
-![[dx_dy.png]]
-source(https://xaktly.com/TheDerivative.html) Figure 9
+![dx/dy diagram](photos/dx_dy.png)
+
+Source: [xaktly.com – The Derivative (Figure 9)](https://xaktly.com/TheDerivative.html)
 
 ---
 
