@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "e70671f362851c0a",
+    "type": "split",
+    "children": [
+      {
+        "id": "f060a3eb04dd10de",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f70fcd26181c5c7a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/linear-regression-expressions.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "linear-regression-expressions"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "7c273dbbc13368b5",
+    "type": "split",
+    "children": [
+      {
+        "id": "891d86cce0c332f1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0aba293b3aab5d90",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "f7369e3989effa25",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d1e198e86f64c30a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "d72d519f66b30088",
+    "type": "split",
+    "children": [
+      {
+        "id": "758cf5a94f9a78c3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3ab54ce04cc94df7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/linear-regression-expressions.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for linear-regression-expressions"
+            }
+          },
+          {
+            "id": "b8885aa4f6c91706",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/linear-regression-expressions.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from linear-regression-expressions"
+            }
+          },
+          {
+            "id": "8012c21574f73f28",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "3bc3548ff8eb5c1a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "1c3ebc2816b58339",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/linear-regression-expressions.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of linear-regression-expressions"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "f70fcd26181c5c7a",
+  "lastOpenFiles": [
+    "docs/linear-regression-expressions.md.tmp.89100.1768688918117",
+    "docs/linear-regression-expressions.md.tmp.89100.1768688844359",
+    "docs/linear-regression-expressions.md.tmp.89100.1768688736683",
+    "docs/linear-regression-expressions.md.tmp.89100.1768685862443",
+    "docs/photos/limit_definition.png",
+    "docs/photos/Pasted image 20260117141313.png",
+    "docs/photos/Pasted image 20260117141258.png",
+    "docs/photos/dx_dy.png",
+    "docs/linear-regression-expressions.md",
+    "Pasted image 20260117141313.png",
+    "Pasted image 20260117141258.png",
+    "docs/photos",
+    "Pasted image 20260117140651.png"
+  ]
+}
