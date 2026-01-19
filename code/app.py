@@ -417,6 +417,8 @@ def main():
     # ==========================================
     st.sidebar.header("1. Upload Data")
 
+    st.sidebar.markdown("[Generate a dataset](https://gcuswe2023-2025-br7euxcjtrtjg7qsxcd6yh.streamlit.app/)")
+
     uploaded_file = st.sidebar.file_uploader(
         "Upload CSV file",
         type=["csv"],
