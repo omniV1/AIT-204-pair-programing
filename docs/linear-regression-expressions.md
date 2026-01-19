@@ -274,11 +274,28 @@ The dataset has been plotted showing the relationship between (x) and (y) with n
 Here you can see that we have randomly partitioned our data into a train and test set.
 The randomness helps us avoid bias in the data.
 
+![photos/initial_random_guess.png](photos/initial_random_guess.png)
 
+The weight and bias of the linear regression model has been initialized using random values. The initial random guess
+for these values should be easily reproducible since the random function has been seeded with the number 42.
 
+![photos/train_test_split.png](photos/train_test_split.png)
 
+This is the same image from the train test split, however here we are emphasizing the predictions made by the model
+on their respective splits. The model appears to generalize its learnings well on the validation set.
 
+![photos/training_loss.png](photos/training_loss.png)
 
+This shows the Mean Squared Error for our linear regression model as it trains on the synthetic dataset over time.
+We can see that the MSE falls very rapidly, this is primarily due to the fact that our data is highly linear and
+does not have much noise. This was trained using a Full Batch method of Gradient Descent.
+
+![photos/mini_batch.png](photos/mini_batch.png)
+![photos/stochastic.png](photos/stochastic.png)
+
+Here we can see the linear regression model using different methods of gradient descent. The first one is mini batch and the second image is stochastic. We can see that mini batch is a bit noisier than the full batch, but still results in a lower MSE than our starting.
+However, stochastic is so noisy that we actually result in a higher MSE than we started with. Immediately what this tells me is that
+the learning rate for the stochastic descent is too high for it to settle on a global/local minima.
 
 
 
