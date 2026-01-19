@@ -256,6 +256,7 @@ z = e^(x² + xy)
 
 ---
 
+<div style="page-break-after: always;"></div>
 
 ###  Part 2 Linear Regression
 
@@ -313,6 +314,8 @@ resolution in the step size to make the small adjustments the parameters need.
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 # Ethical Considerations
 
 ## Potential for bias in data generation affecting model fairness:
@@ -339,8 +342,8 @@ to make sure that the model is performing as intended.
 ---
 
 # Program flowchart (and code to generate flowchart using mermaid.js)
-![photos/flowchart.png](photos/flowchart.png)
-```
+
+```mermaid
 flowchart TD
     A[Start Application] --> B[Set Page Configuration]
     B --> C[Initialize Sidebar]

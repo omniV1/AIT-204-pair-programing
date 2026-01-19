@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "d72d519f66b30088",
@@ -186,6 +185,8 @@
   },
   "active": "f70fcd26181c5c7a",
   "lastOpenFiles": [
+    "docs/linear-regression-expressions.pdf",
+    "docs/linear-regression-expressions.md",
     "docs/linear-regression-expressions.md.tmp.89100.1768688918117",
     "docs/linear-regression-expressions.md.tmp.89100.1768688844359",
     "docs/linear-regression-expressions.md.tmp.89100.1768688736683",
@@ -194,7 +195,6 @@
     "docs/photos/Pasted image 20260117141313.png",
     "docs/photos/Pasted image 20260117141258.png",
     "docs/photos/dx_dy.png",
-    "docs/linear-regression-expressions.md",
     "Pasted image 20260117141313.png",
     "Pasted image 20260117141258.png",
     "docs/photos",
