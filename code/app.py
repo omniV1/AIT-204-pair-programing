@@ -43,6 +43,35 @@ st.sidebar.title("Linear Regression")
 ### Helper Functions
 ### ===============================
 
+def load_csv_from_upload(uploaded_file):
+    """
+    Load data from an uploaded CSV file.
+
+    Args:
+        uploaded_file: Streamlit uploaded file object
+
+    Returns:
+        X: Feature matrix (n_samples, 1)
+        y: Target vector (n_samples)
+        y_true: True values without noise (or y if y_true not present)
+    """
+    df = pd.read_csv(uploaded_file)
+
+    # Check required columns
+    if "x" not in df.columns or "y" not in df.columns:
+        raise ValueError("CSV must contain 'x' and 'y' columns")
+
+    X = df["x"].values.reshape(-1, 1)
+    y = df["y"].values
+
+    # y_true is optional - use y if not present
+    if "y_true" in df.columns:
+        y_true = df["y_true"].values
+    else:
+        y_true = y.copy()
+
+    return X, y, y_true
+
 def load_csv_data(file_path):
     """ 
     Load data from a CSV file into a pandas DataFrame.
@@ -157,6 +186,7 @@ class LinearRegression:
                 y_batch = y_shuffled[start_idx:end_idx]
                 batch_len = end_idx - start_idx
                 
+                ### Forward Pass
                 y_pred_batch = X_batch @ self.weights + self.bias
                 
                 dw = -(2 / batch_len) * X_batch.T @ (y_batch - y_pred_batch)
@@ -164,7 +194,8 @@ class LinearRegression:
 
                 self.weights -= self.learning_rate * dw
                 self.bias -= self.learning_rate * db
-
+                
+            ### Forward Pass for final loss on full dataset
             y_pred_full = X @ self.weights + self.bias
             loss = np.mean((y_pred_full - y) ** 2)
             self.losses.append(loss)
@@ -364,40 +395,99 @@ def plot_train_val_split(X_train, y_train, X_val, y_val):
 ### ==============================
 
 def main():
-    # Sidebar controls
-    st.sidebar.header("Data Settings")
+    # ==========================================
+    # HOME SCREEN / WELCOME
+    # ==========================================
+    st.title("Linear Regression with Gradient Descent")
+    st.write("""
+    Welcome to the Linear Regression Analysis App! This application demonstrates
+    key concepts in machine learning including gradient descent optimization,
+    train/test splitting, and model evaluation.
+    """)
+
+    st.info("""
+    **Getting Started:**
+    1. Upload your CSV file using the sidebar (must contain 'x' and 'y' columns)
+    2. Adjust the model parameters as needed
+    3. Click 'Train Model' to see the results
+    """)
+
+    # ==========================================
+    # SIDEBAR - DATA UPLOAD
+    # ==========================================
+    st.sidebar.header("1. Upload Data")
+
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload CSV file",
+        type=["csv"],
+        help="CSV must contain 'x' and 'y' columns. 'y_true' column is optional."
+    )
+
+    st.sidebar.caption("Required columns: `x`, `y`")
+    st.sidebar.caption("Optional column: `y_true` (true values without noise)")
+
+    # ==========================================
+    # SIDEBAR - DATA SETTINGS
+    # ==========================================
+    st.sidebar.header("2. Data Settings")
     test_size = st.sidebar.slider("Test Split %", 10, 50, 20, 5) / 100
     random_seed = st.sidebar.number_input("Random Seed", 0, 9999, 42)
-    
-    st.sidebar.header("Model Settings")
+
+    # ==========================================
+    # SIDEBAR - MODEL SETTINGS
+    # ==========================================
+    st.sidebar.header("3. Model Settings")
     learning_rate = st.sidebar.select_slider(
-        "Learning Rate", 
+        "Learning Rate",
         options=[0.0001, 0.001, 0.01, 0.1, 0.5, 1.0],
         value=0.01
     )
     n_iterations = st.sidebar.slider("Iterations", 100, 2000, 500, 100)
-    
+
     batch_mode = st.sidebar.selectbox(
         "Gradient Descent Mode",
         ["Full Batch", "Mini-Batch", "Stochastic (SGD)"]
     )
-    
+
     batch_size = None  # Full batch
     if batch_mode == "Mini-Batch":
         batch_size = st.sidebar.slider("Batch Size", 8, 64, 32, 8)
     elif batch_mode == "Stochastic (SGD)":
         batch_size = 1
 
-    # Load data
+    # ==========================================
+    # CHECK IF DATA IS UPLOADED
+    # ==========================================
+    if uploaded_file is None:
+        st.warning("Please upload a CSV file using the sidebar to begin.")
+
+        # Show example format
+        st.subheader("Expected CSV Format")
+        example_df = pd.DataFrame({
+            "x": [1.0, 2.0, 3.0, 4.0, 5.0],
+            "y": [2.1, 4.2, 5.8, 8.1, 9.9],
+            "y_true": [2.0, 4.0, 6.0, 8.0, 10.0]
+        })
+        st.dataframe(example_df, use_container_width=True)
+        st.caption("Note: 'y_true' column is optional (used for comparing noisy vs true values)")
+        return
+
+    # ==========================================
+    # LOAD AND VALIDATE DATA
+    # ==========================================
     try:
-        X, y, y_true = load_csv_data("synthetic_data_Simple_Linear.csv")
-    except FileNotFoundError:
-        st.error("CSV file not found! Please ensure synthetic_data_Simple_Linear.csv is in the code directory.")
+        X, y, y_true = load_csv_from_upload(uploaded_file)
+        st.sidebar.success(f"Loaded {len(X)} samples!")
+    except ValueError as e:
+        st.error(f"Error loading CSV: {e}")
+        return
+    except Exception as e:
+        st.error(f"Unexpected error: {e}")
         return
 
     # Split data
     X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=test_size, random_state=random_seed)
-    
+
     st.header("1. Data Overview")
     col1, col2 = st.columns(2)
     with col1:
