@@ -297,6 +297,112 @@ Here we can see the linear regression model using different methods of gradient 
 However, stochastic is so noisy that we actually result in a higher MSE than we started with. Immediately what this tells me is that
 the learning rate for the stochastic descent is too high for it to settle on a global/local minima.
 
+![photos/gradient_verification.png](photos/gradient_verification.png)
+
+Here you can see that we have calculated the weights and biases using both the numerical method (gradient descent) as well as the
+analytical method (Gauss Markov Theorem). The numerical method matches very closely to what the analytical method says.
+
+![photos/gradient_over_iterations.png](photos/gradient_over_iterations.png)
+
+This is the gradient over time as we train the model. You can see that the gradient tunes towards the correct value (the analytical one)
+very quickly because the synthetic dataset we used to train on is very simple. Even though we had 500 iterations the model finds the
+correct parameters in the first handful of iterations.
+
+![photos/large_gradient_values.png](photos/large_gradient_values.png)
+
+Here is what happens when we increase the learning rate to an excessive amount. You'll notice in the graphs that we get a giant leap
+in our MSE value, as well as wild swings in our weight values for the model. Large learning values allow the model to move more quickly
+towards the correct solution, however it can also cause it to overshoot the ideal set of parameters because we don't have enough 
+resolution in the step size to make the small adjustments the parameters need.
+
+---
+
+# Ethical Considerations
+
+## Potential for bias in data generation affecting model fairness:
+The bias exhibited by the model will be the same biases that we have when creating the dataset. For example if we were building
+an ML model to determine insurance rates based on the likelihood of a break-in our model could be subject to bias if we do not
+choose a random sample of housing and break-ins. If we picked only houses in Scottsdale for our dataset, our break-in prediction
+could be artificially low.
+## Ensuring data privacy when using real-world data:
+when handling user data to train our models we need to be extremely careful on how we handle it. One important consideration is
+scrubbing any Personally Identifiable Information (PII) from the data to protect user anonymity. If we fail to do this then
+confidential user information could leak out of the model, especially if our model is available for public use (ex: ChatGPT)
+Importance of model transparency and explainability:
+## Responsible use of models to benefit society and minimize harm:
+Just like any piece of technology, machine learning models can be used to help people, or it can be used to hurt people. When
+putting a machine learning model into use we should always keep the human impact at the forefront of our mind. For example,
+using a machine learning model to screen job application candidates without any kind of human oversight can result in a more
+depersonalized job interview process, souring the job applicant. It could also have biases that would go unchecked without human
+oversight, like only responding to candidates with an American sounding name.
+## Mitigating negative impacts of prediction errors:
+The primary mitigator of negative impacts of prediction is to get a dataset that most accurately represents the parent distribution.
+The second best way to mitigate is to keep good metrics on how the model is performing in production, and actively monitoring it
+to make sure that the model is performing as intended.
+
+---
+
+# Program flowchart (and code to generate flowchart using mermaid.js)
+![photos/flowchart.png](photos/flowchart.png)
+```
+flowchart TD
+    A[Start Application] --> B[Set Page Configuration]
+    B --> C[Initialize Sidebar]
+    C --> D[Show Welcome Screen]
+
+    %% Sidebar Inputs
+    C --> E[Upload CSV File]
+    C --> F[Configure Data Settings]
+    C --> G[Configure Model Settings]
+
+    %% Upload Check
+    E -->|No file| H[Show Warning and Example CSV]
+    H --> Z[Wait for User Action]
+
+    E -->|File uploaded| I[Load CSV Data]
+    I -->|Invalid data| J[Display Error Message]
+    J --> Z
+
+    I -->|Valid data| K[Split Train and Test Data]
+    K --> L[Display Data Overview]
+    L --> M[Plot Train Test Split]
+
+    %% Training
+    M --> N{Train Button Clicked}
+    N -->|No| Z
+    N -->|Yes| O[Initialize Model with Random Weights]
+
+    O --> P[Fit Model One Iteration]
+    P --> Q[Plot Initial Predictions]
+
+    Q --> R[Train Model with Gradient Descent]
+    R --> S[Store Loss Weight and Gradient History]
+
+    S --> T[Generate Train and Test Predictions]
+
+    %% Results Tabs
+    T --> U[Display Results Tabs]
+
+    U --> U1[Loss Plot]
+    U --> U2[Prediction Plots]
+    U --> U3[Residual Plot]
+    U --> U4[Weights and Gradients]
+    U --> U5[Evaluation Metrics]
+    U --> U6[Gradient Verification]
+    U --> U7[Gradient Explosion Demo]
+
+    %% Gradient Check
+    U6 --> V{Gradients Match}
+    V -->|Yes| W[Show Gradient Success Message]
+    V -->|No| X[Show Gradient Warning Message]
+
+    U7 --> Z[User Continues Interaction]
+```
+
+
+
+
+
 
 
 
