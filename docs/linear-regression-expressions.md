@@ -252,3 +252,6 @@ z = e^(x² + xy)
 	∂z/∂y = e^(x²+xy) · x
 
 **Answer:** ∂z/∂x = (2x + y)e^(x²+xy)  and  ∂z/∂y = xe^(x²+xy)
+
+
+###  Part 2 Linear Regression
