@@ -100,7 +100,7 @@ source(https://xaktly.com/TheDerivative.html) Figure 9
 	
 5. Combine all terms
 
-**Answer:**dy/dx = 2 - 6x -15x^2 - 32x3 + 45x^4
+**Answer:** dy/dx = 2 - 6x -15x^2 - 32x3 + 45x^4
 
 ---
 **Problem 2:**
@@ -127,7 +127,7 @@ source(https://xaktly.com/TheDerivative.html) Figure 9
 	
 4. Convert back to fractions (Optional but it looks nice)
 
-**Answer:**dy/dx = -1/x^2 - 6/x^3 - 6/x^4 
+**Answer:** dy/dx = -1/x^2 - 6/x^3 - 6/x^4 
  
 
 ---
