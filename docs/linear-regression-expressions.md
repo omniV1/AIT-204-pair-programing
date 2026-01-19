@@ -253,5 +253,17 @@ z = e^(x² + xy)
 
 **Answer:** ∂z/∂x = (2x + y)e^(x²+xy)  and  ∂z/∂y = xe^(x²+xy)
 
+---
 
 ###  Part 2 Linear Regression
+
+![photos/synthetic_dataset.png](photos/synthetic_dataset.png)
+
+Here you can see we have created a synthetic dataset that fits the linear regression model y = b + wx + ϵ.
+We have included a controlled amount of noise (ϵ) to simulate real-world data scenarios.
+The dataset has been plotted showing the relationship between (x) and (y) with noise included in our streamlit app.
+
+![photos/train_test_split.png](photos/train_test_split.png)
+
+Here you can see that we have randomly partitioned our data into a train and test set.
+The randomness helps us avoid bias in the data.
