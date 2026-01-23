@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/linear-regression-expressions.md",
+                "file": "linear-regression/docs/linear-regression-expressions.md",
                 "mode": "source",
                 "source": false
               },
@@ -185,6 +185,7 @@
   },
   "active": "f70fcd26181c5c7a",
   "lastOpenFiles": [
+    "matrix-and-nn/docs/matrix-and-neural-networks.md",
     "docs/linear-regression-expressions.pdf",
     "docs/linear-regression-expressions.md",
     "docs/linear-regression-expressions.md.tmp.89100.1768688918117",
