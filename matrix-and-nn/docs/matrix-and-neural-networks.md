@@ -109,7 +109,7 @@ The question is not whether ethical AI development is possible, it is. The quest
 
 **Addressing the potential consequences of error and inaccuracies in neural network predictions**
 
-Return to the medical framework. Imagine a neural network delivers a terminal diagnosis—and it is wrong.
+Return to the medical framework. Imagine a neural network delivers a terminal diagnosis, and it is wrong.
 
 Public trust in medicine is already fragile. The COVID-19 pandemic exposed deep fractures: misinformation spread faster than the virus, institutions contradicted themselves, and millions of people walked away more skeptical of medical authority than ever before. Into this landscape, we introduce AI systems that make life or death predictions. The margin for error is thin.
 
