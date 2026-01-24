@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/linear-regression-expressions.md",
+                "file": "matrix-and-nn/docs/matrix-and-neural-networks.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "linear-regression-expressions"
+              "title": "matrix-and-neural-networks"
             }
           }
         ]
@@ -185,6 +185,8 @@
   },
   "active": "f70fcd26181c5c7a",
   "lastOpenFiles": [
+    "linear-regression/docs/linear-regression-expressions.md",
+    "matrix-and-nn/docs/matrix-and-neural-networks.md",
     "docs/linear-regression-expressions.pdf",
     "docs/linear-regression-expressions.md",
     "docs/linear-regression-expressions.md.tmp.89100.1768688918117",
