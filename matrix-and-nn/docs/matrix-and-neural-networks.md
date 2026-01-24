@@ -34,5 +34,5 @@ You cannot perform matrix multiplication on these as the dimensions do not match
 - A<sup>T</sup><br>
 $\begin{pmatrix} 1 & 4 \\ -2 & 5 \\ 3 & -6 \end{pmatrix}$
 - AI<br>
-Any matrix multiplied by the identity matrix is itself.
+Any matrix multiplied by the identity matrix is itself.<br>
 $\begin{pmatrix} 1 & -2 & 3 \\ 4 & 5 & -6 \end{pmatrix}$
