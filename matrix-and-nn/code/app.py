@@ -4,6 +4,126 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from multilayer_perceptron import MultiLayerPerceptron
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Install dependencies as needed:
+# pip install kagglehub[pandas-datasets]
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
+
+# Set the path to the file you'd like to load
+file_path = "all_seasons.csv"
+
+# Load the latest version
+df = kagglehub.load_dataset(
+  KaggleDatasetAdapter.PANDAS,
+  "justinas/nba-players-data",
+  file_path,
+  # Provide any additional arguments like 
+  # sql_query or pandas_kwargs. See the 
+  # documenation for more information:
+  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
+)
+
+print("First 5 records:", df.head())
+
+# -----------------------------
+# Select 100 players from 5-year window
+# -----------------------------
+
+# Convert the season to starting year as integer
+df["season_start_year"] = df["season"].str.split("-").str[0].astype(int)
+
+# Define 5-year window
+start_year = 1996
+end_year = 2000
+
+# Filter dataset to 5-year window
+df_window = df[(df["season_start_year"] >= start_year) & (df["season_start_year"] <= end_year)]
+
+# Randomly select 100 players
+df_pool = df_window.sample(100, random_state=42).reset_index(drop=True)
+
+# Use df_pool for all further processing
+df = df_pool
+
+# -----------------------------
+# DATA CLEANING & PREPARATION
+# -----------------------------
+
+# Keep only rows with required numeric data
+# Keep only numeric features needed
+features = ["age", "player_height", "player_weight", "draft_round"]
+df_clean = df[features].dropna().copy()
+
+# Handle draft_round
+df_clean["draft_round"] = pd.to_numeric(df_clean["draft_round"], errors="coerce")
+df_clean["draft_round"] = df_clean["draft_round"].fillna(df_clean["draft_round"].max() + 1)
+
+# Normalization
+def normalize(series):
+    return (series - series.min()) / (series.max() - series.min())
+
+df_clean["height_norm"] = normalize(df_clean["player_height"])
+df_clean["weight_norm"] = normalize(df_clean["player_weight"])
+PRIME_AGE = 27
+df_clean["age_prime_score"] = 1 - abs(df_clean["age"] - PRIME_AGE) / df_clean["age"].max()
+df_clean["age_prime_score"] = df_clean["age_prime_score"].clip(0, 1)
+df_clean["draft_score"] = 1 - normalize(df_clean["draft_round"])
+
+# Player suitability
+df_clean["suitability_score"] = (
+    0.35 * df_clean["height_norm"] +
+    0.25 * df_clean["weight_norm"] +
+    0.25 * df_clean["age_prime_score"] +
+    0.15 * df_clean["draft_score"]
+)
+
+# Weak supervision labels
+TOP_PERCENT = 0.25
+threshold = df_clean["suitability_score"].quantile(1 - TOP_PERCENT)
+df_clean["optimal_label"] = (df_clean["suitability_score"] >= threshold).astype(int)
+
+
+# -----------------------------
+# FINAL DATASET FOR ANN
+# -----------------------------
+
+X = df_clean[
+    ["height_norm", "weight_norm", "age_prime_score", "draft_score"]
+].values
+
+y = df_clean["optimal_label"].values
+
+print("Class distribution:")
+print(df_clean["optimal_label"].value_counts())
+
+df_clean.head()
+
+
+# ==========================================
+# PREPARE FEATURES AND LABELS
+# ==========================================
+# Select features you want to use (physical + draft info)
+feature_cols = ["age", "player_height", "player_weight", "draft_round"]
+X = df_clean[feature_cols].values
+y = df_clean["optimal_label"].values
+
+# Scale features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Convert labels to one-hot encoding for softmax
+y_onehot = np.zeros((y.size, 2))
+y_onehot[np.arange(y.size), y] = 1
+
+# Split into training and testing
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y_onehot, test_size=0.2, random_state=int(42), stratify=y
+)
+
 
 def main():
     # ==========================================
@@ -56,15 +176,13 @@ def main():
         # ==========================================
     # LOAD AND VALIDATE DATA
     # ==========================================
-    X = 0
-    y = 0
     # Split data
     #X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=test_size, random_state=random_seed)
 
     st.header("1. Data Overview")
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Total Samples", X)
+        st.metric("Total Samples", len(X))
         #st.metric("Training Samples", len(X_train))
     with col2:
         #st.metric("Test Samples", len(X_test))
@@ -74,65 +192,49 @@ def main():
 
     # Train button
     if st.button("Train Model", type="primary"):
-        # Show initial guess before training
-        st.header("2. Initial Model (Before Training)")
-        #init_model = LinearRegression(learning_rate=learning_rate, n_iterations=1)
-        #init_model.fit(X_train, y_train, batch_size=batch_size)
-        y_pred_init = init_model.predict(X_train)
-        #plot_predictions(X_train, y_train, y_pred_init, title="Initial Random Guess")
-        
-        # Train full model
-        st.header("3. Training Progress")
-        #model = LinearRegression(learning_rate=learning_rate, n_iterations=n_iterations)
-        
+        # ==========================================
+        # INITIALIZE AND TRAIN THE MLP
+        # ==========================================
+        input_size = X_train.shape[1]
+        hidden_size = 8  # tune this
+        output_size = 2  # binary classification
+
+        mlp_model = MultiLayerPerceptron(input_size, hidden_size, output_size)
+
+        st.subheader("Training Progress")
+        mlp_model.train(X_train, y_train, epochs=n_iterations, learning_rate=learning_rate)
+
         st.success("Training complete!")
-        
-        # Results
-        #y_pred_train = model.predict(X_train)
-        #y_pred_test = model.predict(X_test)
-        
-        # Tabs for different visualizations
-        '''tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-            "Loss", "Predictions", "Residuals", "Parameters", "Metrics", "Gradient Verification", "Gradient Exploration"
-        ])
-        
-        
-        
-        
-        with tab4:
-            col1, col2 = st.columns(2)
-            
-        
-        with tab5:
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("Training Metrics")
-                st.metric("MSE ")
-                st.metric("RMSE")
-            with col2:
-                st.subheader("Test Metrics")
-                st.metric("MSE")
-            
-        with tab6:
-            st.subheader("Numerical Gradient Verification")
-            st.write("Comparing analytical gradients with numerical approximations (finite differences)")
 
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write("**Weight Gradient (dw)**")
-            with col2:
-                st.write("**Bias Gradient (db)**")
-    
-            st.warning("""
-            **Observations:**
-            - With a large learning rate, gradients cause parameters to overshoot
-            - Loss may oscillate wildly or diverge to infinity (NaN)
-            - Weights can explode to very large values
-            - This is why learning rate tuning is critical!
-            """)'''
-            
+        # Predictions
+        y_pred_train = mlp_model.predict(X_train)
+        y_pred_test = mlp_model.predict(X_test)
+
+        # Convert back to single class labels
+        y_train_labels = np.argmax(y_train, axis=1)
+        y_test_labels = np.argmax(y_test, axis=1)
+
+        # Accuracy metrics
+        train_acc = np.mean(y_pred_train == y_train_labels)
+        test_acc = np.mean(y_pred_test == y_test_labels)
+
+        st.header("Model Performance")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Training Accuracy", f"{train_acc*100:.2f}%")
+        with col2:
+            st.metric("Test Accuracy", f"{test_acc*100:.2f}%")
+
+
+        # Use predicted probabilities for ranking
+        y_prob = mlp_model.forward(X_train)[:, 1]  # probability of class 1
+        top5_idx = np.argsort(y_prob)[-5:][::-1]   # indices of top 5
+
+        st.header("Optimal Team (Top 5 Players)")
+        st.dataframe(df_clean.iloc[top5_idx][["player_name", "team_abbreviation", "age", "player_height", "player_weight"]])
+
+           
 if __name__ == "__main__":
     main()
 
