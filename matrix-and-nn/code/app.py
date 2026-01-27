@@ -54,9 +54,10 @@ df = df_pool
 # -----------------------------
 
 # Keep only rows with required numeric data
-# Keep only numeric features needed
-features = ["age", "player_height", "player_weight", "draft_round"]
-df_clean = df[features].dropna().copy()
+# Keep numeric features AND name/abbreviation for display
+features = ["age", "player_height", "player_weight", "draft_round", "player_name", "team_abbreviation"]
+df_clean = df[features].copy()
+
 
 # Handle draft_round
 df_clean["draft_round"] = pd.to_numeric(df_clean["draft_round"], errors="coerce")
@@ -104,6 +105,26 @@ df_clean.head()
 
 
 # ==========================================
+# SIDEBAR - DATA SETTINGS
+# ==========================================
+st.sidebar.header("1. Data Settings")
+test_size = st.sidebar.slider("Test Split %", 10, 50, 20, 5) / 100
+random_seed = st.sidebar.number_input("Random Seed", 0, 9999, 42)
+
+# ==========================================
+# SIDEBAR - MODEL SETTINGS
+# ==========================================
+st.sidebar.header("2. Model Settings")
+learning_rate = st.sidebar.select_slider(
+"Learning Rate",
+options=[0.0001, 0.001, 0.01, 0.1, 0.5, 1.0],
+value=0.01
+)
+n_iterations = st.sidebar.slider("Iterations", 100, 2000, 500, 100)
+
+
+
+# ==========================================
 # PREPARE FEATURES AND LABELS
 # ==========================================
 # Select features you want to use (physical + draft info)
@@ -121,7 +142,7 @@ y_onehot[np.arange(y.size), y] = 1
 
 # Split into training and testing
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y_onehot, test_size=0.2, random_state=int(42), stratify=y
+    X, y_onehot, test_size=test_size, random_state=int(42), stratify=y
 )
 
 
@@ -145,39 +166,8 @@ def main():
     """)
 
     # ==========================================
-    # SIDEBAR - DATA SETTINGS
-    # ==========================================
-    st.sidebar.header("1. Data Settings")
-    test_size = st.sidebar.slider("Test Split %", 10, 50, 20, 5) / 100
-    random_seed = st.sidebar.number_input("Random Seed", 0, 9999, 42)
-
-    # ==========================================
-    # SIDEBAR - MODEL SETTINGS
-    # ==========================================
-    st.sidebar.header("2. Model Settings")
-    learning_rate = st.sidebar.select_slider(
-        "Learning Rate",
-        options=[0.0001, 0.001, 0.01, 0.1, 0.5, 1.0],
-        value=0.01
-    )
-    n_iterations = st.sidebar.slider("Iterations", 100, 2000, 500, 100)
-
-    batch_mode = st.sidebar.selectbox(
-        "Gradient Descent Mode",
-        ["Full Batch", "Mini-Batch", "Stochastic (SGD)"]
-    )
-
-    batch_size = None  # Full batch
-    if batch_mode == "Mini-Batch":
-        batch_size = st.sidebar.slider("Batch Size", 8, 64, 32, 8)
-    elif batch_mode == "Stochastic (SGD)":
-        batch_size = 1
-
-        # ==========================================
     # LOAD AND VALIDATE DATA
     # ==========================================
-    # Split data
-    #X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=test_size, random_state=random_seed)
 
     st.header("1. Data Overview")
     col1, col2 = st.columns(2)
@@ -188,7 +178,6 @@ def main():
         #st.metric("Test Samples", len(X_test))
         st.metric("Test Split", f"{test_size*100:.0f}%")
     
-    #plot_train_val_split(X_train, y_train, X_test, y_test)
 
     # Train button
     if st.button("Train Model", type="primary"):
