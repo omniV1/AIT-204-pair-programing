@@ -117,6 +117,33 @@ People will not tolerate AI misdiagnosis, regardless of outcome. If a patient is
 
 Personally, I know how I would react. If an algorithm told me I had a week to live, I would live that week to its fullest, and when I woke up on day eight, a lawsuit would be the least of someone's problems. The question is not just technical accuracy; it is about the irreversible decisions people make based on what they are told. 
 
+## Part 4: Understanding our ANN output
+
+### Interpretation of MLP Output for Optimal Basketball Team Selection
+
+The multilayer perceptron (MLP) trained on the NBA player dataset has successfully identified the top 5 players most suitable for an optimal team based on their physical characteristics and draft information. The predicted optimal team includes:
+
+- Eddie Jones (LAL), 25 years old, 198.12 cm, 86.18 kg  
+- Bryon Russell (UTA), 29 years old, 200.66 cm, 102.06 kg  
+- David Wingate (SEA), 34 years old, 195.58 cm, 83.91 kg  
+- Tim Thomas (PHI), 21 years old, 208.28 cm, 104.33 kg  
+- Michael Redd (MIL), 21 years old, 198.12 cm, 97.07 kg  
+
+These players were ranked by the MLP according to the probability of being labeled as "optimal," which reflects a combination of normalized height, weight, age relative to a prime performance age of 27, and draft round.
+
+The MLP effectively learned patterns from the weakly supervised labels derived from the suitability scoring formula:
+
+$$
+\text{suitability\_score} = 0.35 \times \text{height\_norm} + 0.25 \times \text{weight\_norm} + 0.25 \times \text{age\_prime\_score} + 0.15 \times \text{draft\_score}
+$$
+
+This formula evaluates each player's overall suitability by weighting their physical attributes and draft information. The MLP learned these patterns without explicitly recalculating the formula, allowing for a nonlinear and flexible assessment of player suitability. 
+
+The selected team demonstrates a balance of physical attributes and experience: younger players such as Tim Thomas and Michael Redd provide height and athleticism, while older players like David Wingate contribute experience. 
+
+Overall, the output illustrates the ability of the MLP to prioritize players who meet multi-dimensional criteria and to generate a well-rounded team from a pool of 100 candidates. This demonstrates the practical application of artificial neural networks in decision-making tasks such as team selection, with potential for further enhancement by including additional performance statistics or multiple hidden layers for more complex feature interactions.
+
+
 
 ## References
 
