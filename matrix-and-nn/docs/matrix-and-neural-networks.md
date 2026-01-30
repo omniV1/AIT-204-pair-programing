@@ -71,39 +71,33 @@ $$AI = \begin{pmatrix} 1 & -2 & 3 \\ 4 & 5 & -6 \end{pmatrix}$$
 Medical science has historically underrepresented women's health compared to men's. This is a well documented disparity, diseases often present differently in females than in males, yet diagnostic criteria have largely been developed from male-centric studies. Furthermore, as society evolves and humans augment their physiology through technologies like Neuralink, entirely new categories of bias may emerge.
 
 The data we rely on is already skewed. When we analyze patterns, we often miss or omit variables that fall outside the norm. These outliers become invisible, and the systems we build fail to accommodate them. 
-This is the critical distinction: when we train AI on human data, we are training on datasets that already carry the weight of historical bias.
 
 ---
 
 **Safeguarding the privacy and confidentiality of data used in training neural networks.**
 
-Privacy has long been considered a cornerstone of American society—yet this foundation has steadily eroded since the passage of the Patriot Act in 2001. Today, mass data collection by both government agencies and private corporations is an open secret. Surveillance infrastructure like Flock Safety cameras, deployed in cities such as Phoenix and backed by defense contractors like Palantir, monitors citizens with little public oversight. Consent, in any meaningful sense, has become an afterthought.
+Privacy has long been considered an important part of American society, yet this foundation has steadily eroded. Today, mass data collection by both government agencies and private corporations is an open secret. Surveillance infrastructure like Flock Safety cameras, deployed in cities such as Phoenix and backed by defense contractors like Palantir, monitors citizens with little public oversight. Consent, in any meaningful sense, has become an afterthought.
 
-Given this precedent, there is little reason to trust that AI companies will handle personal data with greater care. The training of neural networks requires vast quantities of data often scraped, purchased, or inferred without explicit user consent. If existing institutions have already normalized surveillance at scale, the burden falls on AI developers to prove they can do better. Until robust, enforceable privacy protections exist.
+Given this precedent, there is little reason to trust that AI companies will handle personal data with greater care. The training of neural networks requires vast quantities of data often scraped, purchased, or inferred without explicit user consent. If existing institutions have already normalized surveillance at scale, the burden falls on AI developers to prove they can do better. Until robust, enforceable privacy protections exist, skepticism is warranted.
 
 ---
 
 **The need for transparency and interpretability in neural network decisions.**
 
-Consider the self-checkout machine a tiny computer found in nearly every store on the planet. It has large buttons, clear instructions, and a straightforward purpose. And yet, humans operate it with moderate success at best. The older generation, in particular, despises these devices. They "take jobs from real workers." They create confusion. And why should customers pay the same prices while doing the labor themselves?
+Even if training data and model architectures were fully disclosed, the technical complexity involved would limit meaningful public engagement. Neural networks operate through millions of weighted connections and nonlinear transformations—concepts that require significant technical literacy to interpret.
 
-Frankly, I agree with that assessment.
+This suggests that interpretability efforts may be most valuable not as tools for mass understanding, but as mechanisms for accountability—enabling regulators, auditors, and domain experts to evaluate AI systems on the public's behalf. Transparency, in this framing, serves less as a democratic ideal and more as an institutional safeguard.
 
-Now imagine trying to explain neural networks to the average consumer: how they work, what data they ingest, how decisions are made. Would they understand? Would they care? The average American does not even participate in the political processes that directly shape their daily lives. If companies released their training data tomorrow and researchers distilled it into a simple newspaper column, how many people would actually read it?
-
-This raises an uncomfortable question: if transparency requires an engaged and informed public to be meaningful, and that public largely does not exist, then what is the real value of interpretability? The answer may be that transparency is less about public understanding and more about accountability—creating a paper trail for regulators, researchers, and advocates who *will* do the reading.
 
 ---
 
 **The broader societal implications and responsibilities when deploying neural networks.**
 
-At the end of the day, I can only control what I do.
+Ethical AI development ultimately depends on individual accountability. Developers who commit to using only ethically sourced datasets—avoiding pirated databases or data obtained without consent can control their own practices. Consideration of environmental costs, whether through carbon offsets or more efficient training methods, represents another dimension of responsible development.
 
-As a developer working with neural networks, I believe honesty matters. I will not scrape pirated databases. I will not use data that was obtained through deception, exploitation, or without consent. These are my lines, and I intend to hold them. Where possible, I will seek out ethically compiled datasets and consider the environmental cost as well, whether that means carbon offsets or choosing more efficient training methods.
+However, individual ethics cannot govern an industry driven by growth, shareholder value, and competitive pressure. Large corporations operate under different incentives, and voluntary adoption of ethical constraints remains unlikely without external enforcement.
 
-But I am not naive. I can govern my own practices; I cannot govern an industry. Large corporations operate under different incentives: growth, shareholder value, competitive advantage. Expecting them to voluntarily adopt ethical constraints is optimistic at best. The societal responsibility, then, is twofold: individuals must hold themselves accountable, and collectively, we must demand regulation that holds corporations to the same standard.
-
-The question is not whether ethical AI development is possible, it is. The question is whether it will be the norm or the exception.
+The societal responsibility, then, is twofold: individuals must hold themselves accountable, and collectively, the public must demand regulation that holds corporations to the same standard. The question is not whether ethical AI development is possible—it is. The question is whether it will become the norm or remain the exception.
 
 ---
 
@@ -111,11 +105,7 @@ The question is not whether ethical AI development is possible, it is. The quest
 
 Return to the medical framework. Imagine a neural network delivers a terminal diagnosis, and it is wrong.
 
-Public trust in medicine is already fragile. The COVID-19 pandemic exposed deep fractures: misinformation spread faster than the virus, institutions contradicted themselves, and millions of people walked away more skeptical of medical authority than ever before. Into this landscape, we introduce AI systems that make life or death predictions. The margin for error is thin.
-
-People will not tolerate AI misdiagnosis, regardless of outcome. If a patient is told they have six months to live and dies in three, the family will demand answers. If they are told they have a week and survive, they may have quit their job, drained their savings, or said goodbyes they cannot take back. A "positive" error is still an error with consequences.
-
-Personally, I know how I would react. If an algorithm told me I had a week to live, I would live that week to its fullest, and when I woke up on day eight, a lawsuit would be the least of someone's problems. The question is not just technical accuracy; it is about the irreversible decisions people make based on what they are told. 
+Public trust in medical institutions is already strained. Into this environment, we introduce AI systems making life or death predictions systems whose errors carry irreversible consequences. If a patient is told they have six months and dies in three, families will demand accountability. If told they have a week and they survive, they may have already quit their job, drained savings, or made decisions that cannot be undone. The direction of the error does not eliminate its harm.
 
 ## Part 4: Understanding our ANN output
 
