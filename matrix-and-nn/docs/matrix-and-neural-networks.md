@@ -1,6 +1,12 @@
 # Matrix and Neural Networks
 
----
+### Owen Lindsey & Tyler Friesen
+### Professor Artzi
+### Jan 21 2026
+### AIT-204 
+### Streamlit application link: https://mlp-owen.streamlit.app/
+
+<div style="page-break-after: always;"></div>
 
 ## Part 1: Matrix Fundamentals
 
@@ -57,12 +63,14 @@ $$\begin{pmatrix} 1 & 4 \\ -2 & 5 \\ 3 & -6 \end{pmatrix}$$
 
 $$AI = \begin{pmatrix} 1 & -2 & 3 \\ 4 & 5 & -6 \end{pmatrix}$$
 
----
+<div style="page-break-after: always;"></div>
 
 ## Part 2: Artificial Neural Networks Presentation
 
 > [!info] Presentation Link
-> [View the Presentation on Google Slides](https://docs.google.com/presentation/d/13tsobpSMuF19WWWzfXjexNoUIdMoUP3uakOSJY4WdJw/edit?slide=id.p#slide=id.p)
+> [View the Application in Streamlit](https://mlp-owen.streamlit.app/)
+
+<div style="page-break-after: always;"></div>
 
 ## Part 3: Ethical Considerations
 
@@ -107,6 +115,8 @@ Return to the medical framework. Imagine a neural network delivers a terminal di
 
 Public trust in medical institutions is already strained. Into this environment, we introduce AI systems making life or death predictions systems whose errors carry irreversible consequences. If a patient is told they have six months and dies in three, families will demand accountability. If told they have a week and they survive, they may have already quit their job, drained savings, or made decisions that cannot be undone. The direction of the error does not eliminate its harm.
 
+<div style="page-break-after: always;"></div>
+
 ## Part 4: Understanding our ANN output
 
 ### Interpretation of MLP Output for Optimal Basketball Team Selection
@@ -133,7 +143,7 @@ The selected team demonstrates a balance of physical attributes and experience: 
 
 Overall, the output illustrates the ability of the MLP to prioritize players who meet multi-dimensional criteria and to generate a well-rounded team from a pool of 100 candidates. This demonstrates the practical application of artificial neural networks in decision-making tasks such as team selection, with potential for further enhancement by including additional performance statistics or multiple hidden layers for more complex feature interactions.
 
-
+<div style="page-break-after: always;"></div>
 
 ## References
 
