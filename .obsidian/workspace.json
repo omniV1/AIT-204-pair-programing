@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "f060a3eb04dd10de",
+        "id": "e2603c9f6bc88749",
         "type": "tabs",
         "children": [
           {
-            "id": "f70fcd26181c5c7a",
+            "id": "c3cb6c82e82d81bb",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -183,11 +183,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "f70fcd26181c5c7a",
+  "active": "c3cb6c82e82d81bb",
   "lastOpenFiles": [
     "matrix-and-nn/docs/matrix-and-neural-networks.pdf",
-    "linear-regression/docs/linear-regression-expressions.md",
+    "README.md",
     "matrix-and-nn/docs/matrix-and-neural-networks.md",
+    "linear-regression/docs/linear-regression-expressions.md",
     "docs/linear-regression-expressions.pdf",
     "docs/linear-regression-expressions.md",
     "docs/linear-regression-expressions.md.tmp.89100.1768688918117",
