@@ -67,8 +67,10 @@ $$AI = \begin{pmatrix} 1 & -2 & 3 \\ 4 & 5 & -6 \end{pmatrix}$$
 
 ## Part 2: Artificial Neural Networks Presentation
 
-> [!info] Presentation Link
+> [!info] cloud deployed app Link
 > [View the Application in Streamlit](https://mlp-owen.streamlit.app/)
+> 
+> [View the presentation](https://docs.google.com/presentation/d/13tsobpSMuF19WWWzfXjexNoUIdMoUP3uakOSJY4WdJw/edit?slide=id.g3bbae62108e_1_54#slide=id.g3bbae62108e_1_54) 
 
 <div style="page-break-after: always;"></div>
 
