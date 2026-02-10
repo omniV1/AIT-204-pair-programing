@@ -761,6 +761,47 @@
       stroke-width: 3;
       fill: none;
     }
+
+    .pool-grid-4x4,
+    .pool-grid-2x2 {
+      display: grid;
+      gap: 3px;
+      background: #f7f7f7;
+      padding: 6px;
+      border-radius: 8px;
+    }
+
+    .pool-grid-4x4 {
+      grid-template-columns: repeat(4, 40px);
+    }
+
+    .pool-grid-2x2 {
+      grid-template-columns: repeat(2, 40px);
+    }
+
+    .pool-cell {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .pool-highlight {
+      background: #e6f7ff;
+      border: 2px solid #1890ff;
+    }
+
+    .pool-output-active {
+      background: #f6ffed;
+      border: 2px solid #52c41a;
+    }
   </style>
 </head>
 
@@ -1838,26 +1879,56 @@
     <!-- Pooling Layer -->
     <div class="step">
       <span class="step-label">3</span>
-      <div class="step-title">Pooling Layer</div>
+      <div class="step-title">Pooling Layer (Max Pooling)</div>
+
       <p>
-        Pooling reduces the spatial dimensions of feature maps while retaining dominant features. Max pooling selects
-        the largest value in each region, reducing computation and controlling overfitting.
+        Pooling reduces the spatial dimensions of feature maps while preserving the
+        strongest activations. In <strong>max pooling</strong>, the maximum value in
+        each local region is selected.
       </p>
 
-      <div class="cnn-diagram" id="pooling-diagram">
-        <svg class="cnn-svg" id="pooling-svg"></svg>
+      <div style="display:flex; gap:40px; align-items: center; justify-content: center;">
 
-        <div class="cnn-column" id="pooling-input-column">
-          <div class="cnn-block convolution">4×4 Feature Map</div>
+        <!-- Pooling Input -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">4×4 Feature Map</div>
+          <div id="pool-input-grid" class="pool-grid-4x4">
+            <div class="pool-cell">3</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">4</div>
+            <div class="pool-cell">5</div>
+            <div class="pool-cell">6</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">7</div>
+            <div class="pool-cell">3</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">4</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">6</div>
+          </div>
         </div>
 
-        <div class="cnn-column" id="pooling-output-column">
-          <div class="cnn-block pooling">2×2 Pooled Map</div>
+        <!-- Pooling Output -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">2×2 Pooled Map</div>
+          <div id="pool-output-grid" class="pool-grid-2x2">
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+          </div>
         </div>
       </div>
 
+      <button style="margin-left: 45%; margin-right: 50%; width: 100px;" onclick="nextPoolStep()">Next Pool →</button>
+
       <p class="cnn-caption">
-        Pooling reduces the feature map size (e.g., from 4×4 to 2×2) while keeping key features.
+        Each 2×2 region is replaced by its maximum value, reducing spatial size
+        while keeping dominant features.
       </p>
     </div>
 
@@ -2267,6 +2338,69 @@
 
     window.addEventListener('load', connectOutputLayer);
     window.addEventListener('resize', connectOutputLayer);
+
+    const poolFeatureMap = [
+      [3, 1, 2, 4],
+      [5, 6, 1, 2],
+      [0, 2, 7, 3],
+      [1, 4, 2, 6]
+    ];
+
+    const poolWindowSize = 2;
+    let poolCursor = {x: 0, y: 0};
+
+    const poolInputGrid = document.getElementById("pool-input-grid");
+    const poolOutputGrid = document.getElementById("pool-output-grid");
+
+    function poolGetCell(grid, row, col, size) {
+      return grid.children[row * size + col];
+    }
+
+    function highlightPoolWindow() {
+      Array.from(poolInputGrid.children)
+        .forEach(c => c.classList.remove("pool-highlight"));
+
+      for (let dy = 0; dy < poolWindowSize; dy++) {
+        for (let dx = 0; dx < poolWindowSize; dx++) {
+          poolGetCell(poolInputGrid, poolCursor.y + dy, poolCursor.x + dx, 4)
+            .classList.add("pool-highlight");
+        }
+      }
+    }
+
+    function computePoolMax() {
+      let maxVal = -Infinity;
+      for (let dy = 0; dy < poolWindowSize; dy++) {
+        for (let dx = 0; dx < poolWindowSize; dx++) {
+          maxVal = Math.max(
+            maxVal,
+            poolFeatureMap[poolCursor.y + dy][poolCursor.x + dx]
+          );
+        }
+      }
+      return maxVal;
+    }
+
+    function nextPoolStep() {
+      const outX = poolCursor.x / 2;
+      const outY = poolCursor.y / 2;
+
+      const maxVal = computePoolMax();
+      const outCell = poolGetCell(poolOutputGrid, outY, outX, 2);
+      outCell.textContent = maxVal;
+      outCell.classList.add("pool-output-active");
+
+      poolCursor.x += 2;
+      if (poolCursor.x >= 4) {
+        poolCursor.x = 0;
+        poolCursor.y += 2;
+      }
+      if (poolCursor.y >= 4) poolCursor.y = 0;
+
+      highlightPoolWindow();
+    }
+
+    highlightPoolWindow();
   </script>
 
 </body>
