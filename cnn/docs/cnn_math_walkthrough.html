@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CNN Convolution &amp; Max Pooling Walkthrough</title>
   <script>
-    window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+    window.MathJax = {tex: {inlineMath: [['$', '$']], displayMath: [['$$', '$$']]}};
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
   <style>
@@ -27,7 +28,11 @@
       --incorrect: #c62828;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -46,844 +51,2409 @@
       margin-bottom: 44px;
       background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
     }
-    header .university { text-align: center; font-size: 1.5em; font-weight: bold; color: var(--purple); letter-spacing: 1.5px; margin-bottom: 2px; }
-    header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
-    header .meta { display: flex; justify-content: space-between; font-size: 0.92em; padding: 3px 0; }
-    header .title { text-align: center; font-size: 1.3em; font-weight: bold; margin-top: 12px; color: var(--dark); }
+
+    header .university {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: var(--purple);
+      letter-spacing: 1.5px;
+      margin-bottom: 2px;
+    }
+
+    header hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 10px 0;
+    }
+
+    header .meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92em;
+      padding: 3px 0;
+    }
+
+    header .title {
+      text-align: center;
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-top: 12px;
+      color: var(--dark);
+    }
 
     /* ── Sections ── */
     .problem-header {
-      background: var(--purple); color: #fff; padding: 14px 24px;
-      font-size: 1.2em; font-weight: bold; margin: 48px 0 0; border-radius: 6px 6px 0 0;
+      background: var(--purple);
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin: 48px 0 0;
+      border-radius: 6px 6px 0 0;
     }
+
     .problem-body {
-      border: 1px solid var(--border); border-top: none; padding: 28px 30px;
-      background: var(--card-bg); border-radius: 0 0 6px 6px; margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 28px 30px;
+      background: var(--card-bg);
+      border-radius: 0 0 6px 6px;
+      margin-bottom: 12px;
     }
+
     .given-box {
-      background: var(--purple-faint); border-left: 4px solid var(--purple-light);
-      padding: 18px 22px; margin: 16px 0 28px; font-size: 1.05em; text-align: center;
+      background: var(--purple-faint);
+      border-left: 4px solid var(--purple-light);
+      padding: 18px 22px;
+      margin: 16px 0 28px;
+      font-size: 1.05em;
+      text-align: center;
     }
 
     /* ── Steps ── */
-    .step { margin: 32px 0; }
-    .step-label {
-      display: inline-block; background: var(--step-accent); color: #fff;
-      font-size: 0.78em; font-weight: bold; letter-spacing: 1.2px;
-      text-transform: uppercase; padding: 4px 14px; border-radius: 3px; margin-bottom: 10px;
+    .step {
+      margin: 32px 0;
     }
-    .step-title { font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
-    .step p { margin-bottom: 14px; }
+
+    .step-label {
+      display: inline-block;
+      background: var(--step-accent);
+      color: #fff;
+      font-size: 0.78em;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 3px;
+      margin-bottom: 10px;
+    }
+
+    .step-title {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      margin-bottom: 14px;
+    }
 
     /* ── Matrix grids ── */
-    .matrix-row { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
-    .matrix-card { text-align: center; }
-    .matrix-card .label { font-weight: bold; font-size: 0.9em; margin-bottom: 6px; color: var(--muted); }
+    .matrix-row {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
 
-    table.matrix { border-collapse: collapse; margin: 0 auto; }
+    .matrix-card {
+      text-align: center;
+    }
+
+    .matrix-card .label {
+      font-weight: bold;
+      font-size: 0.9em;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    table.matrix {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+
     table.matrix td {
-      border: 1px solid #ccc; width: 52px; height: 42px;
-      text-align: center; font-size: 1em; font-family: 'Georgia', serif;
+      border: 1px solid #ccc;
+      width: 52px;
+      height: 42px;
+      text-align: center;
+      font-size: 1em;
+      font-family: 'Georgia', serif;
       transition: background 0.3s ease;
     }
-    table.matrix td.highlight { background: var(--highlight); font-weight: bold; }
-    table.matrix td.kernel-overlap { background: #e8ddf5; font-weight: bold; }
-    table.matrix td.result { background: #ddd5ef; font-weight: bold; }
-    table.matrix td.dim { color: #bbb; background: #fafafa; }
+
+    table.matrix td.highlight {
+      background: var(--highlight);
+      font-weight: bold;
+    }
+
+    table.matrix td.kernel-overlap {
+      background: #e8ddf5;
+      font-weight: bold;
+    }
+
+    table.matrix td.result {
+      background: #ddd5ef;
+      font-weight: bold;
+    }
+
+    table.matrix td.dim {
+      color: #bbb;
+      background: #fafafa;
+    }
 
     /* ── Computation blocks ── */
     .computation {
-      background: #fafafa; border: 1px solid var(--border); border-radius: 4px;
-      padding: 18px 22px; margin: 16px 0; font-size: 1.02em; text-align: center;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px 22px;
+      margin: 16px 0;
+      font-size: 1.02em;
+      text-align: center;
     }
-    .computation .equation-label { font-weight: bold; color: var(--purple); margin-bottom: 6px; text-align: left; font-size: 0.92em; }
+
+    .computation .equation-label {
+      font-weight: bold;
+      color: var(--purple);
+      margin-bottom: 6px;
+      text-align: left;
+      font-size: 0.92em;
+    }
 
     /* ── Callouts ── */
-    .callout { background: var(--purple-faint); border-left: 4px solid var(--purple-light); padding: 14px 20px; margin: 20px 0; font-size: 0.95em; }
-    .callout strong { color: var(--purple); }
-    .outcome { background: #e8ddf5; border-left: 4px solid var(--purple-light); padding: 14px 20px; margin: 20px 0; }
-    .outcome-label { font-weight: bold; font-size: 0.82em; text-transform: uppercase; letter-spacing: 1px; color: var(--purple); margin-bottom: 4px; }
+    .callout {
+      background: var(--purple-faint);
+      border-left: 4px solid var(--purple-light);
+      padding: 14px 20px;
+      margin: 20px 0;
+      font-size: 0.95em;
+    }
+
+    .callout strong {
+      color: var(--purple);
+    }
+
+    .outcome {
+      background: #e8ddf5;
+      border-left: 4px solid var(--purple-light);
+      padding: 14px 20px;
+      margin: 20px 0;
+    }
+
+    .outcome-label {
+      font-weight: bold;
+      font-size: 0.82em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--purple);
+      margin-bottom: 4px;
+    }
 
     /* ── Slide visual ── */
-    .slide-visual { display: flex; gap: 16px; align-items: center; justify-content: center; margin: 22px 0; flex-wrap: wrap; }
-    .slide-visual .arrow { font-size: 1.6em; color: var(--purple); }
+    .slide-visual {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      margin: 22px 0;
+      flex-wrap: wrap;
+    }
+
+    .slide-visual .arrow {
+      font-size: 1.6em;
+      color: var(--purple);
+    }
 
     /* ── Interactive answer inputs ── */
     .answer-row {
-      display: flex; align-items: center; justify-content: center;
-      gap: 12px; margin: 14px 0; flex-wrap: wrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 14px 0;
+      flex-wrap: wrap;
     }
+
     .answer-row input[type="number"] {
-      width: 100px; padding: 8px 12px; font-size: 1.05em; font-family: 'Georgia', serif;
-      border: 2px solid var(--border); border-radius: 4px; text-align: center;
+      width: 100px;
+      padding: 8px 12px;
+      font-size: 1.05em;
+      font-family: 'Georgia', serif;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      text-align: center;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
       -moz-appearance: textfield;
     }
+
     .answer-row input[type="number"]::-webkit-outer-spin-button,
-    .answer-row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .answer-row input[type="number"]:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(81,40,136,0.18); }
-    .answer-row input.correct { border-color: var(--correct); background: #e8f5e9; }
-    .answer-row input.incorrect { border-color: var(--incorrect); background: #ffebee; }
+    .answer-row input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .answer-row input[type="number"]:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(81, 40, 136, 0.18);
+    }
+
+    .answer-row input.correct {
+      border-color: var(--correct);
+      background: #e8f5e9;
+    }
+
+    .answer-row input.incorrect {
+      border-color: var(--incorrect);
+      background: #ffebee;
+    }
 
     .btn {
-      padding: 8px 20px; font-size: 0.9em; font-family: 'Georgia', serif;
-      border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s ease;
+      padding: 8px 20px;
+      font-size: 0.9em;
+      font-family: 'Georgia', serif;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    .btn-check { background: var(--purple); color: #fff; }
-    .btn-check:hover { background: var(--purple-dark); }
-    .btn-hint { background: transparent; color: var(--purple); border: 1px solid var(--purple); }
-    .btn-hint:hover { background: rgba(81,40,136,0.08); }
+
+    .btn-check {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .btn-check:hover {
+      background: var(--purple-dark);
+    }
+
+    .btn-hint {
+      background: transparent;
+      color: var(--purple);
+      border: 1px solid var(--purple);
+    }
+
+    .btn-hint:hover {
+      background: rgba(81, 40, 136, 0.08);
+    }
 
     .feedback {
-      font-size: 0.92em; font-weight: bold; min-width: 24px;
-      transition: opacity 0.3s ease; opacity: 0;
+      font-size: 0.92em;
+      font-weight: bold;
+      min-width: 24px;
+      transition: opacity 0.3s ease;
+      opacity: 0;
     }
-    .feedback.visible { opacity: 1; }
-    .feedback.correct { color: var(--correct); }
-    .feedback.incorrect { color: var(--incorrect); }
+
+    .feedback.visible {
+      opacity: 1;
+    }
+
+    .feedback.correct {
+      color: var(--correct);
+    }
+
+    .feedback.incorrect {
+      color: var(--incorrect);
+    }
 
     .hint-box {
-      background: var(--purple-faint); border: 1px dashed var(--purple-light); border-radius: 4px;
-      padding: 12px 18px; margin: 10px 0; font-size: 0.92em;
-      display: none; text-align: center;
+      background: var(--purple-faint);
+      border: 1px dashed var(--purple-light);
+      border-radius: 4px;
+      padding: 12px 18px;
+      margin: 10px 0;
+      font-size: 0.92em;
+      display: none;
+      text-align: center;
     }
-    .hint-box.visible { display: block; animation: fadeIn 0.3s ease; }
+
+    .hint-box.visible {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
 
     /* ── Animated kernel demo ── */
     #kernel-demo {
-      background: var(--purple-faint); border: 1px solid var(--border); border-radius: 6px;
-      padding: 24px; margin: 24px 0; text-align: center;
+      background: var(--purple-faint);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
     }
-    #kernel-demo .demo-title {
-      font-weight: bold; font-size: 1em; color: var(--purple); margin-bottom: 16px;
-    }
-    .demo-grid-wrapper {
-      display: inline-block; position: relative; margin: 0 auto;
-    }
-    table.demo-grid { border-collapse: collapse; margin: 0 auto; }
-    table.demo-grid td {
-      width: 64px; height: 52px; border: 1px solid #ccc; text-align: center;
-      font-size: 1.05em; font-weight: bold; font-family: 'Georgia', serif;
-      transition: background 0.4s ease, color 0.4s ease;
-      background: #fff; color: var(--text);
-    }
-    table.demo-grid td.active { background: #e8ddf5; color: #3b1d66; }
 
-    .demo-controls { margin-top: 18px; display: flex; justify-content: center; gap: 12px; align-items: center; }
+    #kernel-demo .demo-title {
+      font-weight: bold;
+      font-size: 1em;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+
+    .demo-grid-wrapper {
+      display: inline-block;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    table.demo-grid {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+
+    table.demo-grid td {
+      width: 64px;
+      height: 52px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 1.05em;
+      font-weight: bold;
+      font-family: 'Georgia', serif;
+      transition: background 0.4s ease, color 0.4s ease;
+      background: #fff;
+      color: var(--text);
+    }
+
+    table.demo-grid td.active {
+      background: #e8ddf5;
+      color: #3b1d66;
+    }
+
+    .demo-controls {
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+    }
+
     .btn-demo {
-      padding: 8px 22px; font-size: 0.88em; font-family: 'Georgia', serif;
-      background: var(--purple); color: #fff; border: none; border-radius: 4px; cursor: pointer;
+      padding: 8px 22px;
+      font-size: 0.88em;
+      font-family: 'Georgia', serif;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    .btn-demo:hover { background: var(--purple-dark); }
-    .btn-demo:disabled { background: #ccc; cursor: not-allowed; }
+
+    .btn-demo:hover {
+      background: var(--purple-dark);
+    }
+
+    .btn-demo:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
     .demo-position {
-      font-size: 0.95em; color: var(--muted); min-width: 180px; text-align: center;
+      font-size: 0.95em;
+      color: var(--muted);
+      min-width: 180px;
+      text-align: center;
     }
+
     .demo-equation {
-      margin-top: 14px; font-size: 0.95em; color: var(--text);
+      margin-top: 14px;
+      font-size: 0.95em;
+      color: var(--text);
       min-height: 1.8em;
     }
 
     /* ── Output matrix interactive grid ── */
-    .output-grid { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 10px auto; }
+    .output-grid {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin: 10px auto;
+    }
+
     .output-grid input {
-      width: 80px; height: 50px; text-align: center; font-size: 1.05em;
-      font-family: 'Georgia', serif; border: 1px solid #ccc;
+      width: 80px;
+      height: 50px;
+      text-align: center;
+      font-size: 1.05em;
+      font-family: 'Georgia', serif;
+      border: 1px solid #ccc;
       transition: background 0.3s ease, border-color 0.3s ease;
     }
-    .output-grid input:focus { outline: none; border-color: var(--purple); z-index: 1; position: relative; }
-    .output-grid input.correct { background: #e8f5e9; border-color: var(--correct); }
-    .output-grid input.incorrect { background: #ffebee; border-color: var(--incorrect); }
+
+    .output-grid input:focus {
+      outline: none;
+      border-color: var(--purple);
+      z-index: 1;
+      position: relative;
+    }
+
+    .output-grid input.correct {
+      background: #e8f5e9;
+      border-color: var(--correct);
+    }
+
+    .output-grid input.incorrect {
+      background: #ffebee;
+      border-color: var(--incorrect);
+    }
 
     /* ── Reference table ── */
-    .concepts-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    .concepts-table th { background: var(--purple); color: #fff; padding: 10px 16px; text-align: left; font-size: 0.9em; letter-spacing: 0.5px; }
-    .concepts-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 0.92em; }
-    .concepts-table tr:nth-child(even) td { background: #fafafa; }
+    .concepts-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
 
-    hr.section-break { border: none; border-top: 2px solid var(--border); margin: 48px 0; }
+    .concepts-table th {
+      background: var(--purple);
+      color: #fff;
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 0.9em;
+      letter-spacing: 0.5px;
+    }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .concepts-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92em;
+    }
+
+    .concepts-table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    hr.section-break {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 48px 0;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Fully Connected Diagram Styles */
+    .fc-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 50px;
+      position: relative;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .fc-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      position: relative;
+    }
+
+    .fc-node {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #007BFF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5px;
+      font-size: 0.9em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .fc-node.hidden {
+      background-color: #28a745;
+    }
+
+    .fc-node.output {
+      background-color: #dc3545;
+    }
+
+    /* Lines connecting nodes */
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .diagram-caption {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    /* Image Dimensions Section */
+    .image-dimensions {
+      margin-bottom: 40px;
+    }
+
+    .image-dimensions .step-title {
+      font-size: 1.4em;
+      margin: 10px 0;
+    }
+
+    .image-dimensions p {
+      margin: 10px 0;
+    }
+
+    .image-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 50px;
+      position: relative;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .image-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    .image-block {
+      width: 80px;
+      height: 80px;
+      background-color: #007BFF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9em;
+      border-radius: 6px;
+    }
+
+    .image-block.grayscale {
+      background-color: #555;
+    }
+
+    .svg-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .diagram-caption {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    /* CNN Steps Section */
+    .cnn-steps {
+      margin-bottom: 40px;
+    }
+
+    .cnn-steps .step-title {
+      font-size: 1.4em;
+      margin: 10px 0;
+    }
+
+    .cnn-steps p {
+      margin: 10px 0;
+    }
+
+    /* Common block styles for CNN diagrams */
+    .cnn-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 50px;
+      position: relative;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .cnn-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    .cnn-block {
+      min-width: 80px;
+      min-height: 60px;
+      background-color: #007BFF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9em;
+      border-radius: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cnn-block.convolution {
+      background-color: #17a2b8;
+    }
+
+    .cnn-block.activation {
+      background-color: #28a745;
+    }
+
+    .cnn-block.pooling {
+      background-color: #ffc107;
+    }
+
+    .cnn-block.fc {
+      background-color: #6f42c1;
+    }
+
+    .cnn-block.output {
+      background-color: #dc3545;
+    }
+
+    /* SVG lines behind blocks */
+    .cnn-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .cnn-caption {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    /* ReLU Graph */
+    .relu-graph {
+      width: 100%;
+      max-width: 400px;
+      height: 200px;
+      margin: 20px auto;
+      border-left: 2px solid #333;
+      border-bottom: 2px solid #333;
+      position: relative;
+    }
+
+    .relu-line {
+      stroke: #28a745;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .pool-grid-4x4,
+    .pool-grid-2x2 {
+      display: grid;
+      gap: 3px;
+      background: #f7f7f7;
+      padding: 6px;
+      border-radius: 8px;
+    }
+
+    .pool-grid-4x4 {
+      grid-template-columns: repeat(4, 40px);
+    }
+
+    .pool-grid-2x2 {
+      grid-template-columns: repeat(2, 40px);
+    }
+
+    .pool-cell {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .pool-highlight {
+      background: #e6f7ff;
+      border: 2px solid #1890ff;
+    }
+
+    .pool-output-active {
+      background: #f6ffed;
+      border: 2px solid #52c41a;
+    }
   </style>
 </head>
+
 <body>
 
-<!-- ════════════════ HEADER ════════════════ -->
-<header>
-  <div class="university">Grand Canyon University</div>
-  <hr>
-  <div class="meta">
-    <span><strong>Course:</strong> AIT-204</span>
-    <span><strong>Instructor:</strong> Professor Artzi</span>
-  </div>
-  <div class="meta">
-    <span><strong>Authors:</strong> Owen Lindsey &amp; Tyler Friesen</span>
-    <span><strong>Date:</strong> ___</span>
-  </div>
-  <hr>
-  <div class="title">CNN Convolution &amp; Max Pooling &mdash; Interactive Walkthrough</div>
-</header>
-
-<!-- ════════════════ PROBLEM A ════════════════ -->
-<div class="problem-header">Problem A &mdash; Constructing the Convolution Output Matrix M (General Form)</div>
-<div class="problem-body">
-
-  <div class="given-box">
-    $$
-    A = \begin{bmatrix} a_{1,1} & a_{1,2} & a_{1,3} \\ a_{2,1} & a_{2,2} & a_{2,3} \\ a_{3,1} & a_{3,2} & a_{3,3} \end{bmatrix}
-    \qquad
-    K = \begin{bmatrix} k_{1,1} & k_{1,2} \\ k_{2,1} & k_{2,2} \end{bmatrix}
-    $$
-  </div>
-
-  <!-- Step 1 -->
-  <div class="step">
-    <span class="step-label">Step 1</span>
-    <div class="step-title">Determine the Output Dimensions</div>
-    <p>
-      Before any computation begins, you need to know how large the result will be.
-      The input matrix $A$ has 3 rows and 3 columns, making it a $3 \times 3$ matrix.
-      The kernel $K$ has 2 rows and 2 columns, making it $2 \times 2$.
-    </p>
-    <p>
-      When performing convolution with <em>no padding</em> and a <em>stride of 1</em>,
-      the output dimension is calculated with the formula:
-    </p>
-    <div class="computation">
-      $$ \text{output size} = (n - f + 1) \times (n - f + 1) $$
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header>
+    <div class="university">Grand Canyon University</div>
+    <hr>
+    <div class="meta">
+      <span><strong>Course:</strong> AIT-204</span>
+      <span><strong>Instructor:</strong> Professor Artzi</span>
     </div>
-    <p>
-      Here, $n$ is the dimension of the input and $f$ is the dimension of the kernel.
-      Substituting the values gives $(3 - 2 + 1) = 2$, so the output matrix $M$
-      will be $2 \times 2$. This tells you that the kernel will land in exactly four
-      distinct positions as it slides across $A$.
-    </p>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      The output matrix $M$ is $2 \times 2$, meaning there are four values to compute.
+    <div class="meta">
+      <span><strong>Authors:</strong> Owen Lindsey &amp; Tyler Friesen</span>
+      <span><strong>Date:</strong> February 15, 2026</span>
     </div>
-  </div>
+    <hr>
+    <div class="title">CNN Convolution &amp; Max Pooling &mdash; Interactive Walkthrough</div>
+  </header>
 
-  <!-- Step 2 -->
-  <div class="step">
-    <span class="step-label">Step 2</span>
-    <div class="step-title">Identify the Receptive Fields</div>
-    <p>
-      A <strong>receptive field</strong> is the specific region of the input that the
-      kernel overlaps at a given position. Think of the kernel as a small window that
-      slides over the input. At each stop, it "sees" a submatrix of $A$ that matches
-      its own size.
-    </p>
-    <p>
-      Since the kernel is $2 \times 2$, each receptive field is a $2 \times 2$ block
-      pulled from $A$. The kernel starts at the top-left corner and slides one column
-      to the right, then drops down one row and repeats. With stride 1, each move shifts
-      the window by exactly one position.
-    </p>
-    <div class="callout">
-      <strong>How to read these diagrams:</strong> The green-highlighted cells show which
-      elements of $A$ the kernel covers at that position. These are the values that will
-      be paired with the kernel for element-wise multiplication.
+  <!-- ════════════════ PROBLEM A ════════════════ -->
+  <div class="problem-header">Problem A &mdash; Constructing the Convolution Output Matrix M (General Form)</div>
+  <div class="problem-body">
+
+    <div class="given-box">
+      $$
+      A = \begin{bmatrix} a_{1,1} & a_{1,2} & a_{1,3} \\ a_{2,1} & a_{2,2} & a_{2,3} \\ a_{3,1} & a_{3,2} & a_{3,3}
+      \end{bmatrix}
+      \qquad
+      K = \begin{bmatrix} k_{1,1} & k_{1,2} \\ k_{2,1} & k_{2,2} \end{bmatrix}
+      $$
     </div>
 
-    <p style="font-weight:bold; margin-top: 20px;">Position (1,1) &mdash; Top Left</p>
-    <p>The kernel sits over the first two rows and first two columns of $A$.</p>
-    <div class="matrix-row">
-      <div class="matrix-card">
-        <div class="label">Input A (receptive field highlighted)</div>
-        <table class="matrix">
-          <tr><td class="kernel-overlap">$a_{1,1}$</td><td class="kernel-overlap">$a_{1,2}$</td><td>$a_{1,3}$</td></tr>
-          <tr><td class="kernel-overlap">$a_{2,1}$</td><td class="kernel-overlap">$a_{2,2}$</td><td>$a_{2,3}$</td></tr>
-          <tr><td>$a_{3,1}$</td><td>$a_{3,2}$</td><td>$a_{3,3}$</td></tr>
+    <!-- Step 1 -->
+    <div class="step">
+      <span class="step-label">Step 1</span>
+      <div class="step-title">Determine the Output Dimensions</div>
+      <p>
+        Before any computation begins, you need to know how large the result will be.
+        The input matrix $A$ has 3 rows and 3 columns, making it a $3 \times 3$ matrix.
+        The kernel $K$ has 2 rows and 2 columns, making it $2 \times 2$.
+      </p>
+      <p>
+        When performing convolution with <em>no padding</em> and a <em>stride of 1</em>,
+        the output dimension is calculated with the formula:
+      </p>
+      <div class="computation">
+        $$ \text{output size} = (n - f + 1) \times (n - f + 1) $$
+      </div>
+      <p>
+        Here, $n$ is the dimension of the input and $f$ is the dimension of the kernel.
+        Substituting the values gives $(3 - 2 + 1) = 2$, so the output matrix $M$
+        will be $2 \times 2$. This tells you that the kernel will land in exactly four
+        distinct positions as it slides across $A$.
+      </p>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        The output matrix $M$ is $2 \times 2$, meaning there are four values to compute.
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <span class="step-label">Step 2</span>
+      <div class="step-title">Identify the Receptive Fields</div>
+      <p>
+        A <strong>receptive field</strong> is the specific region of the input that the
+        kernel overlaps at a given position. Think of the kernel as a small window that
+        slides over the input. At each stop, it "sees" a submatrix of $A$ that matches
+        its own size.
+      </p>
+      <p>
+        Since the kernel is $2 \times 2$, each receptive field is a $2 \times 2$ block
+        pulled from $A$. The kernel starts at the top-left corner and slides one column
+        to the right, then drops down one row and repeats. With stride 1, each move shifts
+        the window by exactly one position.
+      </p>
+      <div class="callout">
+        <strong>How to read these diagrams:</strong> The green-highlighted cells show which
+        elements of $A$ the kernel covers at that position. These are the values that will
+        be paired with the kernel for element-wise multiplication.
+      </div>
+
+      <p style="font-weight:bold; margin-top: 20px;">Position (1,1) &mdash; Top Left</p>
+      <p>The kernel sits over the first two rows and first two columns of $A$.</p>
+      <div class="matrix-row">
+        <div class="matrix-card">
+          <div class="label">Input A (receptive field highlighted)</div>
+          <table class="matrix">
+            <tr>
+              <td class="kernel-overlap">$a_{1,1}$</td>
+              <td class="kernel-overlap">$a_{1,2}$</td>
+              <td>$a_{1,3}$</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">$a_{2,1}$</td>
+              <td class="kernel-overlap">$a_{2,2}$</td>
+              <td>$a_{2,3}$</td>
+            </tr>
+            <tr>
+              <td>$a_{3,1}$</td>
+              <td>$a_{3,2}$</td>
+              <td>$a_{3,3}$</td>
+            </tr>
+          </table>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">$k_{1,1}$</td>
+              <td class="highlight">$k_{1,2}$</td>
+            </tr>
+            <tr>
+              <td class="highlight">$k_{2,1}$</td>
+              <td class="highlight">$k_{2,2}$</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <p style="font-weight:bold; margin-top: 24px;">Position (1,2) &mdash; Top Right</p>
+      <p>The kernel slides one column to the right, now covering columns 2 and 3 of the first two rows.</p>
+      <div class="matrix-row">
+        <div class="matrix-card">
+          <div class="label">Input A (receptive field highlighted)</div>
+          <table class="matrix">
+            <tr>
+              <td>$a_{1,1}$</td>
+              <td class="kernel-overlap">$a_{1,2}$</td>
+              <td class="kernel-overlap">$a_{1,3}$</td>
+            </tr>
+            <tr>
+              <td>$a_{2,1}$</td>
+              <td class="kernel-overlap">$a_{2,2}$</td>
+              <td class="kernel-overlap">$a_{2,3}$</td>
+            </tr>
+            <tr>
+              <td>$a_{3,1}$</td>
+              <td>$a_{3,2}$</td>
+              <td>$a_{3,3}$</td>
+            </tr>
+          </table>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">$k_{1,1}$</td>
+              <td class="highlight">$k_{1,2}$</td>
+            </tr>
+            <tr>
+              <td class="highlight">$k_{2,1}$</td>
+              <td class="highlight">$k_{2,2}$</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <p style="font-weight:bold; margin-top: 24px;">Position (2,1) &mdash; Bottom Left</p>
+      <p>The kernel moves back to column 1 and drops down one row, covering rows 2&ndash;3 and columns 1&ndash;2.</p>
+      <div class="matrix-row">
+        <div class="matrix-card">
+          <div class="label">Input A (receptive field highlighted)</div>
+          <table class="matrix">
+            <tr>
+              <td>$a_{1,1}$</td>
+              <td>$a_{1,2}$</td>
+              <td>$a_{1,3}$</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">$a_{2,1}$</td>
+              <td class="kernel-overlap">$a_{2,2}$</td>
+              <td>$a_{2,3}$</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">$a_{3,1}$</td>
+              <td class="kernel-overlap">$a_{3,2}$</td>
+              <td>$a_{3,3}$</td>
+            </tr>
+          </table>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">$k_{1,1}$</td>
+              <td class="highlight">$k_{1,2}$</td>
+            </tr>
+            <tr>
+              <td class="highlight">$k_{2,1}$</td>
+              <td class="highlight">$k_{2,2}$</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <p style="font-weight:bold; margin-top: 24px;">Position (2,2) &mdash; Bottom Right</p>
+      <p>The kernel slides right once more, now covering the bottom-right $2 \times 2$ corner of $A$.</p>
+      <div class="matrix-row">
+        <div class="matrix-card">
+          <div class="label">Input A (receptive field highlighted)</div>
+          <table class="matrix">
+            <tr>
+              <td>$a_{1,1}$</td>
+              <td>$a_{1,2}$</td>
+              <td>$a_{1,3}$</td>
+            </tr>
+            <tr>
+              <td>$a_{2,1}$</td>
+              <td class="kernel-overlap">$a_{2,2}$</td>
+              <td class="kernel-overlap">$a_{2,3}$</td>
+            </tr>
+            <tr>
+              <td>$a_{3,1}$</td>
+              <td class="kernel-overlap">$a_{3,2}$</td>
+              <td class="kernel-overlap">$a_{3,3}$</td>
+            </tr>
+          </table>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">$k_{1,1}$</td>
+              <td class="highlight">$k_{1,2}$</td>
+            </tr>
+            <tr>
+              <td class="highlight">$k_{2,1}$</td>
+              <td class="highlight">$k_{2,2}$</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        You now know exactly which four $2 \times 2$ submatrices of $A$ will be used. Each one
+        maps to a single entry in the output matrix $M$.
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <span class="step-label">Step 3</span>
+      <div class="step-title">Compute Each Output Element</div>
+      <p>
+        At every position, the operation is the same: take the receptive field and the kernel,
+        multiply them <em>element-wise</em> (each cell in the receptive field times the
+        corresponding cell in the kernel), then <strong>sum all the products</strong> into a
+        single number. This is sometimes written using the Hadamard product symbol $\odot$:
+      </p>
+      <div class="computation">
+        $$ M_{i,j} = \sum \left( \text{receptive field} \odot K \right) $$
+      </div>
+      <p>
+        Expanding this for each of the four positions gives you four equations. In each one,
+        you pair the top-left of the receptive field with $k_{1,1}$, the top-right with
+        $k_{1,2}$, the bottom-left with $k_{2,1}$, and the bottom-right with $k_{2,2}$.
+      </p>
+
+      <div class="computation">
+        <div class="equation-label">$M_{1,1}$</div>
+        $$ M_{1,1} = (a_{1,1} \cdot k_{1,1}) + (a_{1,2} \cdot k_{1,2}) + (a_{2,1} \cdot k_{2,1}) + (a_{2,2} \cdot
+        k_{2,2}) $$
+      </div>
+      <div class="computation">
+        <div class="equation-label">$M_{1,2}$</div>
+        $$ M_{1,2} = (a_{1,2} \cdot k_{1,1}) + (a_{1,3} \cdot k_{1,2}) + (a_{2,2} \cdot k_{2,1}) + (a_{2,3} \cdot
+        k_{2,2}) $$
+      </div>
+      <div class="computation">
+        <div class="equation-label">$M_{2,1}$</div>
+        $$ M_{2,1} = (a_{2,1} \cdot k_{1,1}) + (a_{2,2} \cdot k_{1,2}) + (a_{3,1} \cdot k_{2,1}) + (a_{3,2} \cdot
+        k_{2,2}) $$
+      </div>
+      <div class="computation">
+        <div class="equation-label">$M_{2,2}$</div>
+        $$ M_{2,2} = (a_{2,2} \cdot k_{1,1}) + (a_{2,3} \cdot k_{1,2}) + (a_{3,2} \cdot k_{2,1}) + (a_{3,3} \cdot
+        k_{2,2}) $$
+      </div>
+
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        Each equation produces one scalar value. Together they fill every cell of the $2 \times 2$ output.
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <span class="step-label">Step 4</span>
+      <div class="step-title">Assemble the Output Matrix</div>
+      <p>Place each computed value into its corresponding position to form $M$:</p>
+      <div class="computation">
+        $$ M = \begin{bmatrix} M_{1,1} & M_{1,2} \\ M_{2,1} & M_{2,2} \end{bmatrix} $$
+      </div>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        This is the complete convolution result for the general case. In Problem&nbsp;B you will plug in
+        real numbers and carry out the arithmetic.
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ PROBLEM B ════════════════ -->
+  <div class="problem-header">Problem B &mdash; Convolution with Specific Values + Max Pooling</div>
+  <div class="problem-body">
+
+    <div class="given-box">
+      $$
+      A = \begin{bmatrix} 14 & 15 & 16 \\ 17 & 18 & 19 \\ 20 & 21 & 22 \end{bmatrix}
+      \qquad
+      K = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+      $$
+    </div>
+
+    <!-- Interactive Kernel Slider Demo -->
+    <div id="kernel-demo">
+      <div class="demo-title">Interactive Kernel Slider &mdash; Watch the kernel slide across A</div>
+      <div class="demo-grid-wrapper">
+        <table class="demo-grid" id="demo-matrix">
+          <tr>
+            <td id="d00">14</td>
+            <td id="d01">15</td>
+            <td id="d02">16</td>
+          </tr>
+          <tr>
+            <td id="d10">17</td>
+            <td id="d11">18</td>
+            <td id="d12">19</td>
+          </tr>
+          <tr>
+            <td id="d20">20</td>
+            <td id="d21">21</td>
+            <td id="d22">22</td>
+          </tr>
         </table>
       </div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix">
-          <tr><td class="highlight">$k_{1,1}$</td><td class="highlight">$k_{1,2}$</td></tr>
-          <tr><td class="highlight">$k_{2,1}$</td><td class="highlight">$k_{2,2}$</td></tr>
-        </table>
+      <div class="demo-equation" id="demo-equation"></div>
+      <div class="demo-controls">
+        <button class="btn-demo" id="demo-prev" onclick="demoStep(-1)">&#9664; Previous</button>
+        <span class="demo-position" id="demo-pos">Position (1,1) &mdash; Top Left</span>
+        <button class="btn-demo" id="demo-next" onclick="demoStep(1)">Next &#9654;</button>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-demo" id="demo-auto" onclick="demoAutoPlay()">&#9654; Auto-Play</button>
       </div>
     </div>
 
-    <p style="font-weight:bold; margin-top: 24px;">Position (1,2) &mdash; Top Right</p>
-    <p>The kernel slides one column to the right, now covering columns 2 and 3 of the first two rows.</p>
-    <div class="matrix-row">
-      <div class="matrix-card">
-        <div class="label">Input A (receptive field highlighted)</div>
-        <table class="matrix">
-          <tr><td>$a_{1,1}$</td><td class="kernel-overlap">$a_{1,2}$</td><td class="kernel-overlap">$a_{1,3}$</td></tr>
-          <tr><td>$a_{2,1}$</td><td class="kernel-overlap">$a_{2,2}$</td><td class="kernel-overlap">$a_{2,3}$</td></tr>
-          <tr><td>$a_{3,1}$</td><td>$a_{3,2}$</td><td>$a_{3,3}$</td></tr>
-        </table>
-      </div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix">
-          <tr><td class="highlight">$k_{1,1}$</td><td class="highlight">$k_{1,2}$</td></tr>
-          <tr><td class="highlight">$k_{2,1}$</td><td class="highlight">$k_{2,2}$</td></tr>
-        </table>
+    <!-- Step 1 -->
+    <div class="step">
+      <span class="step-label">Step 1</span>
+      <div class="step-title">Confirm the Output Dimensions</div>
+      <p>
+        The same formula from Problem A applies. $A$ is $3 \times 3$ and $K$ is
+        $2 \times 2$, so the output $M$ will again be $(3 - 2 + 1) \times (3 - 2 + 1) = 2 \times 2$.
+      </p>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        You will compute exactly four values to fill the $2 \times 2$ output.
       </div>
     </div>
 
-    <p style="font-weight:bold; margin-top: 24px;">Position (2,1) &mdash; Bottom Left</p>
-    <p>The kernel moves back to column 1 and drops down one row, covering rows 2&ndash;3 and columns 1&ndash;2.</p>
-    <div class="matrix-row">
-      <div class="matrix-card">
-        <div class="label">Input A (receptive field highlighted)</div>
-        <table class="matrix">
-          <tr><td>$a_{1,1}$</td><td>$a_{1,2}$</td><td>$a_{1,3}$</td></tr>
-          <tr><td class="kernel-overlap">$a_{2,1}$</td><td class="kernel-overlap">$a_{2,2}$</td><td>$a_{2,3}$</td></tr>
-          <tr><td class="kernel-overlap">$a_{3,1}$</td><td class="kernel-overlap">$a_{3,2}$</td><td>$a_{3,3}$</td></tr>
-        </table>
+    <!-- Step 2 -->
+    <div class="step">
+      <span class="step-label">Step 2</span>
+      <div class="step-title">Compute Each Convolution Element</div>
+      <p>
+        Follow the same sliding-window process from Problem A, but now with actual numbers.
+        At each kernel position, identify the $2 \times 2$ receptive field from $A$, multiply
+        each element by its kernel counterpart, and add the four products.
+      </p>
+
+      <!-- M11 -->
+      <p style="font-weight:bold; margin-top:18px;">$M_{1,1}$ &mdash; Top Left</p>
+      <p>The kernel overlaps the top-left $2 \times 2$ region of $A$:</p>
+      <div class="slide-visual">
+        <div class="matrix-card">
+          <div class="label">Receptive Field</div>
+          <table class="matrix">
+            <tr>
+              <td class="kernel-overlap">14</td>
+              <td class="kernel-overlap">15</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">17</td>
+              <td class="kernel-overlap">18</td>
+            </tr>
+          </table>
+        </div>
+        <div class="arrow">$\odot$</div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">1</td>
+              <td class="highlight">2</td>
+            </tr>
+            <tr>
+              <td class="highlight">3</td>
+              <td class="highlight">4</td>
+            </tr>
+          </table>
+        </div>
       </div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix">
-          <tr><td class="highlight">$k_{1,1}$</td><td class="highlight">$k_{1,2}$</td></tr>
-          <tr><td class="highlight">$k_{2,1}$</td><td class="highlight">$k_{2,2}$</td></tr>
-        </table>
+      <div class="computation">
+        $$ M_{1,1} = (14 \times 1) + (15 \times 2) + (17 \times 3) + (18 \times 4) = \;?$$
+      </div>
+      <div class="hint-box" id="hint-m11">
+        <strong>Intermediate products:</strong> $14 + 30 + 51 + 72$. Now add them together.
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="number" id="ans-m11" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('m11')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('m11')">Hint</button>
+        <span class="feedback" id="fb-m11"></span>
+      </div>
+
+      <!-- M12 -->
+      <p style="font-weight:bold; margin-top:28px;">$M_{1,2}$ &mdash; Top Right</p>
+      <p>The kernel slides one column right, now covering columns 2&ndash;3 of the top two rows:</p>
+      <div class="slide-visual">
+        <div class="matrix-card">
+          <div class="label">Receptive Field</div>
+          <table class="matrix">
+            <tr>
+              <td class="kernel-overlap">15</td>
+              <td class="kernel-overlap">16</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">18</td>
+              <td class="kernel-overlap">19</td>
+            </tr>
+          </table>
+        </div>
+        <div class="arrow">$\odot$</div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">1</td>
+              <td class="highlight">2</td>
+            </tr>
+            <tr>
+              <td class="highlight">3</td>
+              <td class="highlight">4</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="computation">
+        $$ M_{1,2} = (15 \times 1) + (16 \times 2) + (18 \times 3) + (19 \times 4) = \;?$$
+      </div>
+      <div class="hint-box" id="hint-m12">
+        <strong>Intermediate products:</strong> $15 + 32 + 54 + 76$. Now add them together.
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="number" id="ans-m12" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('m12')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('m12')">Hint</button>
+        <span class="feedback" id="fb-m12"></span>
+      </div>
+
+      <!-- M21 -->
+      <p style="font-weight:bold; margin-top:28px;">$M_{2,1}$ &mdash; Bottom Left</p>
+      <p>The kernel returns to column 1 and drops down one row, covering rows 2&ndash;3:</p>
+      <div class="slide-visual">
+        <div class="matrix-card">
+          <div class="label">Receptive Field</div>
+          <table class="matrix">
+            <tr>
+              <td class="kernel-overlap">17</td>
+              <td class="kernel-overlap">18</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">20</td>
+              <td class="kernel-overlap">21</td>
+            </tr>
+          </table>
+        </div>
+        <div class="arrow">$\odot$</div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">1</td>
+              <td class="highlight">2</td>
+            </tr>
+            <tr>
+              <td class="highlight">3</td>
+              <td class="highlight">4</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="computation">
+        $$ M_{2,1} = (17 \times 1) + (18 \times 2) + (20 \times 3) + (21 \times 4) = \;?$$
+      </div>
+      <div class="hint-box" id="hint-m21">
+        <strong>Intermediate products:</strong> $17 + 36 + 60 + 84$. Now add them together.
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="number" id="ans-m21" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('m21')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('m21')">Hint</button>
+        <span class="feedback" id="fb-m21"></span>
+      </div>
+
+      <!-- M22 -->
+      <p style="font-weight:bold; margin-top:28px;">$M_{2,2}$ &mdash; Bottom Right</p>
+      <p>The kernel slides right to its final position at the bottom-right corner of $A$:</p>
+      <div class="slide-visual">
+        <div class="matrix-card">
+          <div class="label">Receptive Field</div>
+          <table class="matrix">
+            <tr>
+              <td class="kernel-overlap">18</td>
+              <td class="kernel-overlap">19</td>
+            </tr>
+            <tr>
+              <td class="kernel-overlap">21</td>
+              <td class="kernel-overlap">22</td>
+            </tr>
+          </table>
+        </div>
+        <div class="arrow">$\odot$</div>
+        <div class="matrix-card">
+          <div class="label">Kernel K</div>
+          <table class="matrix">
+            <tr>
+              <td class="highlight">1</td>
+              <td class="highlight">2</td>
+            </tr>
+            <tr>
+              <td class="highlight">3</td>
+              <td class="highlight">4</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="computation">
+        $$ M_{2,2} = (18 \times 1) + (19 \times 2) + (21 \times 3) + (22 \times 4) = \;?$$
+      </div>
+      <div class="hint-box" id="hint-m22">
+        <strong>Intermediate products:</strong> $18 + 38 + 63 + 88$. Now add them together.
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="number" id="ans-m22" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('m22')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('m22')">Hint</button>
+        <span class="feedback" id="fb-m22"></span>
+      </div>
+
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        After performing the arithmetic for each position, you have four numerical values ready
+        to place into the output matrix.
       </div>
     </div>
 
-    <p style="font-weight:bold; margin-top: 24px;">Position (2,2) &mdash; Bottom Right</p>
-    <p>The kernel slides right once more, now covering the bottom-right $2 \times 2$ corner of $A$.</p>
-    <div class="matrix-row">
-      <div class="matrix-card">
-        <div class="label">Input A (receptive field highlighted)</div>
-        <table class="matrix">
-          <tr><td>$a_{1,1}$</td><td>$a_{1,2}$</td><td>$a_{1,3}$</td></tr>
-          <tr><td>$a_{2,1}$</td><td>$a_{2,2}$</td><td class="kernel-overlap">$a_{2,3}$</td></tr>
-          <tr><td>$a_{3,1}$</td><td class="kernel-overlap">$a_{3,2}$</td><td class="kernel-overlap">$a_{3,3}$</td></tr>
-        </table>
+    <!-- Step 3: Assemble -->
+    <div class="step">
+      <span class="step-label">Step 3</span>
+      <div class="step-title">Assemble the Convolution Result</div>
+      <p>
+        Place your four computed values into the $2 \times 2$ output matrix.
+        Type each value into the corresponding cell:
+      </p>
+      <div style="text-align:center; margin: 20px 0;">
+        <div style="font-weight:bold; font-size:0.9em; color:var(--muted); margin-bottom:8px;">Output M</div>
+        <div class="output-grid" id="output-grid">
+          <input type="number" id="grid-m11" placeholder="M₁₁">
+          <input type="number" id="grid-m12" placeholder="M₁₂">
+          <input type="number" id="grid-m21" placeholder="M₂₁">
+          <input type="number" id="grid-m22" placeholder="M₂₂">
+        </div>
+        <div style="margin-top: 12px;">
+          <button class="btn btn-check" onclick="checkGrid()">Check Matrix</button>
+          <span class="feedback" id="fb-grid" style="margin-left: 10px;"></span>
+        </div>
       </div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix">
-          <tr><td class="highlight">$k_{1,1}$</td><td class="highlight">$k_{1,2}$</td></tr>
-          <tr><td class="highlight">$k_{2,1}$</td><td class="highlight">$k_{2,2}$</td></tr>
-        </table>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        $M$ is now a complete $2 \times 2$ feature map &mdash; the result of convolving $A$ with $K$.
       </div>
     </div>
 
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      You now know exactly which four $2 \times 2$ submatrices of $A$ will be used. Each one
-      maps to a single entry in the output matrix $M$.
+    <!-- Step 4: Max Pooling -->
+    <div class="step">
+      <span class="step-label">Step 4</span>
+      <div class="step-title">Apply Max Pooling</div>
+      <p>
+        Max pooling is a down-sampling operation. It takes a region of the feature map and
+        reduces it to a single value by keeping only the <strong>largest</strong> element.
+        The purpose is to retain the most prominent feature while reducing spatial dimensions.
+      </p>
+      <p>
+        In this problem, the pooling window covers the entire $2 \times 2$ matrix $M$.
+        That means you look at all four values and select the maximum:
+      </p>
+      <div class="computation">
+        $$ M_p = \max(M_{1,1},\; M_{1,2},\; M_{2,1},\; M_{2,2}) = \;? $$
+      </div>
+      <div class="answer-row">
+        <span>Your answer for $M_p$:</span>
+        <input type="number" id="ans-pool" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('pool')">Check</button>
+        <span class="feedback" id="fb-pool"></span>
+      </div>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        The max pooling operation collapses the $2 \times 2$ matrix into a single scalar value $M_p$.
+      </div>
+    </div>
+
+    <!-- Step 5: Transpose -->
+    <div class="step">
+      <span class="step-label">Step 5</span>
+      <div class="step-title">Transpose the Result</div>
+      <p>
+        The problem asks for $M_p^T$, the transpose of the max-pooled result.
+        Transposing a matrix swaps its rows and columns &mdash; the element at row $i$,
+        column $j$ moves to row $j$, column $i$.
+      </p>
+      <p>
+        However, since max pooling over the full $2 \times 2$ window produced a
+        <strong>scalar</strong> (a $1 \times 1$ matrix), the transpose of a scalar is simply
+        itself. There are no rows and columns to swap.
+      </p>
+      <div class="computation">
+        $$ M_p^T = M_p $$
+      </div>
+      <div class="answer-row">
+        <span>Your answer for $M_p^T$:</span>
+        <input type="number" id="ans-transpose" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('transpose')">Check</button>
+        <span class="feedback" id="fb-transpose"></span>
+      </div>
+      <div class="outcome">
+        <div class="outcome-label">Outcome</div>
+        $M_p^T$ equals $M_p$. The final answer is a single number &mdash; the largest value
+        found in the convolution output.
+      </div>
     </div>
   </div>
 
-  <!-- Step 3 -->
+  <hr class="section-break">
+
+  <!-- ════════════════ REFERENCE TABLE ════════════════ -->
+  <div class="problem-header" style="border-radius: 6px 6px 0 0;">Quick Reference</div>
+  <div class="problem-body" style="padding: 0; border-radius: 0 0 6px 6px;">
+    <table class="concepts-table">
+      <thead>
+        <tr>
+          <th style="width:35%;">Concept</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Convolution Output Size</strong></td>
+          <td>$(n - f + 1) \times (n - f + 1)$ where $n$ = input dimension, $f$ = kernel dimension. Assumes no padding
+            and stride = 1.</td>
+        </tr>
+        <tr>
+          <td><strong>Receptive Field</strong></td>
+          <td>The subregion of the input that the kernel overlaps at a given position. Its size always matches the
+            kernel.</td>
+        </tr>
+        <tr>
+          <td><strong>Convolution Operation</strong></td>
+          <td>Element-wise multiplication of the receptive field and the kernel, followed by summation of all products
+            into one value.</td>
+        </tr>
+        <tr>
+          <td><strong>Stride</strong></td>
+          <td>The number of positions the kernel moves between each computation. Stride 1 means the window shifts by one
+            row or column at a time.</td>
+        </tr>
+        <tr>
+          <td><strong>Padding</strong></td>
+          <td>Zeros added around the border of the input to control the output size. "Valid" (no padding) shrinks the
+            output; "Same" padding preserves dimensions.</td>
+        </tr>
+        <tr>
+          <td><strong>Max Pooling</strong></td>
+          <td>A down-sampling technique that selects the maximum value from each pooling window, reducing spatial size
+            while retaining dominant features.</td>
+        </tr>
+        <tr>
+          <td><strong>Transpose</strong></td>
+          <td>Swaps rows and columns of a matrix. For a scalar, the transpose is itself.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Step 6: Fully Connected Layer -->
+  <hr class="section-break">
+
   <div class="step">
-    <span class="step-label">Step 3</span>
-    <div class="step-title">Compute Each Output Element</div>
+    <span class="step-label">Step 6</span>
+    <div class="step-title">Fully Connected (Dense) Layer</div>
+
     <p>
-      At every position, the operation is the same: take the receptive field and the kernel,
-      multiply them <em>element-wise</em> (each cell in the receptive field times the
-      corresponding cell in the kernel), then <strong>sum all the products</strong> into a
-      single number. This is sometimes written using the Hadamard product symbol $\odot$:
+      After convolution and pooling, the CNN has extracted the most important
+      <em>features</em> from the input. These features are then passed into a
+      <strong>fully connected (FC) layer</strong>, which performs the final
+      decision-making step of the network.
     </p>
-    <div class="computation">
-      $$ M_{i,j} = \sum \left( \text{receptive field} \odot K \right) $$
-    </div>
+
     <p>
-      Expanding this for each of the four positions gives you four equations. In each one,
-      you pair the top-left of the receptive field with $k_{1,1}$, the top-right with
-      $k_{1,2}$, the bottom-left with $k_{2,1}$, and the bottom-right with $k_{2,2}$.
+      A fully connected layer works like a traditional neural network layer:
+      every input value is connected to every neuron in the next layer using
+      learned weights.
     </p>
 
     <div class="computation">
-      <div class="equation-label">$M_{1,1}$</div>
-      $$ M_{1,1} = (a_{1,1} \cdot k_{1,1}) + (a_{1,2} \cdot k_{1,2}) + (a_{2,1} \cdot k_{2,1}) + (a_{2,2} \cdot k_{2,2}) $$
+      $$ \mathbf{y} = \mathbf{W}\mathbf{x} + \mathbf{b} $$
     </div>
-    <div class="computation">
-      <div class="equation-label">$M_{1,2}$</div>
-      $$ M_{1,2} = (a_{1,2} \cdot k_{1,1}) + (a_{1,3} \cdot k_{1,2}) + (a_{2,2} \cdot k_{2,1}) + (a_{2,3} \cdot k_{2,2}) $$
-    </div>
-    <div class="computation">
-      <div class="equation-label">$M_{2,1}$</div>
-      $$ M_{2,1} = (a_{2,1} \cdot k_{1,1}) + (a_{2,2} \cdot k_{1,2}) + (a_{3,1} \cdot k_{2,1}) + (a_{3,2} \cdot k_{2,2}) $$
-    </div>
-    <div class="computation">
-      <div class="equation-label">$M_{2,2}$</div>
-      $$ M_{2,2} = (a_{2,2} \cdot k_{1,1}) + (a_{2,3} \cdot k_{1,2}) + (a_{3,2} \cdot k_{2,1}) + (a_{3,3} \cdot k_{2,2}) $$
-    </div>
+
+    <ul>
+      <li><strong>$\mathbf{x}$</strong>: flattened input feature vector</li>
+      <li><strong>$\mathbf{W}$</strong>: weight matrix</li>
+      <li><strong>$\mathbf{b}$</strong>: bias vector</li>
+      <li><strong>$\mathbf{y}$</strong>: output scores (logits)</li>
+    </ul>
+
+    <p>
+      In this problem, max pooling produced a single scalar value
+      <strong>$M_p$</strong>. Before entering a fully connected layer, this value
+      would be <em>flattened</em> (converted into a 1D vector), even though it
+      already contains only one element.
+    </p>
 
     <div class="outcome">
       <div class="outcome-label">Outcome</div>
-      Each equation produces one scalar value. Together they fill every cell of the $2 \times 2$ output.
+      The fully connected layer combines extracted features to produce the final
+      prediction, such as a class score or probability.
     </div>
   </div>
 
-  <!-- Step 4 -->
+  <!-- Fully Connected Layer Diagram -->
   <div class="step">
-    <span class="step-label">Step 4</span>
-    <div class="step-title">Assemble the Output Matrix</div>
-    <p>Place each computed value into its corresponding position to form $M$:</p>
-    <div class="computation">
-      $$ M = \begin{bmatrix} M_{1,1} & M_{1,2} \\ M_{2,1} & M_{2,2} \end{bmatrix} $$
-    </div>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      This is the complete convolution result for the general case. In Problem&nbsp;B you will plug in
-      real numbers and carry out the arithmetic.
-    </div>
-  </div>
-</div>
+    <span class="step-label">Visual</span>
+    <div class="step-title">Fully Connected Layer Diagram</div>
 
-<hr class="section-break">
+    <div class="fc-diagram" id="fc-diagram-1">
+      <div class="fc-column" id="input-column-1">
+        <div class="fc-node input">x₁</div>
+        <div class="fc-node input">x₂</div>
+        <div class="fc-node input">x₃</div>
+      </div>
 
-<!-- ════════════════ PROBLEM B ════════════════ -->
-<div class="problem-header">Problem B &mdash; Convolution with Specific Values + Max Pooling</div>
-<div class="problem-body">
+      <div class="fc-column" id="hidden-column-1">
+        <div class="fc-node hidden">Neuron 1</div>
+        <div class="fc-node hidden">Neuron 2</div>
+      </div>
 
-  <div class="given-box">
-    $$
-    A = \begin{bmatrix} 14 & 15 & 16 \\ 17 & 18 & 19 \\ 20 & 21 & 22 \end{bmatrix}
-    \qquad
-    K = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
-    $$
-  </div>
+      <div class="fc-column" id="output-column-1">
+        <div class="fc-node output">y</div>
+      </div>
 
-  <!-- Interactive Kernel Slider Demo -->
-  <div id="kernel-demo">
-    <div class="demo-title">Interactive Kernel Slider &mdash; Watch the kernel slide across A</div>
-    <div class="demo-grid-wrapper">
-      <table class="demo-grid" id="demo-matrix">
-        <tr><td id="d00">14</td><td id="d01">15</td><td id="d02">16</td></tr>
-        <tr><td id="d10">17</td><td id="d11">18</td><td id="d12">19</td></tr>
-        <tr><td id="d20">20</td><td id="d21">21</td><td id="d22">22</td></tr>
-      </table>
+      <!-- SVG for connecting lines -->
+      <svg id="connections-1"></svg>
     </div>
-    <div class="demo-equation" id="demo-equation"></div>
-    <div class="demo-controls">
-      <button class="btn-demo" id="demo-prev" onclick="demoStep(-1)">&#9664; Previous</button>
-      <span class="demo-position" id="demo-pos">Position (1,1) &mdash; Top Left</span>
-      <button class="btn-demo" id="demo-next" onclick="demoStep(1)">Next &#9654;</button>
-    </div>
-    <div style="margin-top:10px;">
-      <button class="btn-demo" id="demo-auto" onclick="demoAutoPlay()">&#9654; Auto-Play</button>
-    </div>
+
+    <p class="diagram-caption">
+      Every input feature connects to every neuron in the next layer, allowing the
+      network to combine learned features into a final prediction.
+    </p>
   </div>
 
-  <!-- Step 1 -->
+  <div class="outcome">
+    <div class="outcome-label">CNN Pipeline Summary</div>
+    Convolutional layers extract local patterns from the input, pooling layers
+    reduce spatial size while preserving dominant features, and fully connected
+    layers combine these features to produce the final output. Together, these
+    components allow CNNs to learn hierarchical representations of data.
+  </div>
+
+  <!-- Image Dimensions Section -->
+  <div class="image-dimensions">
+    <span class="step-label">Step 7</span>
+    <div class="step-title">Image Dimensions</div>
+
+    <p>
+      A colored RGB image has <strong>3 dimensions</strong>: height, width, and color channels (Red, Green, Blue).
+      A black and white (grayscale) image has only <strong>2 dimensions</strong>: height and width, with a single
+      intensity channel.
+    </p>
+
+    <p>
+      In machine learning, understanding the number of dimensions is important because it affects how convolutional
+      layers process the data.
+    </p>
+
+    <!-- Diagram comparing RGB to grayscale -->
+    <div class="image-diagram" id="image-diagram">
+      <svg id="image-connections" class="svg-lines"></svg>
+      <!-- RGB Image -->
+      <div class="image-column" id="rgb-column">
+        <div class="image-block">Height</div>
+        <div class="image-block">Width</div>
+        <div class="image-block" style="background-color:red;">R</div>
+        <div class="image-block" style="background-color:green;">G</div>
+        <div class="image-block" style="background-color:blue;">B</div>
+      </div>
+
+      <!-- Grayscale Image -->
+      <div class="image-column" id="grayscale-column">
+        <div class="image-block">Height</div>
+        <div class="image-block">Width</div>
+        <div class="image-block grayscale">Intensity</div>
+      </div>
+
+    </div>
+
+    <p class="diagram-caption">
+      RGB images have 3 color channels (R, G, B) while black and white images have only a single intensity channel.
+    </p>
+  </div>
+
+  <!-- CNN Steps Section -->
+  <hr class="section-break">
+  <div class="cnn-steps">
+    <div class="step-title">Steps in a Convolutional Neural Network (CNN)</div>
+
+    <p>
+      CNNs are composed of layers that extract and process features from input images. Below we detail each step, along
+      with diagrams to illustrate the flow.
+    </p>
+
+    <!-- Convolution Layer -->
+    <div class="step">
+      <span class="step-label">1</span>
+      <div class="step-title">Convolutional Layer</div>
+      <p>
+        Convolutional layers apply learnable <strong>filters</strong> (kernels) across the input image. Each filter
+        generates a <strong>feature map</strong> that highlights specific patterns such as edges or textures.
+      </p>
+
+      <div style="display:flex; gap:40px; align-items: center; justify-content: center;">
+
+        <!-- Input Pixels -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">Input Pixels</div>
+          <div id="input-grid" class="grid-5x5">
+            <!-- 5x5 input grid -->
+            <div class="cell">14</div>
+            <div class="cell">15</div>
+            <div class="cell">16</div>
+            <div class="cell">17</div>
+            <div class="cell">18</div>
+            <div class="cell">19</div>
+            <div class="cell">20</div>
+            <div class="cell">21</div>
+            <div class="cell">22</div>
+            <div class="cell">23</div>
+            <div class="cell">24</div>
+            <div class="cell">25</div>
+            <div class="cell">26</div>
+            <div class="cell">27</div>
+            <div class="cell">28</div>
+            <div class="cell">29</div>
+            <div class="cell">30</div>
+            <div class="cell">31</div>
+            <div class="cell">32</div>
+            <div class="cell">33</div>
+            <div class="cell">34</div>
+            <div class="cell">35</div>
+            <div class="cell">36</div>
+            <div class="cell">37</div>
+            <div class="cell">38</div>
+          </div>
+        </div>
+
+        <!-- Feature Map -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">Feature Map</div>
+          <div id="fmap" class="grid-4x4">
+            <!-- 4x4 fmap -->
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+            <div class="cell">0</div>
+          </div>
+        </div>
+      </div>
+
+      <button style="margin-left: 45%; margin-right: 50%; width: 100px;" onclick="nextKernel()">Next Patch →</button>
+
+      <style>
+        /* Common grid styling */
+        .grid-5x5,
+        .grid-4x4 {
+          display: grid;
+          gap: 3px;
+          background-color: #f5f5f5;
+          padding: 5px;
+          border-radius: 8px;
+          box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Grid dimensions */
+        .grid-5x5 {
+          grid-template-columns: repeat(5, 40px);
+        }
+
+        .grid-4x4 {
+          grid-template-columns: repeat(4, 40px);
+        }
+
+        /* Cells */
+        .cell {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-family: 'Courier New', monospace;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+          background-color: #fff;
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Highlighted kernel cells */
+        .cell.highlight {
+          border: 2px solid #ff4d4f;
+          background-color: #ffeaea;
+          box-shadow: 0 0 5px rgba(255, 77, 79, 0.6);
+        }
+
+        /* Grid labels */
+        div[style*="text-align:center"] {
+          margin-bottom: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          color: #333;
+        }
+
+        /* Button styling */
+        button {
+          margin-top: 15px;
+          padding: 6px 12px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #fff;
+          background-color: #1890ff;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        button:hover {
+          background-color: #40a9ff;
+        }
+
+        /* Container spacing */
+        div[style*="display:flex"] {
+          gap: 50px;
+          align-items: flex-start;
+        }
+      </style>
+
+
+      <script>
+        // Input & Kernel
+        const B = [
+          [14, 15, 16, 17, 18],
+          [19, 20, 21, 22, 23],
+          [24, 25, 26, 27, 28],
+          [29, 30, 31, 32, 33],
+          [34, 35, 36, 37, 38]
+        ];
+        const Z = [
+          [1, 2],
+          [3, 4]
+        ];
+        const kernelSize = 2;
+        let kernelPos = {x: 0, y: 0};
+
+        // DOM
+        const inputGrid = document.getElementById('input-grid');
+        const fmapGrid = document.getElementById('fmap');
+
+        // Helpers
+        function getCell(grid, row, col, gridSize) {
+          return grid.children[row * gridSize + col];
+        }
+
+        function computeConvValue(x, y) {
+          let sum = 0;
+          for (let i = 0; i < kernelSize; i++) {
+            for (let j = 0; j < kernelSize; j++) {
+              sum += B[y + i][x + j] * Z[i][j];
+            }
+          }
+          return sum;
+        }
+
+        function highlightKernel() {
+          // Clear input highlights
+          Array.from(inputGrid.children).forEach(c => c.classList.remove('highlight'));
+          for (let dy = 0; dy < kernelSize; dy++) {
+            for (let dx = 0; dx < kernelSize; dx++) {
+              getCell(inputGrid, kernelPos.y + dy, kernelPos.x + dx, 5).classList.add('highlight');
+            }
+          }
+        }
+
+        function updateFeatureMap() {
+          // Compute conv value at current kernel position
+          const val = computeConvValue(kernelPos.x, kernelPos.y);
+          getCell(fmapGrid, kernelPos.y, kernelPos.x, 4).textContent = val;
+        }
+
+        function nextKernel() {
+          updateFeatureMap();
+          kernelPos.x++;
+          if (kernelPos.x > 5 - kernelSize) {kernelPos.x = 0; kernelPos.y++;}
+          if (kernelPos.y > 5 - kernelSize) kernelPos.y = 0; // loop
+          highlightKernel();
+        }
+
+        // Initial
+        highlightKernel();
+      </script>
+      <p class="cnn-caption">
+        Each filter slides over the input image producing a feature map that captures a specific pattern.
+      </p>
+    </div>
+
+    <!-- Activation Layer -->
+    <div class="step">
+      <span class="step-label">2</span>
+      <div class="step-title">Activation Function (ReLU)</div>
+      <p>
+        Activation functions introduce nonlinearity. The ReLU function outputs 0 for negative inputs and outputs the
+        input itself for positive values, allowing the network to learn complex patterns.
+      </p>
+
+      <svg class="relu-graph">
+        <polyline class="relu-line" points="0,180 80,180 200,60 300,0 400,0"></polyline>
+      </svg>
+      <p class="cnn-caption">
+        ReLU graph showing input vs output: negative inputs are zeroed, positive inputs pass through.
+      </p>
+    </div>
+
+    <!-- Pooling Layer -->
+    <div class="step">
+      <span class="step-label">3</span>
+      <div class="step-title">Pooling Layer (Max Pooling)</div>
+
+      <p>
+        Pooling reduces the spatial dimensions of feature maps while preserving the
+        strongest activations. In <strong>max pooling</strong>, the maximum value in
+        each local region is selected.
+      </p>
+
+      <div style="display:flex; gap:40px; align-items: center; justify-content: center;">
+
+        <!-- Pooling Input -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">4×4 Feature Map</div>
+          <div id="pool-input-grid" class="pool-grid-4x4">
+            <div class="pool-cell">3</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">4</div>
+            <div class="pool-cell">5</div>
+            <div class="pool-cell">6</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">7</div>
+            <div class="pool-cell">3</div>
+            <div class="pool-cell">1</div>
+            <div class="pool-cell">4</div>
+            <div class="pool-cell">2</div>
+            <div class="pool-cell">6</div>
+          </div>
+        </div>
+
+        <!-- Pooling Output -->
+        <div>
+          <div style="text-align:center;font-weight:bold;">2×2 Pooled Map</div>
+          <div id="pool-output-grid" class="pool-grid-2x2">
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+            <div class="pool-cell">0</div>
+          </div>
+        </div>
+      </div>
+
+      <button style="margin-left: 45%; margin-right: 50%; width: 100px;" onclick="nextPoolStep()">Next Pool →</button>
+
+      <p class="cnn-caption">
+        Each 2×2 region is replaced by its maximum value, reducing spatial size
+        while keeping dominant features.
+      </p>
+    </div>
+
+    <!-- Fully Connected Layer -->
+    <div class="step">
+      <span class="step-label">4</span>
+      <div class="step-title">Fully Connected Layer</div>
+
+      <p>
+        After convolution and pooling, the feature maps are <strong>flattened</strong> into a 1D vector
+        and fed into the fully connected (dense) layer. In this layer, every input feature is connected
+        to every neuron, allowing the network to combine and weigh the extracted features in complex ways.
+        Each neuron computes a weighted sum of the inputs plus a bias and applies an optional activation
+        function, capturing high-level patterns that help the model make final decisions. Essentially,
+        the fully connected layer interprets all the learned features together and transforms them into
+        the final prediction scores or class probabilities.
+      </p>
+
+      <div class="fc-diagram" id="fc-diagram-2">
+        <svg id="connections-2" class="cnn-svg"></svg>
+
+        <div class="fc-column" id="input-column-2">
+          <div class="fc-node input">x₁</div>
+          <div class="fc-node input">x₂</div>
+          <div class="fc-node input">x₃</div>
+        </div>
+
+        <div class="fc-column" id="hidden-column-2">
+          <div class="fc-node hidden">Neuron 1</div>
+          <div class="fc-node hidden">Neuron 2</div>
+        </div>
+
+        <div class="fc-column" id="output-column-2">
+          <div class="fc-node output">y</div>
+        </div>
+      </div>
+
+      <p class="diagram-caption">
+        Fully connected layers combine extracted features to produce predictions.
+      </p>
+    </div>
+
+    <!-- Output Layer -->
+
+    <div class="step">
+      <span class="step-label">5</span>
+      <div class="step-title">Output Layer</div>
+
+      <p>
+        The output layer takes the high-level features extracted and combined by the previous layers
+        (especially the fully connected layer) and transforms them into the model’s final predictions.
+        Each neuron in this layer represents a possible class (in classification tasks) or a target value
+        (in regression tasks). The network applies the learned weights and biases to compute a score for
+        each class, which can then be normalized using a function like <strong>softmax</strong> to produce
+        probabilities. The class with the highest probability is selected as the model’s predicted output.
+        Essentially, the output layer translates the abstract feature representations learned by the network
+        into actionable, human-interpretable results.
+      </p>
+
+      <!-- Output Layer Diagram -->
+      <div class="fc-diagram" id="output-layer-diagram">
+        <svg id="connections-output" class="cnn-svg"></svg>
+
+        <!-- Last hidden layer nodes -->
+        <div class="fc-column" id="hidden-column-output">
+          <div class="fc-node hidden">Neuron 1</div>
+          <div class="fc-node hidden">Neuron 2</div>
+        </div>
+
+        <!-- Output layer -->
+        <div class="fc-column" id="output-column-output">
+          <div class="fc-node output">Class 1</div>
+          <div class="fc-node output">Class 2</div>
+          <div class="fc-node output">Class 3</div>
+        </div>
+      </div>
+
+      <p class="diagram-caption">
+        Each neuron in the last hidden layer connects to every output node. The output layer produces the final model
+        predictions (e.g., class probabilities).
+      </p>
+    </div>
+  </div>
+
   <div class="step">
-    <span class="step-label">Step 1</span>
-    <div class="step-title">Confirm the Output Dimensions</div>
+    <span class="step-label">Ethics</span>
+    <div class="step-title">Ethical Considerations in Convolutional Neural Networks</div>
+
     <p>
-      The same formula from Problem A applies. $A$ is $3 \times 3$ and $K$ is
-      $2 \times 2$, so the output $M$ will again be $(3 - 2 + 1) \times (3 - 2 + 1) = 2 \times 2$.
+      One major ethical concern when working with convolutional neural networks (CNNs) is
+      <strong>bias in image datasets</strong>. CNNs learn patterns directly from the data they
+      are trained on, so if a dataset overrepresents certain groups, environments, or visual
+      features, the resulting model may perform unevenly across populations. For example, a
+      facial recognition model trained primarily on images of one demographic group may exhibit
+      significantly higher error rates for others. These biases can lead to unfair outcomes,
+      particularly in high-stakes applications such as hiring, law enforcement, or medical
+      diagnosis.
     </p>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      You will compute exactly four values to fill the $2 \times 2$ output.
-    </div>
+
+    <p>
+      Another important concern is <strong>data security and confidentiality</strong>. Images
+      used to train CNNs often contain sensitive personal or proprietary information. Improper
+      handling of this data—such as inadequate anonymization, insecure storage, or unauthorized
+      reuse—can violate privacy rights and legal protections. Ensuring secure data pipelines,
+      limiting access, and complying with data protection regulations are essential
+      responsibilities when developing CNN-based systems.
+    </p>
+
+    <p>
+      The <strong>lack of interpretability and transparency</strong> in CNN decision-making is
+      also ethically significant. CNNs are often described as “black box” models because their
+      internal representations are difficult to understand. This opacity makes it challenging
+      to explain why a particular prediction was made, which can undermine trust and
+      accountability. In domains such as healthcare or criminal justice, clear explanations of
+      model behavior are often necessary to support human oversight and informed decision-making.
+    </p>
+
+    <p>
+      <strong>Responsible deployment</strong> of CNNs is especially critical in applications
+      such as surveillance systems and autonomous technologies. These systems can influence
+      real-world actions that affect safety, civil liberties, and human rights. Deploying CNNs
+      without proper oversight, clearly defined use cases, and safeguards against misuse can
+      result in harmful or unethical outcomes.
+    </p>
+
+    <p>
+      Finally, <strong>errors and inaccuracies in CNN predictions</strong> can have serious
+      consequences. Misclassifications in medical imaging may delay or prevent appropriate
+      treatment, while errors in autonomous systems could lead to physical harm or property
+      damage. Ethical use of CNNs therefore requires extensive testing, ongoing monitoring, and
+      an understanding of the limitations of the model. CNN outputs should support, rather than
+      replace, critical human judgment.
+    </p>
   </div>
 
-  <!-- Step 2 -->
-  <div class="step">
-    <span class="step-label">Step 2</span>
-    <div class="step-title">Compute Each Convolution Element</div>
-    <p>
-      Follow the same sliding-window process from Problem A, but now with actual numbers.
-      At each kernel position, identify the $2 \times 2$ receptive field from $A$, multiply
-      each element by its kernel counterpart, and add the four products.
-    </p>
+  <!-- ════════════════ JAVASCRIPT ════════════════ -->
+  <script>
+    // ── Answer key (computed from the matrices, not hardcoded for clarity) ──
+    const A = [[14, 15, 16], [17, 18, 19], [20, 21, 22]];
+    const K = [[1, 2], [3, 4]];
 
-    <!-- M11 -->
-    <p style="font-weight:bold; margin-top:18px;">$M_{1,1}$ &mdash; Top Left</p>
-    <p>The kernel overlaps the top-left $2 \times 2$ region of $A$:</p>
-    <div class="slide-visual">
-      <div class="matrix-card">
-        <div class="label">Receptive Field</div>
-        <table class="matrix"><tr><td class="kernel-overlap">14</td><td class="kernel-overlap">15</td></tr><tr><td class="kernel-overlap">17</td><td class="kernel-overlap">18</td></tr></table>
-      </div>
-      <div class="arrow">$\odot$</div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix"><tr><td class="highlight">1</td><td class="highlight">2</td></tr><tr><td class="highlight">3</td><td class="highlight">4</td></tr></table>
-      </div>
-    </div>
-    <div class="computation">
-      $$ M_{1,1} = (14 \times 1) + (15 \times 2) + (17 \times 3) + (18 \times 4) = \;?$$
-    </div>
-    <div class="hint-box" id="hint-m11">
-      <strong>Intermediate products:</strong> $14 + 30 + 51 + 72$. Now add them together.
-    </div>
-    <div class="answer-row">
-      <span>Your answer:</span>
-      <input type="number" id="ans-m11" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('m11')">Check</button>
-      <button class="btn btn-hint" onclick="toggleHint('m11')">Hint</button>
-      <span class="feedback" id="fb-m11"></span>
-    </div>
-
-    <!-- M12 -->
-    <p style="font-weight:bold; margin-top:28px;">$M_{1,2}$ &mdash; Top Right</p>
-    <p>The kernel slides one column right, now covering columns 2&ndash;3 of the top two rows:</p>
-    <div class="slide-visual">
-      <div class="matrix-card">
-        <div class="label">Receptive Field</div>
-        <table class="matrix"><tr><td class="kernel-overlap">15</td><td class="kernel-overlap">16</td></tr><tr><td class="kernel-overlap">18</td><td class="kernel-overlap">19</td></tr></table>
-      </div>
-      <div class="arrow">$\odot$</div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix"><tr><td class="highlight">1</td><td class="highlight">2</td></tr><tr><td class="highlight">3</td><td class="highlight">4</td></tr></table>
-      </div>
-    </div>
-    <div class="computation">
-      $$ M_{1,2} = (15 \times 1) + (16 \times 2) + (18 \times 3) + (19 \times 4) = \;?$$
-    </div>
-    <div class="hint-box" id="hint-m12">
-      <strong>Intermediate products:</strong> $15 + 32 + 54 + 76$. Now add them together.
-    </div>
-    <div class="answer-row">
-      <span>Your answer:</span>
-      <input type="number" id="ans-m12" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('m12')">Check</button>
-      <button class="btn btn-hint" onclick="toggleHint('m12')">Hint</button>
-      <span class="feedback" id="fb-m12"></span>
-    </div>
-
-    <!-- M21 -->
-    <p style="font-weight:bold; margin-top:28px;">$M_{2,1}$ &mdash; Bottom Left</p>
-    <p>The kernel returns to column 1 and drops down one row, covering rows 2&ndash;3:</p>
-    <div class="slide-visual">
-      <div class="matrix-card">
-        <div class="label">Receptive Field</div>
-        <table class="matrix"><tr><td class="kernel-overlap">17</td><td class="kernel-overlap">18</td></tr><tr><td class="kernel-overlap">20</td><td class="kernel-overlap">21</td></tr></table>
-      </div>
-      <div class="arrow">$\odot$</div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix"><tr><td class="highlight">1</td><td class="highlight">2</td></tr><tr><td class="highlight">3</td><td class="highlight">4</td></tr></table>
-      </div>
-    </div>
-    <div class="computation">
-      $$ M_{2,1} = (17 \times 1) + (18 \times 2) + (20 \times 3) + (21 \times 4) = \;?$$
-    </div>
-    <div class="hint-box" id="hint-m21">
-      <strong>Intermediate products:</strong> $17 + 36 + 60 + 84$. Now add them together.
-    </div>
-    <div class="answer-row">
-      <span>Your answer:</span>
-      <input type="number" id="ans-m21" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('m21')">Check</button>
-      <button class="btn btn-hint" onclick="toggleHint('m21')">Hint</button>
-      <span class="feedback" id="fb-m21"></span>
-    </div>
-
-    <!-- M22 -->
-    <p style="font-weight:bold; margin-top:28px;">$M_{2,2}$ &mdash; Bottom Right</p>
-    <p>The kernel slides right to its final position at the bottom-right corner of $A$:</p>
-    <div class="slide-visual">
-      <div class="matrix-card">
-        <div class="label">Receptive Field</div>
-        <table class="matrix"><tr><td class="kernel-overlap">18</td><td class="kernel-overlap">19</td></tr><tr><td class="kernel-overlap">21</td><td class="kernel-overlap">22</td></tr></table>
-      </div>
-      <div class="arrow">$\odot$</div>
-      <div class="matrix-card">
-        <div class="label">Kernel K</div>
-        <table class="matrix"><tr><td class="highlight">1</td><td class="highlight">2</td></tr><tr><td class="highlight">3</td><td class="highlight">4</td></tr></table>
-      </div>
-    </div>
-    <div class="computation">
-      $$ M_{2,2} = (18 \times 1) + (19 \times 2) + (21 \times 3) + (22 \times 4) = \;?$$
-    </div>
-    <div class="hint-box" id="hint-m22">
-      <strong>Intermediate products:</strong> $18 + 38 + 63 + 88$. Now add them together.
-    </div>
-    <div class="answer-row">
-      <span>Your answer:</span>
-      <input type="number" id="ans-m22" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('m22')">Check</button>
-      <button class="btn btn-hint" onclick="toggleHint('m22')">Hint</button>
-      <span class="feedback" id="fb-m22"></span>
-    </div>
-
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      After performing the arithmetic for each position, you have four numerical values ready
-      to place into the output matrix.
-    </div>
-  </div>
-
-  <!-- Step 3: Assemble -->
-  <div class="step">
-    <span class="step-label">Step 3</span>
-    <div class="step-title">Assemble the Convolution Result</div>
-    <p>
-      Place your four computed values into the $2 \times 2$ output matrix.
-      Type each value into the corresponding cell:
-    </p>
-    <div style="text-align:center; margin: 20px 0;">
-      <div style="font-weight:bold; font-size:0.9em; color:var(--muted); margin-bottom:8px;">Output M</div>
-      <div class="output-grid" id="output-grid">
-        <input type="number" id="grid-m11" placeholder="M₁₁">
-        <input type="number" id="grid-m12" placeholder="M₁₂">
-        <input type="number" id="grid-m21" placeholder="M₂₁">
-        <input type="number" id="grid-m22" placeholder="M₂₂">
-      </div>
-      <div style="margin-top: 12px;">
-        <button class="btn btn-check" onclick="checkGrid()">Check Matrix</button>
-        <span class="feedback" id="fb-grid" style="margin-left: 10px;"></span>
-      </div>
-    </div>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      $M$ is now a complete $2 \times 2$ feature map &mdash; the result of convolving $A$ with $K$.
-    </div>
-  </div>
-
-  <!-- Step 4: Max Pooling -->
-  <div class="step">
-    <span class="step-label">Step 4</span>
-    <div class="step-title">Apply Max Pooling</div>
-    <p>
-      Max pooling is a down-sampling operation. It takes a region of the feature map and
-      reduces it to a single value by keeping only the <strong>largest</strong> element.
-      The purpose is to retain the most prominent feature while reducing spatial dimensions.
-    </p>
-    <p>
-      In this problem, the pooling window covers the entire $2 \times 2$ matrix $M$.
-      That means you look at all four values and select the maximum:
-    </p>
-    <div class="computation">
-      $$ M_p = \max(M_{1,1},\; M_{1,2},\; M_{2,1},\; M_{2,2}) = \;? $$
-    </div>
-    <div class="answer-row">
-      <span>Your answer for $M_p$:</span>
-      <input type="number" id="ans-pool" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('pool')">Check</button>
-      <span class="feedback" id="fb-pool"></span>
-    </div>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      The max pooling operation collapses the $2 \times 2$ matrix into a single scalar value $M_p$.
-    </div>
-  </div>
-
-  <!-- Step 5: Transpose -->
-  <div class="step">
-    <span class="step-label">Step 5</span>
-    <div class="step-title">Transpose the Result</div>
-    <p>
-      The problem asks for $M_p^T$, the transpose of the max-pooled result.
-      Transposing a matrix swaps its rows and columns &mdash; the element at row $i$,
-      column $j$ moves to row $j$, column $i$.
-    </p>
-    <p>
-      However, since max pooling over the full $2 \times 2$ window produced a
-      <strong>scalar</strong> (a $1 \times 1$ matrix), the transpose of a scalar is simply
-      itself. There are no rows and columns to swap.
-    </p>
-    <div class="computation">
-      $$ M_p^T = M_p $$
-    </div>
-    <div class="answer-row">
-      <span>Your answer for $M_p^T$:</span>
-      <input type="number" id="ans-transpose" placeholder="___">
-      <button class="btn btn-check" onclick="checkAnswer('transpose')">Check</button>
-      <span class="feedback" id="fb-transpose"></span>
-    </div>
-    <div class="outcome">
-      <div class="outcome-label">Outcome</div>
-      $M_p^T$ equals $M_p$. The final answer is a single number &mdash; the largest value
-      found in the convolution output.
-    </div>
-  </div>
-</div>
-
-<hr class="section-break">
-
-<!-- ════════════════ REFERENCE TABLE ════════════════ -->
-<div class="problem-header" style="border-radius: 6px 6px 0 0;">Quick Reference</div>
-<div class="problem-body" style="padding: 0; border-radius: 0 0 6px 6px;">
-  <table class="concepts-table">
-    <thead>
-      <tr><th style="width:35%;">Concept</th><th>Description</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><strong>Convolution Output Size</strong></td><td>$(n - f + 1) \times (n - f + 1)$ where $n$ = input dimension, $f$ = kernel dimension. Assumes no padding and stride = 1.</td></tr>
-      <tr><td><strong>Receptive Field</strong></td><td>The subregion of the input that the kernel overlaps at a given position. Its size always matches the kernel.</td></tr>
-      <tr><td><strong>Convolution Operation</strong></td><td>Element-wise multiplication of the receptive field and the kernel, followed by summation of all products into one value.</td></tr>
-      <tr><td><strong>Stride</strong></td><td>The number of positions the kernel moves between each computation. Stride 1 means the window shifts by one row or column at a time.</td></tr>
-      <tr><td><strong>Padding</strong></td><td>Zeros added around the border of the input to control the output size. "Valid" (no padding) shrinks the output; "Same" padding preserves dimensions.</td></tr>
-      <tr><td><strong>Max Pooling</strong></td><td>A down-sampling technique that selects the maximum value from each pooling window, reducing spatial size while retaining dominant features.</td></tr>
-      <tr><td><strong>Transpose</strong></td><td>Swaps rows and columns of a matrix. For a scalar, the transpose is itself.</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- ════════════════ JAVASCRIPT ════════════════ -->
-<script>
-  // ── Answer key (computed from the matrices, not hardcoded for clarity) ──
-  const A = [[14,15,16],[17,18,19],[20,21,22]];
-  const K = [[1,2],[3,4]];
-
-  function conv(r, c) {
-    return A[r][c]*K[0][0] + A[r][c+1]*K[0][1] + A[r+1][c]*K[1][0] + A[r+1][c+1]*K[1][1];
-  }
-
-  const answers = {
-    m11: conv(0,0),
-    m12: conv(0,1),
-    m21: conv(1,0),
-    m22: conv(1,1),
-  };
-  answers.pool = Math.max(answers.m11, answers.m12, answers.m21, answers.m22);
-  answers.transpose = answers.pool;
-
-  // ── Check individual answers ──
-  function checkAnswer(id) {
-    const input = document.getElementById('ans-' + id);
-    const fb = document.getElementById('fb-' + id);
-    const val = parseInt(input.value, 10);
-
-    input.classList.remove('correct', 'incorrect');
-    fb.classList.remove('correct', 'incorrect', 'visible');
-
-    if (isNaN(val)) { return; }
-
-    if (val === answers[id]) {
-      input.classList.add('correct');
-      fb.textContent = '✓ Correct';
-      fb.classList.add('correct', 'visible');
-    } else {
-      input.classList.add('incorrect');
-      fb.textContent = '✗ Try again';
-      fb.classList.add('incorrect', 'visible');
+    function conv(r, c) {
+      return A[r][c] * K[0][0] + A[r][c + 1] * K[0][1] + A[r + 1][c] * K[1][0] + A[r + 1][c + 1] * K[1][1];
     }
-  }
 
-  // ── Check the output grid ──
-  function checkGrid() {
-    const ids = ['m11','m12','m21','m22'];
-    let allCorrect = true;
-    ids.forEach(id => {
-      const input = document.getElementById('grid-' + id);
+    const answers = {
+      m11: conv(0, 0),
+      m12: conv(0, 1),
+      m21: conv(1, 0),
+      m22: conv(1, 1),
+    };
+    answers.pool = Math.max(answers.m11, answers.m12, answers.m21, answers.m22);
+    answers.transpose = answers.pool;
+
+    // ── Check individual answers ──
+    function checkAnswer(id) {
+      const input = document.getElementById('ans-' + id);
+      const fb = document.getElementById('fb-' + id);
       const val = parseInt(input.value, 10);
+
       input.classList.remove('correct', 'incorrect');
-      if (isNaN(val)) { allCorrect = false; return; }
+      fb.classList.remove('correct', 'incorrect', 'visible');
+
+      if (isNaN(val)) {return;}
+
       if (val === answers[id]) {
         input.classList.add('correct');
+        fb.textContent = '✓ Correct';
+        fb.classList.add('correct', 'visible');
       } else {
         input.classList.add('incorrect');
-        allCorrect = false;
+        fb.textContent = '✗ Try again';
+        fb.classList.add('incorrect', 'visible');
       }
-    });
-    const fb = document.getElementById('fb-grid');
-    fb.classList.remove('correct', 'incorrect', 'visible');
-    if (allCorrect) {
-      fb.textContent = '✓ All correct!';
-      fb.classList.add('correct', 'visible');
-    } else {
-      fb.textContent = '✗ Some values need fixing';
-      fb.classList.add('incorrect', 'visible');
     }
-  }
 
-  // ── Hint toggling ──
-  function toggleHint(id) {
-    const box = document.getElementById('hint-' + id);
-    box.classList.toggle('visible');
-  }
-
-  // ── Allow Enter key to check ──
-  document.querySelectorAll('.answer-row input, .output-grid input').forEach(input => {
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const row = input.closest('.answer-row');
-        if (row) {
-          row.querySelector('.btn-check').click();
+    // ── Check the output grid ──
+    function checkGrid() {
+      const ids = ['m11', 'm12', 'm21', 'm22'];
+      let allCorrect = true;
+      ids.forEach(id => {
+        const input = document.getElementById('grid-' + id);
+        const val = parseInt(input.value, 10);
+        input.classList.remove('correct', 'incorrect');
+        if (isNaN(val)) {allCorrect = false; return;}
+        if (val === answers[id]) {
+          input.classList.add('correct');
         } else {
-          document.querySelector('#output-grid + div .btn-check')?.click();
+          input.classList.add('incorrect');
+          allCorrect = false;
         }
-      }
-    });
-  });
-
-  // ── Kernel Slider Demo ──
-  const positions = [
-    { r: 0, c: 0, label: 'Position (1,1) — Top Left' },
-    { r: 0, c: 1, label: 'Position (1,2) — Top Right' },
-    { r: 1, c: 0, label: 'Position (2,1) — Bottom Left' },
-    { r: 1, c: 1, label: 'Position (2,2) — Bottom Right' },
-  ];
-  let demoIndex = 0;
-  let autoInterval = null;
-
-  function updateDemo() {
-    const pos = positions[demoIndex];
-
-    // Clear all cells
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const cell = document.getElementById('d' + r + c);
-        cell.classList.remove('active');
-        cell.classList.remove('dim');
-      }
-    }
-
-    // Highlight active receptive field, dim others
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const cell = document.getElementById('d' + r + c);
-        if (r >= pos.r && r <= pos.r + 1 && c >= pos.c && c <= pos.c + 1) {
-          cell.classList.add('active');
-        } else {
-          cell.classList.add('dim');
-        }
-      }
-    }
-
-    // Update label
-    document.getElementById('demo-pos').textContent = pos.label;
-
-    // Update equation
-    const rf = [
-      A[pos.r][pos.c], A[pos.r][pos.c+1],
-      A[pos.r+1][pos.c], A[pos.r+1][pos.c+1]
-    ];
-    const eq = `(${rf[0]} × ${K[0][0]}) + (${rf[1]} × ${K[0][1]}) + (${rf[2]} × ${K[1][0]}) + (${rf[3]} × ${K[1][1]})`;
-    document.getElementById('demo-equation').textContent = eq;
-
-    // Update button states
-    document.getElementById('demo-prev').disabled = (demoIndex === 0);
-    document.getElementById('demo-next').disabled = (demoIndex === positions.length - 1);
-  }
-
-  function demoStep(dir) {
-    demoIndex = Math.max(0, Math.min(positions.length - 1, demoIndex + dir));
-    updateDemo();
-  }
-
-  function demoAutoPlay() {
-    if (autoInterval) {
-      clearInterval(autoInterval);
-      autoInterval = null;
-      document.getElementById('demo-auto').innerHTML = '&#9654; Auto-Play';
-      return;
-    }
-    demoIndex = 0;
-    updateDemo();
-    document.getElementById('demo-auto').innerHTML = '&#9632; Stop';
-    autoInterval = setInterval(() => {
-      if (demoIndex < positions.length - 1) {
-        demoIndex++;
-        updateDemo();
+      });
+      const fb = document.getElementById('fb-grid');
+      fb.classList.remove('correct', 'incorrect', 'visible');
+      if (allCorrect) {
+        fb.textContent = '✓ All correct!';
+        fb.classList.add('correct', 'visible');
       } else {
+        fb.textContent = '✗ Some values need fixing';
+        fb.classList.add('incorrect', 'visible');
+      }
+    }
+
+    // ── Hint toggling ──
+    function toggleHint(id) {
+      const box = document.getElementById('hint-' + id);
+      box.classList.toggle('visible');
+    }
+
+    // ── Allow Enter key to check ──
+    document.querySelectorAll('.answer-row input, .output-grid input').forEach(input => {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const row = input.closest('.answer-row');
+          if (row) {
+            row.querySelector('.btn-check').click();
+          } else {
+            document.querySelector('#output-grid + div .btn-check')?.click();
+          }
+        }
+      });
+    });
+
+    // ── Kernel Slider Demo ──
+    const positions = [
+      {r: 0, c: 0, label: 'Position (1,1) — Top Left'},
+      {r: 0, c: 1, label: 'Position (1,2) — Top Right'},
+      {r: 1, c: 0, label: 'Position (2,1) — Bottom Left'},
+      {r: 1, c: 1, label: 'Position (2,2) — Bottom Right'},
+    ];
+    let demoIndex = 0;
+    let autoInterval = null;
+
+    function updateDemo() {
+      const pos = positions[demoIndex];
+
+      // Clear all cells
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const cell = document.getElementById('d' + r + c);
+          cell.classList.remove('active');
+          cell.classList.remove('dim');
+        }
+      }
+
+      // Highlight active receptive field, dim others
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const cell = document.getElementById('d' + r + c);
+          if (r >= pos.r && r <= pos.r + 1 && c >= pos.c && c <= pos.c + 1) {
+            cell.classList.add('active');
+          } else {
+            cell.classList.add('dim');
+          }
+        }
+      }
+
+      // Update label
+      document.getElementById('demo-pos').textContent = pos.label;
+
+      // Update equation
+      const rf = [
+        A[pos.r][pos.c], A[pos.r][pos.c + 1],
+        A[pos.r + 1][pos.c], A[pos.r + 1][pos.c + 1]
+      ];
+      const eq = `(${rf[0]} × ${K[0][0]}) + (${rf[1]} × ${K[0][1]}) + (${rf[2]} × ${K[1][0]}) + (${rf[3]} × ${K[1][1]})`;
+      document.getElementById('demo-equation').textContent = eq;
+
+      // Update button states
+      document.getElementById('demo-prev').disabled = (demoIndex === 0);
+      document.getElementById('demo-next').disabled = (demoIndex === positions.length - 1);
+    }
+
+    function demoStep(dir) {
+      demoIndex = Math.max(0, Math.min(positions.length - 1, demoIndex + dir));
+      updateDemo();
+    }
+
+    function demoAutoPlay() {
+      if (autoInterval) {
         clearInterval(autoInterval);
         autoInterval = null;
         document.getElementById('demo-auto').innerHTML = '&#9654; Auto-Play';
+        return;
       }
-    }, 1500);
-  }
+      demoIndex = 0;
+      updateDemo();
+      document.getElementById('demo-auto').innerHTML = '&#9632; Stop';
+      autoInterval = setInterval(() => {
+        if (demoIndex < positions.length - 1) {
+          demoIndex++;
+          updateDemo();
+        } else {
+          clearInterval(autoInterval);
+          autoInterval = null;
+          document.getElementById('demo-auto').innerHTML = '&#9654; Auto-Play';
+        }
+      }, 1500);
+    }
 
-  // Initialize demo
-  updateDemo();
-</script>
+    function connectFCLayer(svgId, inputId, hiddenId, outputId) {
+      const svg = document.getElementById(svgId);
+      svg.innerHTML = ''; // Clear existing lines
+
+      const inputNodes = document.querySelectorAll(`#${inputId} .fc-node`);
+      const hiddenNodes = document.querySelectorAll(`#${hiddenId} .fc-node`);
+      const outputNodes = document.querySelectorAll(`#${outputId} .fc-node`);
+
+      function getCenter(node) {
+        const rect = node.getBoundingClientRect();
+        const parentRect = svg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2 - parentRect.left,
+          y: rect.top + rect.height / 2 - parentRect.top
+        };
+      }
+
+      function drawLine(start, end) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        line.setAttribute('x1', start.x);
+        line.setAttribute('y1', start.y);
+        line.setAttribute('x2', end.x);
+        line.setAttribute('y2', end.y);
+        line.setAttribute('stroke', '#aaa');
+        line.setAttribute('stroke-width', 2);
+        svg.appendChild(line);
+      }
+
+      // Input -> Hidden
+      inputNodes.forEach(input => hiddenNodes.forEach(hidden => drawLine(getCenter(input), getCenter(hidden))));
+      // Hidden -> Output
+      hiddenNodes.forEach(hidden => outputNodes.forEach(output => drawLine(getCenter(hidden), getCenter(output))));
+    }
+
+    // Draw both diagrams
+    function connectAllFCLayers() {
+      connectFCLayer('connections-1', 'input-column-1', 'hidden-column-1', 'output-column-1');
+      connectFCLayer('connections-2', 'input-column-2', 'hidden-column-2', 'output-column-2');
+    }
+
+    // Responsive redraw
+    window.addEventListener('load', connectAllFCLayers);
+    window.addEventListener('resize', connectAllFCLayers);
+
+    // ── Draw connections for convolution / pooling diagrams ──
+    function connectColumns(svgId, leftColumnId, rightColumnId) {
+      const svg = document.getElementById(svgId);
+      svg.innerHTML = '';
+
+      const leftNodes = document.querySelectorAll(`#${leftColumnId} .cnn-block`);
+      const rightNodes = document.querySelectorAll(`#${rightColumnId} .cnn-block`);
+
+      function getCenter(node) {
+        const rect = node.getBoundingClientRect();
+        const parentRect = svg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2 - parentRect.left,
+          y: rect.top + rect.height / 2 - parentRect.top
+        };
+      }
+
+      leftNodes.forEach(left => {
+        rightNodes.forEach(right => {
+          const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+          const start = getCenter(left);
+          const end = getCenter(right);
+          line.setAttribute('x1', start.x);
+          line.setAttribute('y1', start.y);
+          line.setAttribute('x2', end.x);
+          line.setAttribute('y2', end.y);
+          line.setAttribute('stroke', '#aaa');
+          line.setAttribute('stroke-width', '2');
+          svg.appendChild(line);
+        });
+      });
+    }
+
+    // ── Draw connections for RGB → grayscale diagram ──
+    function connectImageDiagram() {
+      const svg = document.getElementById('image-connections');
+      svg.innerHTML = '';
+
+      const rgbBlocks = document.querySelectorAll('#rgb-column .image-block');
+      const grayBlocks = document.querySelectorAll('#grayscale-column .image-block');
+
+      const intensityBlock = grayBlocks[2]; // Intensity
+
+      function getCenter(node) {
+        const rect = node.getBoundingClientRect();
+        const parentRect = svg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2 - parentRect.left,
+          y: rect.top + rect.height / 2 - parentRect.top
+        };
+      }
+
+      rgbBlocks.forEach(block => {
+        if (['R', 'G', 'B'].includes(block.textContent.trim())) {
+          const start = getCenter(block);
+          const end = getCenter(intensityBlock);
+          const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+          line.setAttribute('x1', start.x);
+          line.setAttribute('y1', start.y);
+          line.setAttribute('x2', end.x);
+          line.setAttribute('y2', end.y);
+          line.setAttribute('stroke', '#aaa');
+          line.setAttribute('stroke-width', '2');
+          svg.appendChild(line);
+        }
+      });
+    }
+
+    // ── Call all connection functions on load and resize ──
+    function connectAllDiagrams() {
+      connectColumns('pooling-svg', 'pooling-input-column', 'pooling-output-column');
+      connectImageDiagram();
+      connectAllFCLayers(); // your existing FC function
+    }
+
+    window.addEventListener('load', connectAllDiagrams);
+    window.addEventListener('resize', connectAllDiagrams);
+
+
+    // Initialize demo
+    updateDemo();
+
+    function connectOutputLayer() {
+      const svg = document.getElementById('connections-output');
+      svg.innerHTML = '';
+
+      const hiddenNodes = document.querySelectorAll('#hidden-column-output .fc-node');
+      const outputNodes = document.querySelectorAll('#output-column-output .fc-node');
+
+      function getCenter(node) {
+        const rect = node.getBoundingClientRect();
+        const parentRect = svg.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2 - parentRect.left,
+          y: rect.top + rect.height / 2 - parentRect.top
+        };
+      }
+
+      hiddenNodes.forEach(hidden => {
+        outputNodes.forEach(output => {
+          const start = getCenter(hidden);
+          const end = getCenter(output);
+          const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+          line.setAttribute('x1', start.x);
+          line.setAttribute('y1', start.y);
+          line.setAttribute('x2', end.x);
+          line.setAttribute('y2', end.y);
+          line.setAttribute('stroke', '#aaa');
+          line.setAttribute('stroke-width', '2');
+          svg.appendChild(line);
+        });
+      });
+    }
+
+    window.addEventListener('load', connectOutputLayer);
+    window.addEventListener('resize', connectOutputLayer);
+
+    const poolFeatureMap = [
+      [3, 1, 2, 4],
+      [5, 6, 1, 2],
+      [0, 2, 7, 3],
+      [1, 4, 2, 6]
+    ];
+
+    const poolWindowSize = 2;
+    let poolCursor = {x: 0, y: 0};
+
+    const poolInputGrid = document.getElementById("pool-input-grid");
+    const poolOutputGrid = document.getElementById("pool-output-grid");
+
+    function poolGetCell(grid, row, col, size) {
+      return grid.children[row * size + col];
+    }
+
+    function highlightPoolWindow() {
+      Array.from(poolInputGrid.children)
+        .forEach(c => c.classList.remove("pool-highlight"));
+
+      for (let dy = 0; dy < poolWindowSize; dy++) {
+        for (let dx = 0; dx < poolWindowSize; dx++) {
+          poolGetCell(poolInputGrid, poolCursor.y + dy, poolCursor.x + dx, 4)
+            .classList.add("pool-highlight");
+        }
+      }
+    }
+
+    function computePoolMax() {
+      let maxVal = -Infinity;
+      for (let dy = 0; dy < poolWindowSize; dy++) {
+        for (let dx = 0; dx < poolWindowSize; dx++) {
+          maxVal = Math.max(
+            maxVal,
+            poolFeatureMap[poolCursor.y + dy][poolCursor.x + dx]
+          );
+        }
+      }
+      return maxVal;
+    }
+
+    function nextPoolStep() {
+      const outX = poolCursor.x / 2;
+      const outY = poolCursor.y / 2;
+
+      const maxVal = computePoolMax();
+      const outCell = poolGetCell(poolOutputGrid, outY, outX, 2);
+      outCell.textContent = maxVal;
+      outCell.classList.add("pool-output-active");
+
+      poolCursor.x += 2;
+      if (poolCursor.x >= 4) {
+        poolCursor.x = 0;
+        poolCursor.y += 2;
+      }
+      if (poolCursor.y >= 4) poolCursor.y = 0;
+
+      highlightPoolWindow();
+    }
+
+    highlightPoolWindow();
+  </script>
 
 </body>
+
 </html>
