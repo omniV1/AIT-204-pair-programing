@@ -82,6 +82,43 @@
       color: var(--dark);
     }
 
+    /* ── Video Section ── */
+    .video-section {
+      background: var(--purple-faint);
+      border: 2px solid var(--purple-light);
+      border-radius: 8px;
+      padding: 24px 30px;
+      margin: -24px auto 44px;
+      text-align: center;
+      max-width: 100%;
+    }
+
+    .video-section h2 {
+      color: var(--purple);
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .video-section .video-link {
+      display: inline-block;
+      padding: 14px 28px;
+      background: var(--purple);
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 6px;
+      transition: background 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 2px 4px rgba(81, 40, 136, 0.2);
+    }
+
+    .video-section .video-link:hover {
+      background: var(--purple-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(81, 40, 136, 0.3);
+    }
+
     /* ── Sections ── */
     .problem-header {
       background: var(--purple);
@@ -822,6 +859,18 @@
     <hr>
     <div class="title">CNN Convolution &amp; Max Pooling &mdash; Interactive Walkthrough</div>
   </header>
+
+  <!-- ════════════════ VIDEO WALKTHROUGH ════════════════ -->
+  <div class="video-section">
+    <h2>Video Walkthrough</h2>
+    <a href="https://www.youtube.com/watch?v=6heSCJNwE7U" target="_blank" class="video-link" rel="noopener noreferrer">
+      Watch Video Walkthrough on YouTube ↗
+    </a>
+    <h2 Video Walkthrough part 2 (coding/implementation)></h2>
+    <a href="https://youtu.be/gtrKAIONv4w" target="_blank" class="video-link" rel="noopener noreferrer">
+      Watch Coding Video Walkthrough on YouTube
+    </a>
+  </div>
 
   <!-- ════════════════ PROBLEM A ════════════════ -->
   <div class="problem-header">Problem A &mdash; Constructing the Convolution Output Matrix M (General Form)</div>
