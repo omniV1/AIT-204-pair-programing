@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NLP Sentiment Analysis &amp; Cross-Lingual Understanding — Documentation</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });</script>
+  <style>
+    :root {
+      --purple: #512888;
+      --purple-dark: #3b1d66;
+      --purple-light: #7b52b4;
+      --purple-faint: #f3eef9;
+      --white: #ffffff;
+      --dark: #1a1a2e;
+      --text: #2c2c2c;
+      --muted: #5a5a5a;
+      --bg: #fafafe;
+      --card-bg: #ffffff;
+      --border: #d8d0e4;
+      --highlight: #ede4f7;
+      --step-accent: #512888;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 30px 80px;
+    }
+
+    header {
+      border: 2px solid var(--purple);
+      padding: 28px 36px 24px;
+      margin-bottom: 44px;
+      background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
+    }
+    header .university {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: var(--purple);
+      letter-spacing: 1.5px;
+      margin-bottom: 2px;
+    }
+    header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+    header .meta { display: flex; justify-content: space-between; font-size: 0.92em; padding: 3px 0; }
+    header .title {
+      text-align: center;
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-top: 12px;
+      color: var(--dark);
+    }
+
+    .problem-header {
+      background: var(--purple);
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin: 48px 0 0;
+      border-radius: 6px 6px 0 0;
+    }
+    .problem-body {
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 28px 30px;
+      background: var(--card-bg);
+      border-radius: 0 0 6px 6px;
+      margin-bottom: 12px;
+    }
+
+    .step { margin: 24px 0; }
+    .step-label {
+      display: inline-block;
+      background: var(--step-accent);
+      color: #fff;
+      font-size: 0.78em;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 3px;
+      margin-bottom: 10px;
+    }
+    .step-title { font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
+    .step p { margin-bottom: 12px; }
+
+    .callout {
+      background: var(--purple-faint);
+      border-left: 4px solid var(--purple-light);
+      padding: 14px 20px;
+      margin: 20px 0;
+      font-size: 0.95em;
+    }
+    .callout strong { color: var(--purple); }
+
+    .given-box {
+      background: var(--purple-faint);
+      border-left: 4px solid var(--purple-light);
+      padding: 18px 22px;
+      margin: 16px 0 28px;
+      font-size: 1.05em;
+    }
+
+    .code-block {
+      background: #2d2d2d;
+      color: #e0e0e0;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.88em;
+      line-height: 1.5;
+      padding: 18px 22px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid var(--border);
+    }
+    .code-block .comment { color: #6a9955; }
+    .code-block .kw { color: #569cd6; }
+    .code-block .fn { color: #dcdcaa; }
+    .code-block .str { color: #ce9178; }
+
+    table.doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+    table.doc-table th, table.doc-table td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    table.doc-table th { background: var(--purple-faint); color: var(--purple); font-weight: bold; }
+    table.doc-table tr:nth-child(even) { background: #fafafa; }
+
+    h3 { color: var(--purple); font-size: 1.1em; margin: 20px 0 10px; }
+
+    .diagram-wrap {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 24px 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .diagram-wrap .mermaid { display: inline-block; }
+    .diagram-wrap.diagram-sequence {
+      min-width: 100%;
+    }
+    .diagram-wrap.diagram-sequence .mermaid {
+      min-width: 720px;
+    }
+    .diagram-wrap.diagram-sequence .mermaid svg {
+      min-width: 720px;
+      max-width: 100%;
+      height: auto;
+    }
+    .diagram-caption {
+      font-size: 0.9em;
+      color: var(--muted);
+      margin-top: 12px;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="university">Grand Canyon University</div>
+    <hr>
+    <div class="meta">
+      <span><strong>Course:</strong> AIT-204</span>
+      <span><strong>Topic:</strong> Natural Language Processing</span>
+    </div>
+    <div class="meta">
+      <span><strong>Assignment:</strong> NLP Sentiment Analysis and Cross-Lingual Understanding</span>
+      <span><strong>Points:</strong> 70</span>
+    </div>
+    <hr>
+    <div class="title">NLP Sentiment Analysis — Code Documentation &amp; Design</div>
+  </header>
+
+  <!-- ════════════════ RUBRIC SUMMARY ════════════════ -->
+  <div class="problem-header">Rubric Summary (70 points)</div>
+  <div class="problem-body">
+    <p>This document maps the implementation to the AIT-204 Topic 4 rubric. The assignment is graded across six criteria: the first four (14 points each) cover the ML pipeline, model and training, translation analysis, and ethics; the last two (7 points each) cover documentation/deployment and presentation.</p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>Criteria</th>
+          <th>Points</th>
+          <th>Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ML Pipeline Implementation</td>
+          <td>14</td>
+          <td>Activity 1: preprocessing, vocabulary, encoding, padding, end-to-end pipeline</td>
+        </tr>
+        <tr>
+          <td>Model Architecture and Training</td>
+          <td>14</td>
+          <td>Activity 2: embeddings + classifier; Activity 3: training loop, loss curves, save</td>
+        </tr>
+        <tr>
+          <td>Translation Analysis and Cross-Lingual Evaluation</td>
+          <td>14</td>
+          <td>Activity 4: Translation Comparison tab; <code>compare()</code>; 10+ examples in report</td>
+        </tr>
+        <tr>
+          <td>Ethical Considerations</td>
+          <td>14</td>
+          <td>Report: bias, privacy, scale risks, cross-lingual harm, engineering responsibility</td>
+        </tr>
+        <tr>
+          <td>Documentation and Deployed Application</td>
+          <td>7</td>
+          <td>Commented code, architecture diagram, deployed app URL, written report</td>
+        </tr>
+        <tr>
+          <td>Presentation or Video</td>
+          <td>7</td>
+          <td>Demo app, design decisions, cross-lingual findings, model limitations</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ════════════════ SYSTEM ARCHITECTURE ════════════════ -->
+  <div class="problem-header">System Architecture</div>
+  <div class="problem-body">
+    <p>The project follows a clear frontend/backend split. The Streamlit app (<code>activity4_app.py</code>) handles all user interaction and display; it never touches the model or vocabulary directly. Instead, it holds a single <code>SentimentService</code> instance (cached at startup) and calls <code>predict(text)</code> or <code>compare(original, translated)</code>. The backend (<code>model_service.py</code>) loads the saved model and vocabulary once and exposes these two methods. Training and preprocessing live in Activity 1–3; at runtime only the saved artifacts and the service are used.</p>
+    <p>This separation allows swapping the UI (e.g. Streamlit for React) or the model without rewriting the other layer, and keeps the backend testable on its own (e.g. <code>python model_service.py</code>). The diagram below shows how the main components depend on each other and where data flows from training time to inference.</p>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart TB
+  subgraph Training["Training (Activity 3)"]
+    A1[activity1_preprocessing]
+    A2[activity2_model]
+    IMDB[IMDB Dataset]
+    IMDB --> A1
+    A1 --> vocab[vocab.json]
+    A1 --> A2
+    A2 --> model[model.pt]
+  end
+  subgraph Runtime["Runtime (Activity 4)"]
+    UI[activity4_app.py\nStreamlit UI]
+    SVC[model_service.py\nSentimentService]
+    vocab --> SVC
+    model --> SVC
+    config[config.json] --> SVC
+    UI -->|predict / compare| SVC
+  end
+  Training --> saved[saved_model/]
+  saved --> Runtime
+      </div>
+      <p class="diagram-caption">Figure 1: Component dependency and data flow from training to deployed app.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════ ACTIVITY 1 — ML PIPELINE ════════════════ -->
+  <div class="problem-header">Activity 1 — ML Pipeline: Preprocessing Module</div>
+  <div class="problem-body">
+    <p><strong>File:</strong> <code>activity1_preprocessing.py</code>. Neural networks operate on numeric tensors, so raw text must be turned into fixed-size integer sequences. This module implements that pipeline and is used both during training (Activity 3) and at inference (via <code>model_service.py</code> when a user submits a review).</p>
+
+    <div class="step">
+      <span class="step-label">Pipeline Overview</span>
+      <div class="step-title">From raw text to model input</div>
+      <p>First, text is normalized: <code>clean_text()</code> lowercases, strips non-letters, and collapses whitespace so that "This Movie was GREAT!!!" becomes "this movie was great". Then <code>tokenize()</code> splits on spaces into word tokens. The <code>Vocabulary</code> maps each token to an integer ID (unknown words map to <code>&lt;UNK&gt;</code>); <code>pad_sequence()</code> truncates or pads to a fixed <code>max_length</code> so every batch has the same shape. Finally, the list of integers is wrapped in a PyTorch tensor of shape <code>(1, max_length)</code> for the model. The flowchart below summarizes this sequence.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart LR
+  A[Raw Text] --> B[clean_text]
+  B --> C[tokenize]
+  C --> D[vocab.encode]
+  D --> E[pad_sequence]
+  E --> F["tensor(B, L)"]
+        </div>
+        <p class="diagram-caption">Figure 2: Preprocessing pipeline from raw string to batched tensor.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Vocabulary and deployment</span>
+      <div class="step-title">Word-to-ID mapping and persistence</div>
+      <p>The <code>Vocabulary</code> class is built from training data with <code>build(token_lists)</code> and respects a <code>min_freq</code> threshold so rare words fall back to <code>&lt;UNK&gt;</code>. It provides <code>encode(tokens)</code> and <code>decode(indices)</code> for the pipeline, and <code>save(filepath)</code> / <code>Vocabulary.load(filepath)</code> so the exact same mapping is used in the deployed app. Special tokens <code>&lt;PAD&gt;</code> (0) and <code>&lt;UNK&gt;</code> (1) are always present. The convenience function <code>preprocess_for_model(text, vocab, max_length)</code> runs the full chain for a single string; <code>preprocess_dataset(reviews, vocab, max_length, fit_vocab=False)</code> does batch preprocessing and can optionally build the vocabulary from the given reviews.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+classDiagram
+  class Vocabulary {
+    +int pad_idx
+    +int unk_idx
+    +dict word2idx
+    +dict idx2word
+    +build(token_lists)
+    +encode(tokens) list
+    +decode(indices) list
+    +save(filepath)
+    +load(filepath) Vocabulary
+  }
+        </div>
+        <p class="diagram-caption">Figure 3: Vocabulary class (simplified UML).</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+<span class="comment"># Example: single review to tensor</span>
+cleaned = clean_text("This Movie was GREAT!!!")   <span class="comment"># "this movie was great"</span>
+tokens = tokenize(cleaned)                         <span class="comment"># ["this", "movie", "was", "great"]</span>
+encoded = vocab.encode(tokens)                     <span class="comment"># [4, 12, 7, 23] (IDs)</span>
+padded = pad_sequence(encoded, max_length=10)       <span class="comment"># [4,12,7,23,0,0,0,0,0,0]</span>
+tensor = preprocess_for_model("This Movie was GREAT!!!", vocab, max_length=10)
+    </div>
+  </div>
+
+  <!-- ════════════════ ACTIVITY 2 & 3 — MODEL AND TRAINING ════════════════ -->
+  <div class="problem-header">Activity 2 &amp; 3 — Model Architecture and Training</div>
+  <div class="problem-body">
+    <p><strong>Files:</strong> <code>activity2_model.py</code> defines the network; <code>activity3_train.py</code> trains it on IMDB and saves the model, vocabulary, and config.</p>
+
+    <h3>SentimentClassifier</h3>
+    <p>The model turns a sequence of word IDs into a single probability. An <code>nn.Embedding</code> layer looks up a dense vector for each ID; padding IDs are forced to zero via <code>padding_idx</code>. Those vectors are then averaged over the sequence (ignoring padding) to get one sentence vector per batch item. That vector passes through a fully connected block: Linear(embed_dim → hidden_dim), ReLU, Dropout, Linear(hidden_dim → 1), Sigmoid. So the architecture is: <strong>Word IDs → Embedding → Average Pooling → FC → ReLU → Dropout → FC → Sigmoid</strong>. It mirrors a Topic 2–style feed-forward net with an embedding layer at the front. <code>save_model()</code> and <code>load_model()</code> persist the config and state dict so the app can load the same architecture and weights.</p>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart LR
+  subgraph model["SentimentClassifier"]
+    I["(B, L) IDs"]
+    I --> Emb[Embedding]
+    Emb --> Pool["Avg Pool\n(mask pad)"]
+    Pool --> FC1[Linear]
+    FC1 --> R[ReLU]
+    R --> D[Dropout]
+    D --> FC2[Linear]
+    FC2 --> S[Sigmoid]
+    S --> O["(B, 1) prob"]
+  end
+      </div>
+      <p class="diagram-caption">Figure 4: Model data flow from token IDs to sentiment probability.</p>
+    </div>
+
+    <h3>Training pipeline</h3>
+    <p>Activity 3 loads the IMDB dataset (e.g. via Hugging Face <code>datasets</code>), builds the vocabulary from the training texts, and encodes and pads all sequences to <code>MAX_LENGTH</code>. It creates a <code>SentimentClassifier</code> with chosen hyperparameters (e.g. <code>EMBED_DIM=128</code>, <code>HIDDEN_DIM=64</code>, <code>DROPOUT=0.5</code>, <code>MIN_FREQ=5</code>), then runs a standard training loop: forward pass, BCE loss, backward, Adam step. Train and validation loss and accuracy are logged per epoch and plotted to <code>plots/training_curves.png</code>. After training, the script writes <code>saved_model/model.pt</code>, <code>saved_model/vocab.json</code>, and <code>saved_model/config.json</code> (containing <code>max_length</code>) for the app to load.</p>
+  </div>
+
+  <!-- ════════════════ ACTIVITY 4 — DEPLOYED APP ════════════════ -->
+  <div class="problem-header">Activity 4 — Deployed Application (Backend and Frontend)</div>
+  <div class="problem-body">
+    <p>The app is split into a backend service and a Streamlit frontend. The backend owns the model and vocabulary; the frontend owns the UI and calls the backend. No model logic lives in the UI code.</p>
+
+    <h3>Backend: SentimentService</h3>
+    <p>On construction, <code>SentimentService</code> loads the vocabulary from <code>vocab.json</code>, the model from <code>model.pt</code>, and <code>max_length</code> from <code>config.json</code>. <code>predict(text)</code> runs the full preprocessing pipeline (clean, tokenize, encode, pad, tensor), passes the tensor through the model, and returns a dict with sentiment label, confidence, positive/negative scores, and pipeline intermediates (cleaned text, tokens, encoded IDs, known_count) for display. <code>compare(original, translated)</code> calls <code>predict()</code> on both strings, computes the score delta and whether the sentiment label flipped, and identifies vocabulary words that appear in one text but not the other (lost_words / new_words). The sequence diagram below shows the flow when a user submits a review in the Sentiment tab.</p>
+    <div class="diagram-wrap diagram-sequence">
+      <div class="mermaid">
+sequenceDiagram
+  participant User
+  participant Streamlit
+  participant SentimentService
+  participant Preprocess
+  participant Model
+  User->>Streamlit: Paste review, click Analyze
+  Streamlit->>SentimentService: predict(text)
+  SentimentService->>Preprocess: clean_text, tokenize, encode, pad
+  Preprocess-->>SentimentService: tensor
+  SentimentService->>Model: forward(tensor)
+  Model-->>SentimentService: probability
+  SentimentService-->>Streamlit: dict(sentiment, confidence, tokens, ...)
+  Streamlit-->>User: Display metrics and expander
+      </div>
+      <p class="diagram-caption">Figure 5: Sequence of calls for a single sentiment prediction.</p>
+    </div>
+
+    <h3>Frontend: Streamlit</h3>
+    <p><code>load_service()</code> is decorated with <code>@st.cache_resource</code> so one <code>SentimentService()</code> is created and reused for the lifetime of the app; the model is not reloaded on every button click. Tab 1 (Sentiment Analysis) provides a text area and an "Analyze Sentiment" button that calls <code>service.predict(review)</code> and shows the sentiment, confidence, a positive-score progress bar, and an expander with cleaned text and tokens. Tab 2 (Translation Comparison) provides two text areas (original and round-trip translated); "Compare Sentiments" calls <code>service.compare(original, translated)</code> and shows both predictions, the score delta, whether the label changed, and lost/new words. Deployment (e.g. Streamlit Community Cloud or Hugging Face Spaces) requires the repo to include the app file, backend, Activity 1–2 modules, <code>saved_model/</code>, and <code>requirements.txt</code>, with the app file as the entry point.</p>
+  </div>
+
+  <!-- ════════════════ TRANSLATION & CROSS-LINGUAL ════════════════ -->
+  <div class="problem-header">Translation Analysis and Cross-Lingual Evaluation</div>
+  <div class="problem-body">
+    <p>The rubric asks for a round-trip translation experiment (at least 10 examples), model-based comparison of original vs. translated sentiment, and classification of translation effects (e.g. grammatical error, semantic shift, contextual loss, or preserved meaning).</p>
+    <p>Round-trip means taking an English review, translating it to another language (e.g. with Google Translate or DeepL), then translating back to English. The original and the round-trip text are pasted into the Translation Comparison tab; <code>compare()</code> returns both sentiment scores, the delta, a boolean <code>changed</code> (true if the label flipped), and the sets of vocabulary words that were lost or introduced. In the written report, each example should be classified (grammatical, semantic, contextual, or preserved) and documented with the model outputs. The decision tree below summarizes how the app and report interpret "sentiment changed" and how to use the outputs for analysis.</p>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart TD
+  A[Original and Translated text] --> B[compare]
+  B --> C{Labels equal?}
+  C -->|Yes| D[changed false]
+  C -->|No| E[changed true]
+  D --> F[Report: preserved or minor shift]
+  E --> G[Report: classify error type]
+  G --> H{Error type?}
+  H --> I[Grammatical]
+  H --> J[Semantic]
+  H --> K[Contextual]
+  F --> L[Document delta, lost_words, new_words]
+  I --> L
+  J --> L
+  K --> L
+      </div>
+      <p class="diagram-caption">Figure 6: Decision flow for translation comparison and report classification.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════ ETHICAL CONSIDERATIONS ════════════════ -->
+  <div class="problem-header">Ethical Considerations</div>
+  <div class="problem-body">
+  </div>
+
+  <!-- ════════════════ QUICK REFERENCE ════════════════ -->
+  <div class="problem-header">Quick Reference — Run Commands</div>
+  <div class="problem-body">
+    <p>Run activities in order to verify preprocessing, inspect the model, train, test the backend, and launch the app.</p>
+    <div class="code-block">
+python activity1_preprocessing.py   <span class="comment"># Test preprocessing</span>
+python activity2_model.py            <span class="comment"># Inspect model architecture</span>
+python activity3_train.py           <span class="comment"># Train and save to saved_model/</span>
+python model_service.py             <span class="comment"># Self-test backend</span>
+streamlit run activity4_app.py      <span class="comment"># Launch web app</span>
+    </div>
+  </div>
+
+</body>
+</html>
