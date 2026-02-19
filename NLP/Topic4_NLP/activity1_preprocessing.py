@@ -86,15 +86,15 @@ def clean_text(text):
     """
     # TODO 1: Convert to lowercase
     # HINT: Use the .lower() string method
-    text = ___
+    text = text.lower()
 
     # TODO 2: Remove everything that is NOT a lowercase letter or space
     # HINT: re.sub(r'[^a-z ]', '', text) replaces non-matching chars with ''
-    text = ___
+    text = re.sub(r'[^a-z ]', '', text)
 
     # TODO 3: Replace multiple spaces with a single space, then strip edges
     # HINT: re.sub(r'\s+', ' ', text).strip()
-    text = ___
+    text = re.sub(r'\s+', ' ', text).strip()
 
     return text
 
@@ -122,7 +122,7 @@ def tokenize(text):
     """
     # TODO 4: Split the text on whitespace
     # HINT: .split() with no arguments splits on any whitespace
-    tokens = ___
+    tokens = text.split()
 
     return tokens
 
@@ -182,7 +182,7 @@ class Vocabulary:
         # TODO 5: Update self.word_counts with each token list
         # HINT: self.word_counts.update(tokens) adds counts from one list
         for tokens in token_lists:
-            ___
+            self.word_counts.update(tokens)
 
         # Start with special tokens
         self.word2idx = {self.pad_token: self.pad_idx, self.unk_token: self.unk_idx}
@@ -192,17 +192,18 @@ class Vocabulary:
         #   if count >= self.min_freq:
         #       assign the word the next available index: len(self.word2idx)
         for word, count in self.word_counts.items():
-            ___
+            if count >= self.min_freq:
+                self.word2idx[word] = len(self.word2idx)
 
         # Build reverse mapping
         # TODO 7: Create idx2word by inverting word2idx
         # HINT: dict comprehension {idx: word for word, idx in ...}
-        self.idx2word = ___
+        self.idx2word = {idx: word for word, idx in self.word2idx.items()}
 
     def encode(self, tokens):
         """Convert tokens to integer IDs. Unknown words become <UNK>."""
         # TODO 8: Return list of IDs using word2idx.get(token, self.unk_idx)
-        return ___
+        return [self.word2idx.get(token, self.unk_idx) for token in tokens]
 
     def decode(self, indices):
         """Convert integer IDs back to words."""
@@ -263,9 +264,9 @@ def pad_sequence(encoded, max_length, pad_value=0):
     # If len(encoded) >= max_length: return encoded[:max_length]
     # Else: return encoded + [pad_value] * (max_length - len(encoded))
     if len(encoded) >= max_length:
-        return ___
+        return encoded[:max_length]
     else:
-        return ___
+        return encoded + [pad_value] * (max_length - len(encoded))
 
 
 # =========================================================================

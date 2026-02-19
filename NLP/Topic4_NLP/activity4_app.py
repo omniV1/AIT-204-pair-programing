@@ -122,7 +122,7 @@ st.set_page_config(
 
 @st.cache_resource
 def load_service():
-    return ___          # TODO 5: return the backend service instance
+    return SentimentService() # TODO 5: return the backend service instance
 
 service = load_service()
 
@@ -212,7 +212,15 @@ with tab1:
 
             # TODO 6 (continued): Display the prediction result.
             # Replace this placeholder with your Streamlit display code.
-            ___
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Sentiment", result["sentiment"])
+            with col2:
+                st.metric("Confidence", f"{result['confidence']:.1%}")
+            st.progress(result["positive_score"], text=f"Positive score: {result['positive_score']:.3f}")
+            with st.expander("Preprocessing Pipeline"):
+                st.write("**Cleaned:**", result["cleaned"])
+                st.write("**Tokens:**", result["tokens"])
 
 
 # =========================================================================
@@ -286,7 +294,15 @@ with tab2:
 
             # TODO 7 (continued): Display the comparison result.
             # Replace this placeholder with your Streamlit display code.
-            ___
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Original", result["original"]["sentiment"], f'{result["original"]["positive_score"]:.3f}')
+            with col2:
+                st.metric("Translated", result["translated"]["sentiment"], f'{result["translated"]["positive_score"]:.3f}')
+            if result["changed"]:
+                st.warning(f"Sentiment CHANGED  (delta: {result['delta']:+.3f})")
+            else:
+                st.success(f"Sentiment preserved (delta: {result['delta']:+.3f})")
 
 
 # =========================================================================
