@@ -105,7 +105,7 @@ class SentimentService:
         #
         # HINT: Use Vocabulary.load(path) where path = f"{model_dir}/vocab.json"
         #       Store the result as self.vocab
-        self.vocab = ___
+        self.vocab = Vocabulary.load(f"{model_dir}/vocab.json")
 
         # ── TODO 2 ────────────────────────────────────────────────────────
         # Load the trained model saved by Activity 3.
@@ -113,7 +113,7 @@ class SentimentService:
         # HINT: Use load_model(path) where path = f"{model_dir}/model.pt"
         #       Then call self.model.eval() to disable Dropout for inference.
         #       Store the result as self.model
-        self.model = ___
+        self.model = load_model(f"{model_dir}/model.pt")
         self.model.eval()
 
         # Load max_length from config (already done for you)
@@ -182,17 +182,17 @@ class SentimentService:
         # Step 5 — Return the dict. Compute known_count as:
         #   sum(1 for t in tokens if t in self.vocab.word2idx)
 
-        cleaned     = ___
-        tokens      = ___
-        encoded     = ___
-        tensor      = ___
+        cleaned     = clean_text(text)
+        tokens      = tokenize(cleaned)
+        encoded     = self.vocab.encode(tokens)
+        tensor      = preprocess_for_model(text, self.vocab, self.max_length)
 
         with torch.no_grad():
-            probability = ___
+            probability = self.model(tensor).item()
 
-        sentiment   = ___
-        confidence  = ___
-        known_count = ___
+        sentiment   = "Positive" if probability >= 0.5 else "Negative"
+        confidence  = probability if sentiment == "Positive" else 1 - probability
+        known_count = sum(1 for t in tokens if t in self.vocab.word2idx)
 
         return {
             "sentiment":      sentiment,
@@ -247,12 +247,12 @@ class SentimentService:
         #
         # Step 4 — Return the dict described in the docstring above.
 
-        orig_result  = ___
-        trans_result = ___
-        delta        = ___
-        changed      = ___
-        lost_words   = ___
-        new_words    = ___
+        orig_result  = self.predict(original)   
+        trans_result = self.predict(translated)
+        delta        = trans_result["positive_score"] - orig_result["positive_score"]
+        changed      = orig_result["sentiment"] != trans_result["sentiment"]
+        lost_words   = sorted(set(orig_result["tokens"]) - set(trans_result["tokens"]))
+        new_words    = sorted(set(trans_result["tokens"]) - set(orig_result["tokens"]))
 
         return {
             "original":   orig_result,

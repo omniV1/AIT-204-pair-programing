@@ -100,7 +100,7 @@ class SentimentClassifier(nn.Module):
         # padding_idx=pad_idx ensures <PAD> tokens always embed to zeros.
         #
         # HINT: nn.Embedding(vocab_size, embed_dim, padding_idx=pad_idx)
-        self.embedding = ___
+        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_idx)
 
         # TODO 2: Create the first fully-connected (linear) layer
         # Input: embed_dim (the averaged embedding for the whole sentence)
@@ -108,7 +108,7 @@ class SentimentClassifier(nn.Module):
         # This is EXACTLY the same type of layer from Topic 2.
         #
         # HINT: nn.Linear(embed_dim, hidden_dim)
-        self.fc1 = ___
+        self.fc1 = nn.Linear(embed_dim, hidden_dim)
 
         # Activation and regularization (provided)
         self.relu = nn.ReLU()
@@ -119,7 +119,7 @@ class SentimentClassifier(nn.Module):
         # Output: 1 (single probability: positive vs. negative)
         #
         # HINT: nn.Linear(hidden_dim, 1)
-        self.fc2 = ___
+        self.fc2 = nn.Linear(hidden_dim, 1)
 
         self.sigmoid = nn.Sigmoid()
 
@@ -140,7 +140,7 @@ class SentimentClassifier(nn.Module):
         #
         # TODO 4: Pass text_ids through self.embedding
         # HINT: embedded = self.embedding(text_ids)
-        embedded = ___
+        embedded = self.embedding(text_ids)
 
         # STEP 2: Average Pooling — collapse sequence into single vector
         # We average all NON-PADDING embeddings in each sequence.
@@ -165,11 +165,11 @@ class SentimentClassifier(nn.Module):
         #   x = self.dropout(x)
         #   x = self.fc2(x)
         #   output = self.sigmoid(x)
-        x = ___       # fc1
-        x = ___       # relu
-        x = ___       # dropout
-        x = ___       # fc2
-        output = ___  # sigmoid
+        x = self.fc1(pooled)       # fc1
+        x = self.relu(x)        # relu
+        x = self.dropout(x)        # dropout
+        x = self.fc2(x)       # fc2
+        output = self.sigmoid(x)  # sigmoid
 
         return output
 
