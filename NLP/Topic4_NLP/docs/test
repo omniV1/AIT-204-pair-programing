@@ -1,0 +1,11 @@
+Translation Analysis and Cross-Lingual Evaluation
+14 points | Corresponds to LMS: Sophisticated Feature Identification
+
+Criteria Description: Round-trip translation experiment (10+ examples), model-based sentiment comparison, error classification (grammatical, semantic, contextual), and linguistic feature analysis.
+
+Level	Points	Description
+5. Target	14	Provides comprehensive examination of translation effects on model predictions with insightful classification and discussion of linguistic features.
+4. Acceptable	11.9	Examines and classifies translation errors clearly using the model; minor details or examples missing.
+3. Approaching	10.5	Examines translation effects and classifies errors; minor inaccuracies or insufficient number of examples present.
+2. Insufficient	9.1	Highlights some translation effects but with significant gaps in analysis or error classification.
+1. Unsatisfactory	0	Does not examine translation effects or classify linguistic errors using the model.

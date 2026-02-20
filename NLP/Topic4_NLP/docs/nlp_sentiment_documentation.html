@@ -24,7 +24,11 @@
       --step-accent: #512888;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -42,6 +46,7 @@
       margin-bottom: 44px;
       background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
     }
+
     header .university {
       text-align: center;
       font-size: 1.5em;
@@ -50,8 +55,20 @@
       letter-spacing: 1.5px;
       margin-bottom: 2px;
     }
-    header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
-    header .meta { display: flex; justify-content: space-between; font-size: 0.92em; padding: 3px 0; }
+
+    header hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 10px 0;
+    }
+
+    header .meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92em;
+      padding: 3px 0;
+    }
+
     header .title {
       text-align: center;
       font-size: 1.3em;
@@ -69,6 +86,7 @@
       margin: 48px 0 0;
       border-radius: 6px 6px 0 0;
     }
+
     .problem-body {
       border: 1px solid var(--border);
       border-top: none;
@@ -78,7 +96,10 @@
       margin-bottom: 12px;
     }
 
-    .step { margin: 24px 0; }
+    .step {
+      margin: 24px 0;
+    }
+
     .step-label {
       display: inline-block;
       background: var(--step-accent);
@@ -91,8 +112,17 @@
       border-radius: 3px;
       margin-bottom: 10px;
     }
-    .step-title { font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
-    .step p { margin-bottom: 12px; }
+
+    .step-title {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      margin-bottom: 12px;
+    }
 
     .callout {
       background: var(--purple-faint);
@@ -101,7 +131,10 @@
       margin: 20px 0;
       font-size: 0.95em;
     }
-    .callout strong { color: var(--purple); }
+
+    .callout strong {
+      color: var(--purple);
+    }
 
     .given-box {
       background: var(--purple-faint);
@@ -123,10 +156,22 @@
       margin: 16px 0;
       border: 1px solid var(--border);
     }
-    .code-block .comment { color: #6a9955; }
-    .code-block .kw { color: #569cd6; }
-    .code-block .fn { color: #dcdcaa; }
-    .code-block .str { color: #ce9178; }
+
+    .code-block .comment {
+      color: #6a9955;
+    }
+
+    .code-block .kw {
+      color: #569cd6;
+    }
+
+    .code-block .fn {
+      color: #dcdcaa;
+    }
+
+    .code-block .str {
+      color: #ce9178;
+    }
 
     table.doc-table {
       width: 100%;
@@ -134,15 +179,29 @@
       margin: 16px 0;
       font-size: 0.95em;
     }
-    table.doc-table th, table.doc-table td {
+
+    table.doc-table th,
+    table.doc-table td {
       border: 1px solid var(--border);
       padding: 10px 14px;
       text-align: left;
     }
-    table.doc-table th { background: var(--purple-faint); color: var(--purple); font-weight: bold; }
-    table.doc-table tr:nth-child(even) { background: #fafafa; }
 
-    h3 { color: var(--purple); font-size: 1.1em; margin: 20px 0 10px; }
+    table.doc-table th {
+      background: var(--purple-faint);
+      color: var(--purple);
+      font-weight: bold;
+    }
+
+    table.doc-table tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    h3 {
+      color: var(--purple);
+      font-size: 1.1em;
+      margin: 20px 0 10px;
+    }
 
     .diagram-wrap {
       background: #fafafa;
@@ -153,23 +212,127 @@
       overflow-x: auto;
       text-align: center;
     }
-    .diagram-wrap .mermaid { display: inline-block; }
+
+    .diagram-wrap .mermaid {
+      display: inline-block;
+    }
+
     .diagram-wrap.diagram-sequence {
       min-width: 100%;
     }
+
     .diagram-wrap.diagram-sequence .mermaid {
       min-width: 720px;
     }
+
     .diagram-wrap.diagram-sequence .mermaid svg {
       min-width: 720px;
       max-width: 100%;
       height: auto;
     }
+
     .diagram-caption {
       font-size: 0.9em;
       color: var(--muted);
       margin-top: 12px;
       font-style: italic;
+    }
+
+    /* Translation Analysis Styles */
+    .experiment-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 24px 0;
+      overflow: hidden;
+    }
+
+    .experiment-header {
+      background: var(--purple-faint);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .experiment-header h4 {
+      color: var(--purple);
+      margin: 0;
+    }
+
+    .experiment-body {
+      padding: 20px;
+    }
+
+    .exp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .exp-img-wrap img {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .analysis-box {
+      font-size: 0.92em;
+    }
+
+    .analysis-box h5 {
+      margin-bottom: 8px;
+      color: var(--dark);
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .analysis-box p {
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .tag-preserved {
+      background: #e6f4ea;
+      color: #1e8e3e;
+    }
+
+    .tag-semantic {
+      background: #fef7e0;
+      color: #b05e00;
+    }
+
+    .tag-grammatical {
+      background: #fce8e6;
+      color: #d93025;
+    }
+
+    .tag-contextual {
+      background: #e8f0fe;
+      color: #1967d2;
+    }
+
+    .tag-flip {
+      background: #f3e8fd;
+      color: #9334e6;
+    }
+
+    .summary-table {
+      margin-top: 40px;
+    }
+
+    .summary-table h3 {
+      margin-bottom: 16px;
     }
   </style>
 </head>
@@ -194,7 +357,9 @@
   <!-- ════════════════ RUBRIC SUMMARY ════════════════ -->
   <div class="problem-header">Rubric Summary (70 points)</div>
   <div class="problem-body">
-    <p>This document maps the implementation to the AIT-204 Topic 4 rubric. The assignment is graded across six criteria: the first four (14 points each) cover the ML pipeline, model and training, translation analysis, and ethics; the last two (7 points each) cover documentation/deployment and presentation.</p>
+    <p>This document maps the implementation to the AIT-204 Topic 4 rubric. The assignment is graded across six
+      criteria: the first four (14 points each) cover the ML pipeline, model and training, translation analysis, and
+      ethics; the last two (7 points each) cover documentation/deployment and presentation.</p>
     <table class="doc-table">
       <thead>
         <tr>
@@ -241,30 +406,38 @@
   <!-- ════════════════ SYSTEM ARCHITECTURE ════════════════ -->
   <div class="problem-header">System Architecture</div>
   <div class="problem-body">
-    <p>The project follows a clear frontend/backend split. The Streamlit app (<code>activity4_app.py</code>) handles all user interaction and display; it never touches the model or vocabulary directly. Instead, it holds a single <code>SentimentService</code> instance (cached at startup) and calls <code>predict(text)</code> or <code>compare(original, translated)</code>. The backend (<code>model_service.py</code>) loads the saved model and vocabulary once and exposes these two methods. Training and preprocessing live in Activity 1–3; at runtime only the saved artifacts and the service are used.</p>
-    <p>This separation allows swapping the UI (e.g. Streamlit for React) or the model without rewriting the other layer, and keeps the backend testable on its own (e.g. <code>python model_service.py</code>). The diagram below shows how the main components depend on each other and where data flows from training time to inference.</p>
+    <p>The project follows a clear frontend/backend split. The Streamlit app (<code>activity4_app.py</code>) handles all
+      user interaction and display; it never touches the model or vocabulary directly. Instead, it holds a single
+      <code>SentimentService</code> instance (cached at startup) and calls <code>predict(text)</code> or
+      <code>compare(original, translated)</code>. The backend (<code>model_service.py</code>) loads the saved model and
+      vocabulary once and exposes these two methods. Training and preprocessing live in Activity 1–3; at runtime only
+      the saved artifacts and the service are used.
+    </p>
+    <p>This separation allows swapping the UI (e.g. Streamlit for React) or the model without rewriting the other layer,
+      and keeps the backend testable on its own (e.g. <code>python model_service.py</code>). The diagram below shows how
+      the main components depend on each other and where data flows from training time to inference.</p>
     <div class="diagram-wrap">
       <div class="mermaid">
-flowchart TB
-  subgraph Training["Training (Activity 3)"]
-    A1[activity1_preprocessing]
-    A2[activity2_model]
-    IMDB[IMDB Dataset]
-    IMDB --> A1
-    A1 --> vocab[vocab.json]
-    A1 --> A2
-    A2 --> model[model.pt]
-  end
-  subgraph Runtime["Runtime (Activity 4)"]
-    UI[activity4_app.py\nStreamlit UI]
-    SVC[model_service.py\nSentimentService]
-    vocab --> SVC
-    model --> SVC
-    config[config.json] --> SVC
-    UI -->|predict / compare| SVC
-  end
-  Training --> saved[saved_model/]
-  saved --> Runtime
+        flowchart TB
+        subgraph Training["Training (Activity 3)"]
+        A1[activity1_preprocessing]
+        A2[activity2_model]
+        IMDB[IMDB Dataset]
+        IMDB --> A1
+        A1 --> vocab[vocab.json]
+        A1 --> A2
+        A2 --> model[model.pt]
+        end
+        subgraph Runtime["Runtime (Activity 4)"]
+        UI[activity4_app.py\nStreamlit UI]
+        SVC[model_service.py\nSentimentService]
+        vocab --> SVC
+        model --> SVC
+        config[config.json] --> SVC
+        UI -->|predict / compare| SVC
+        end
+        Training --> saved[saved_model/]
+        saved --> Runtime
       </div>
       <p class="diagram-caption">Figure 1: Component dependency and data flow from training to deployed app.</p>
     </div>
@@ -273,20 +446,29 @@ flowchart TB
   <!-- ════════════════ ACTIVITY 1 — ML PIPELINE ════════════════ -->
   <div class="problem-header">Activity 1 — ML Pipeline: Preprocessing Module</div>
   <div class="problem-body">
-    <p><strong>File:</strong> <code>activity1_preprocessing.py</code>. Neural networks operate on numeric tensors, so raw text must be turned into fixed-size integer sequences. This module implements that pipeline and is used both during training (Activity 3) and at inference (via <code>model_service.py</code> when a user submits a review).</p>
+    <p><strong>File:</strong> <code>activity1_preprocessing.py</code>. Neural networks operate on numeric tensors, so
+      raw text must be turned into fixed-size integer sequences. This module implements that pipeline and is used both
+      during training (Activity 3) and at inference (via <code>model_service.py</code> when a user submits a review).
+    </p>
 
     <div class="step">
       <span class="step-label">Pipeline Overview</span>
       <div class="step-title">From raw text to model input</div>
-      <p>First, text is normalized: <code>clean_text()</code> lowercases, strips non-letters, and collapses whitespace so that "This Movie was GREAT!!!" becomes "this movie was great". Then <code>tokenize()</code> splits on spaces into word tokens. The <code>Vocabulary</code> maps each token to an integer ID (unknown words map to <code>&lt;UNK&gt;</code>); <code>pad_sequence()</code> truncates or pads to a fixed <code>max_length</code> so every batch has the same shape. Finally, the list of integers is wrapped in a PyTorch tensor of shape <code>(1, max_length)</code> for the model. The flowchart below summarizes this sequence.</p>
+      <p>First, text is normalized: <code>clean_text()</code> lowercases, strips non-letters, and collapses whitespace
+        so that "This Movie was GREAT!!!" becomes "this movie was great". Then <code>tokenize()</code> splits on spaces
+        into word tokens. The <code>Vocabulary</code> maps each token to an integer ID (unknown words map to
+        <code>&lt;UNK&gt;</code>); <code>pad_sequence()</code> truncates or pads to a fixed <code>max_length</code> so
+        every batch has the same shape. Finally, the list of integers is wrapped in a PyTorch tensor of shape
+        <code>(1, max_length)</code> for the model. The flowchart below summarizes this sequence.
+      </p>
       <div class="diagram-wrap">
         <div class="mermaid">
-flowchart LR
-  A[Raw Text] --> B[clean_text]
-  B --> C[tokenize]
-  C --> D[vocab.encode]
-  D --> E[pad_sequence]
-  E --> F["tensor(B, L)"]
+          flowchart LR
+          A[Raw Text] --> B[clean_text]
+          B --> C[tokenize]
+          C --> D[vocab.encode]
+          D --> E[pad_sequence]
+          E --> F["tensor(B, L)"]
         </div>
         <p class="diagram-caption">Figure 2: Preprocessing pipeline from raw string to batched tensor.</p>
       </div>
@@ -295,140 +477,488 @@ flowchart LR
     <div class="step">
       <span class="step-label">Vocabulary and deployment</span>
       <div class="step-title">Word-to-ID mapping and persistence</div>
-      <p>The <code>Vocabulary</code> class is built from training data with <code>build(token_lists)</code> and respects a <code>min_freq</code> threshold so rare words fall back to <code>&lt;UNK&gt;</code>. It provides <code>encode(tokens)</code> and <code>decode(indices)</code> for the pipeline, and <code>save(filepath)</code> / <code>Vocabulary.load(filepath)</code> so the exact same mapping is used in the deployed app. Special tokens <code>&lt;PAD&gt;</code> (0) and <code>&lt;UNK&gt;</code> (1) are always present. The convenience function <code>preprocess_for_model(text, vocab, max_length)</code> runs the full chain for a single string; <code>preprocess_dataset(reviews, vocab, max_length, fit_vocab=False)</code> does batch preprocessing and can optionally build the vocabulary from the given reviews.</p>
+      <p>The <code>Vocabulary</code> class is built from training data with <code>build(token_lists)</code> and respects
+        a <code>min_freq</code> threshold so rare words fall back to <code>&lt;UNK&gt;</code>. It provides
+        <code>encode(tokens)</code> and <code>decode(indices)</code> for the pipeline, and <code>save(filepath)</code> /
+        <code>Vocabulary.load(filepath)</code> so the exact same mapping is used in the deployed app. Special tokens
+        <code>&lt;PAD&gt;</code> (0) and <code>&lt;UNK&gt;</code> (1) are always present. The convenience function
+        <code>preprocess_for_model(text, vocab, max_length)</code> runs the full chain for a single string;
+        <code>preprocess_dataset(reviews, vocab, max_length, fit_vocab=False)</code> does batch preprocessing and can
+        optionally build the vocabulary from the given reviews.
+      </p>
       <div class="diagram-wrap">
         <div class="mermaid">
-classDiagram
-  class Vocabulary {
-    +int pad_idx
-    +int unk_idx
-    +dict word2idx
-    +dict idx2word
-    +build(token_lists)
-    +encode(tokens) list
-    +decode(indices) list
-    +save(filepath)
-    +load(filepath) Vocabulary
-  }
+          classDiagram
+          class Vocabulary {
+          +int pad_idx
+          +int unk_idx
+          +dict word2idx
+          +dict idx2word
+          +build(token_lists)
+          +encode(tokens) list
+          +decode(indices) list
+          +save(filepath)
+          +load(filepath) Vocabulary
+          }
         </div>
         <p class="diagram-caption">Figure 3: Vocabulary class (simplified UML).</p>
       </div>
     </div>
 
     <div class="code-block">
-<span class="comment"># Example: single review to tensor</span>
-cleaned = clean_text("This Movie was GREAT!!!")   <span class="comment"># "this movie was great"</span>
-tokens = tokenize(cleaned)                         <span class="comment"># ["this", "movie", "was", "great"]</span>
-encoded = vocab.encode(tokens)                     <span class="comment"># [4, 12, 7, 23] (IDs)</span>
-padded = pad_sequence(encoded, max_length=10)       <span class="comment"># [4,12,7,23,0,0,0,0,0,0]</span>
-tensor = preprocess_for_model("This Movie was GREAT!!!", vocab, max_length=10)
+      <span class="comment"># Example: single review to tensor</span>
+      cleaned = clean_text("This Movie was GREAT!!!") <span class="comment"># "this movie was great"</span>
+      tokens = tokenize(cleaned) <span class="comment"># ["this", "movie", "was", "great"]</span>
+      encoded = vocab.encode(tokens) <span class="comment"># [4, 12, 7, 23] (IDs)</span>
+      padded = pad_sequence(encoded, max_length=10) <span class="comment"># [4,12,7,23,0,0,0,0,0,0]</span>
+      tensor = preprocess_for_model("This Movie was GREAT!!!", vocab, max_length=10)
     </div>
   </div>
 
   <!-- ════════════════ ACTIVITY 2 & 3 — MODEL AND TRAINING ════════════════ -->
   <div class="problem-header">Activity 2 &amp; 3 — Model Architecture and Training</div>
   <div class="problem-body">
-    <p><strong>Files:</strong> <code>activity2_model.py</code> defines the network; <code>activity3_train.py</code> trains it on IMDB and saves the model, vocabulary, and config.</p>
+    <p><strong>Files:</strong> <code>activity2_model.py</code> defines the network; <code>activity3_train.py</code>
+      trains it on IMDB and saves the model, vocabulary, and config.</p>
 
     <h3>SentimentClassifier</h3>
-    <p>The model turns a sequence of word IDs into a single probability. An <code>nn.Embedding</code> layer looks up a dense vector for each ID; padding IDs are forced to zero via <code>padding_idx</code>. Those vectors are then averaged over the sequence (ignoring padding) to get one sentence vector per batch item. That vector passes through a fully connected block: Linear(embed_dim → hidden_dim), ReLU, Dropout, Linear(hidden_dim → 1), Sigmoid. So the architecture is: <strong>Word IDs → Embedding → Average Pooling → FC → ReLU → Dropout → FC → Sigmoid</strong>. It mirrors a Topic 2–style feed-forward net with an embedding layer at the front. <code>save_model()</code> and <code>load_model()</code> persist the config and state dict so the app can load the same architecture and weights.</p>
+    <p>The model turns a sequence of word IDs into a single probability. An <code>nn.Embedding</code> layer looks up a
+      dense vector for each ID; padding IDs are forced to zero via <code>padding_idx</code>. Those vectors are then
+      averaged over the sequence (ignoring padding) to get one sentence vector per batch item. That vector passes
+      through a fully connected block: Linear(embed_dim → hidden_dim), ReLU, Dropout, Linear(hidden_dim → 1), Sigmoid.
+      So the architecture is: <strong>Word IDs → Embedding → Average Pooling → FC → ReLU → Dropout → FC →
+        Sigmoid</strong>. It mirrors a Topic 2–style feed-forward net with an embedding layer at the front.
+      <code>save_model()</code> and <code>load_model()</code> persist the config and state dict so the app can load the
+      same architecture and weights.
+    </p>
     <div class="diagram-wrap">
       <div class="mermaid">
-flowchart LR
-  subgraph model["SentimentClassifier"]
-    I["(B, L) IDs"]
-    I --> Emb[Embedding]
-    Emb --> Pool["Avg Pool\n(mask pad)"]
-    Pool --> FC1[Linear]
-    FC1 --> R[ReLU]
-    R --> D[Dropout]
-    D --> FC2[Linear]
-    FC2 --> S[Sigmoid]
-    S --> O["(B, 1) prob"]
-  end
+        flowchart LR
+        subgraph model["SentimentClassifier"]
+        I["(B, L) IDs"]
+        I --> Emb[Embedding]
+        Emb --> Pool["Avg Pool\n(mask pad)"]
+        Pool --> FC1[Linear]
+        FC1 --> R[ReLU]
+        R --> D[Dropout]
+        D --> FC2[Linear]
+        FC2 --> S[Sigmoid]
+        S --> O["(B, 1) prob"]
+        end
       </div>
       <p class="diagram-caption">Figure 4: Model data flow from token IDs to sentiment probability.</p>
     </div>
 
     <h3>Training pipeline</h3>
-    <p>Activity 3 loads the IMDB dataset (e.g. via Hugging Face <code>datasets</code>), builds the vocabulary from the training texts, and encodes and pads all sequences to <code>MAX_LENGTH</code>. It creates a <code>SentimentClassifier</code> with chosen hyperparameters (e.g. <code>EMBED_DIM=128</code>, <code>HIDDEN_DIM=64</code>, <code>DROPOUT=0.5</code>, <code>MIN_FREQ=5</code>), then runs a standard training loop: forward pass, BCE loss, backward, Adam step. Train and validation loss and accuracy are logged per epoch and plotted to <code>plots/training_curves.png</code>. After training, the script writes <code>saved_model/model.pt</code>, <code>saved_model/vocab.json</code>, and <code>saved_model/config.json</code> (containing <code>max_length</code>) for the app to load.</p>
+    <p>Activity 3 loads the IMDB dataset (e.g. via Hugging Face <code>datasets</code>), builds the vocabulary from the
+      training texts, and encodes and pads all sequences to <code>MAX_LENGTH</code>. It creates a
+      <code>SentimentClassifier</code> with chosen hyperparameters (e.g. <code>EMBED_DIM=128</code>,
+      <code>HIDDEN_DIM=64</code>, <code>DROPOUT=0.5</code>, <code>MIN_FREQ=5</code>), then runs a standard training
+      loop: forward pass, BCE loss, backward, Adam step. Train and validation loss and accuracy are logged per epoch and
+      plotted to <code>plots/training_curves.png</code>. After training, the script writes
+      <code>saved_model/model.pt</code>, <code>saved_model/vocab.json</code>, and <code>saved_model/config.json</code>
+      (containing <code>max_length</code>) for the app to load.
+    </p>
   </div>
 
   <!-- ════════════════ ACTIVITY 4 — DEPLOYED APP ════════════════ -->
   <div class="problem-header">Activity 4 — Deployed Application (Backend and Frontend)</div>
   <div class="problem-body">
-    <p>The app is split into a backend service and a Streamlit frontend. The backend owns the model and vocabulary; the frontend owns the UI and calls the backend. No model logic lives in the UI code.</p>
+    <p>The app is split into a backend service and a Streamlit frontend. The backend owns the model and vocabulary; the
+      frontend owns the UI and calls the backend. No model logic lives in the UI code.</p>
 
     <h3>Backend: SentimentService</h3>
-    <p>On construction, <code>SentimentService</code> loads the vocabulary from <code>vocab.json</code>, the model from <code>model.pt</code>, and <code>max_length</code> from <code>config.json</code>. <code>predict(text)</code> runs the full preprocessing pipeline (clean, tokenize, encode, pad, tensor), passes the tensor through the model, and returns a dict with sentiment label, confidence, positive/negative scores, and pipeline intermediates (cleaned text, tokens, encoded IDs, known_count) for display. <code>compare(original, translated)</code> calls <code>predict()</code> on both strings, computes the score delta and whether the sentiment label flipped, and identifies vocabulary words that appear in one text but not the other (lost_words / new_words). The sequence diagram below shows the flow when a user submits a review in the Sentiment tab.</p>
+    <p>On construction, <code>SentimentService</code> loads the vocabulary from <code>vocab.json</code>, the model from
+      <code>model.pt</code>, and <code>max_length</code> from <code>config.json</code>. <code>predict(text)</code> runs
+      the full preprocessing pipeline (clean, tokenize, encode, pad, tensor), passes the tensor through the model, and
+      returns a dict with sentiment label, confidence, positive/negative scores, and pipeline intermediates (cleaned
+      text, tokens, encoded IDs, known_count) for display. <code>compare(original, translated)</code> calls
+      <code>predict()</code> on both strings, computes the score delta and whether the sentiment label flipped, and
+      identifies vocabulary words that appear in one text but not the other (lost_words / new_words). The sequence
+      diagram below shows the flow when a user submits a review in the Sentiment tab.
+    </p>
     <div class="diagram-wrap diagram-sequence">
       <div class="mermaid">
-sequenceDiagram
-  participant User
-  participant Streamlit
-  participant SentimentService
-  participant Preprocess
-  participant Model
-  User->>Streamlit: Paste review, click Analyze
-  Streamlit->>SentimentService: predict(text)
-  SentimentService->>Preprocess: clean_text, tokenize, encode, pad
-  Preprocess-->>SentimentService: tensor
-  SentimentService->>Model: forward(tensor)
-  Model-->>SentimentService: probability
-  SentimentService-->>Streamlit: dict(sentiment, confidence, tokens, ...)
-  Streamlit-->>User: Display metrics and expander
+        sequenceDiagram
+        participant User
+        participant Streamlit
+        participant SentimentService
+        participant Preprocess
+        participant Model
+        User->>Streamlit: Paste review, click Analyze
+        Streamlit->>SentimentService: predict(text)
+        SentimentService->>Preprocess: clean_text, tokenize, encode, pad
+        Preprocess-->>SentimentService: tensor
+        SentimentService->>Model: forward(tensor)
+        Model-->>SentimentService: probability
+        SentimentService-->>Streamlit: dict(sentiment, confidence, tokens, ...)
+        Streamlit-->>User: Display metrics and expander
       </div>
       <p class="diagram-caption">Figure 5: Sequence of calls for a single sentiment prediction.</p>
     </div>
 
     <h3>Frontend: Streamlit</h3>
-    <p><code>load_service()</code> is decorated with <code>@st.cache_resource</code> so one <code>SentimentService()</code> is created and reused for the lifetime of the app; the model is not reloaded on every button click. Tab 1 (Sentiment Analysis) provides a text area and an "Analyze Sentiment" button that calls <code>service.predict(review)</code> and shows the sentiment, confidence, a positive-score progress bar, and an expander with cleaned text and tokens. Tab 2 (Translation Comparison) provides two text areas (original and round-trip translated); "Compare Sentiments" calls <code>service.compare(original, translated)</code> and shows both predictions, the score delta, whether the label changed, and lost/new words. Deployment (e.g. Streamlit Community Cloud or Hugging Face Spaces) requires the repo to include the app file, backend, Activity 1–2 modules, <code>saved_model/</code>, and <code>requirements.txt</code>, with the app file as the entry point.</p>
+    <p><code>load_service()</code> is decorated with <code>@st.cache_resource</code> so one
+      <code>SentimentService()</code> is created and reused for the lifetime of the app; the model is not reloaded on
+      every button click. Tab 1 (Sentiment Analysis) provides a text area and an "Analyze Sentiment" button that calls
+      <code>service.predict(review)</code> and shows the sentiment, confidence, a positive-score progress bar, and an
+      expander with cleaned text and tokens. Tab 2 (Translation Comparison) provides two text areas (original and
+      round-trip translated); "Compare Sentiments" calls <code>service.compare(original, translated)</code> and shows
+      both predictions, the score delta, whether the label changed, and lost/new words. Deployment (e.g. Streamlit
+      Community Cloud or Hugging Face Spaces) requires the repo to include the app file, backend, Activity 1–2 modules,
+      <code>saved_model/</code>, and <code>requirements.txt</code>, with the app file as the entry point.
+    </p>
   </div>
 
   <!-- ════════════════ TRANSLATION & CROSS-LINGUAL ════════════════ -->
   <div class="problem-header">Translation Analysis and Cross-Lingual Evaluation</div>
   <div class="problem-body">
-    <p>The rubric asks for a round-trip translation experiment (at least 10 examples), model-based comparison of original vs. translated sentiment, and classification of translation effects (e.g. grammatical error, semantic shift, contextual loss, or preserved meaning).</p>
-    <p>Round-trip means taking an English review, translating it to another language (e.g. with Google Translate or DeepL), then translating back to English. The original and the round-trip text are pasted into the Translation Comparison tab; <code>compare()</code> returns both sentiment scores, the delta, a boolean <code>changed</code> (true if the label flipped), and the sets of vocabulary words that were lost or introduced. In the written report, each example should be classified (grammatical, semantic, contextual, or preserved) and documented with the model outputs. The decision tree below summarizes how the app and report interpret "sentiment changed" and how to use the outputs for analysis.</p>
-    <div class="diagram-wrap">
-      <div class="mermaid">
-flowchart TD
-  A[Original and Translated text] --> B[compare]
-  B --> C{Labels equal?}
-  C -->|Yes| D[changed false]
-  C -->|No| E[changed true]
-  D --> F[Report: preserved or minor shift]
-  E --> G[Report: classify error type]
-  G --> H{Error type?}
-  H --> I[Grammatical]
-  H --> J[Semantic]
-  H --> K[Contextual]
-  F --> L[Document delta, lost_words, new_words]
-  I --> L
-  J --> L
-  K --> L
+    <p>A round-trip translation experiment was conducted using 10 diverse IMDb-style reviews. Each "Original" review was
+      translated into a foreign language (Spanish, French, or Japanese) and then back to English using a neural
+      translation model. These pairs were then compared using the <code>SentimentService.compare()</code> method to
+      identify sentiment drift, label flips, and vocabulary loss.</p>
+
+    <!-- Experiment 1 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #1: Descriptive Positive</h4>
+        <span class="tag tag-preserved">Preserved</span>
       </div>
-      <p class="diagram-caption">Figure 6: Decision flow for translation comparison and report classification.</p>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation1.png" alt="Exp 1 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "Adrian Pasdar is excellent is this film. He makes a fascinating woman."</p>
+            <p><strong>Translated:</strong> "Adrian Pasdar is excellent in this film. He plays a fascinating woman."</p>
+            <p><strong>Feature Identification:</strong> The translation corrected a grammatical error ("is" to "in") and
+              replaced "makes" with "plays". Since "excellent" and "fascinating" were preserved, the model maintained a
+              <code>1.000</code> confidence score.
+            </p>
+            <p><strong>Delta:</strong> 0.000 (No change)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 2 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #2: Strong Negative</h4>
+        <span class="tag tag-preserved">Preserved</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation2.png" alt="Exp 2 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "Long, boring, blasphemous. Never have I been so glad to see ending credits
+              roll."</p>
+            <p><strong>Translated:</strong> "Long, tedious, blasphemous. I've never been so happy to see the end credits
+              roll."</p>
+            <p><strong>Feature Identification:</strong> "Boring" shifted to "tedious" (synonym) and "glad" to "happy".
+              While "happy" is usually positive, in the context of "ending credits", the strong negative embeddings for
+              "blasphemous" and "tedious" dominate.</p>
+            <p><strong>Delta:</strong> +0.118 (Slightly less negative)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 3 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #3: Sarcasm & Sentiment Flip</h4>
+        <span class="tag tag-flip">Label Flipped</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation3.png" alt="Exp 3 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "I don't know why I like this movie so well, but I never get tired of watching
+              it."</p>
+            <p><strong>Translated:</strong> "I don't know why I like this movie so much, but I never get tired of
+              watching it."</p>
+            <p><strong>Feature Identification:</strong> CRITICAL ERROR. A minor semantic shift from "well" to "much"
+              caused the model to flip from Positive (0.649) to Negative (0.037). This suggests the model relies heavily
+              on specific word patterns rather than global context.</p>
+            <p><strong>Delta:</strong> -0.612 (Extreme Shift)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 4 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #4: Aggressive Negative</h4>
+        <span class="tag tag-preserved">Preserved</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation4.png" alt="Exp 4 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "no comment - stupid movie, acting average or worse... screenplay - no sense
+              at all... SKIP IT!"</p>
+            <p><strong>Translated:</strong> "No comment - stupid movie, mediocre acting or worse... completely
+              nonsensical script... STAY AWAY!"</p>
+            <p><strong>Feature Identification:</strong> "Average" shifted to "mediocre" and "SKIP IT" to "STAY AWAY".
+              Both pairs have strong negative associations in the training data, so the <code>0.000</code> score was
+              perfectly preserved.</p>
+            <p><strong>Delta:</strong> 0.000 (No change)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 5 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #5: High-Level Sarcasm</h4>
+        <span class="tag tag-preserved">Preserved</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation5.png" alt="Exp 5 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "This is the definitive movie version of Hamlet. Branagh cuts nothing, but
+              there are no wasted moments."</p>
+            <p><strong>Translated:</strong> "This is the definitive film version of Hamlet. Branagh cuts nothing, but
+              there are no wasted moments."</p>
+            <p><strong>Feature Identification:</strong> Paradoxically, the model rates this highly positive review as
+              Negative (0.005). Translation changed "movie" to "film", but the sentiment remained identical. This
+              highlights a limitation in the model's training on specific vocabulary.</p>
+            <p><strong>Delta:</strong> +0.001 (Negligible)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 6 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #6: Actor/Director Focus</h4>
+        <span class="tag tag-preserved">Preserved</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation6.png" alt="Exp 6 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "The characters are unlikeable and the script is awful. It's a waste of the
+              talents of Deneuve and Auteuil."</p>
+            <p><strong>Translated:</strong> "The characters are unlikeable and the script is terrible. It's a waste of
+              Deneuve and Auteuil's talent."</p>
+            <p><strong>Feature Identification:</strong> "Awful" became "terrible". Since both are strong negative
+              anchors in the vocabulary, the sentiment score remained at the minimum (0.000).</p>
+            <p><strong>Delta:</strong> 0.000 (No change)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 7 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #7: Classic Cinema Hyperbole</h4>
+        <span class="tag tag-semantic">Semantic Shift</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation7.png" alt="Exp 7 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "This movie will always be a Broadway and Movie classic..."</p>
+            <p><strong>Translated:</strong> "This film will always be a Broadway and cinematic classic..."</p>
+            <p><strong>Feature Identification:</strong> The translation refined "Movie" to "cinematic". The model showed
+              a slight drop in confidence (from 0.997 to 0.967), likely because "movie" (appearing twice in original)
+              has a higher weight in the vocabulary than "cinematic".</p>
+            <p><strong>Delta:</strong> -0.030 (Slightly less confident)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 8 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #8: Fan Feedback</h4>
+        <span class="tag tag-preserved">Preserved</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation8.png" alt="Exp 8 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "Unwatchable. You can't even make it past the first three minutes."</p>
+            <p><strong>Translated:</strong> "Unwatchable. You can't even get past the first three minutes."</p>
+            <p><strong>Feature Identification:</strong> "Make it past" to "get past". The word "Unwatchable" is such a
+              strong negative token that minor grammatical variations in the rest of the sentence do not affect the
+              output.</p>
+            <p><strong>Delta:</strong> 0.000 (No change)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 9 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #9: Mixed Review Contrast</h4>
+        <span class="tag tag-contextual">Contextual Loss</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation9.png" alt="Exp 9 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "As usual, Sean Connery does a great job. Lawrence Fishburn is good..."</p>
+            <p><strong>Translated:</strong> "As always, Sean Connery does a great job. Lawrence Fishburne is good..."
+            </p>
+            <p><strong>Feature Identification:</strong> "As usual" to "As always". The model increased confidence from
+              0.977 to 0.999. "Always" likely has a stronger positive weight correlation than "usual" in the training
+              set.</p>
+            <p><strong>Delta:</strong> +0.023 (Slightly more positive)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment 10 -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Experiment #10: Nuance Flip</h4>
+        <span class="tag tag-flip">Label Flipped</span>
+      </div>
+      <div class="experiment-body">
+        <div class="exp-grid">
+          <div class="exp-img-wrap"><img src="translation10.png" alt="Exp 10 Result"></div>
+          <div class="analysis-box">
+            <h5>Linguistic Analysis</h5>
+            <p><strong>Original:</strong> "Malcolm McDowell has not had too many good movies lately and this is no
+              different."</p>
+            <p><strong>Translated:</strong> "Malcolm McDowell hasn't made many good films lately, and this one is no
+              different."</p>
+            <p><strong>Feature Identification:</strong> BOOM. The original was correctly identified as Negative (0.066).
+              The translation flipped it to Positive (0.875). Replacing "had too many good movies" with "made many good
+              films" triggered the "good" positive weight while losing the negative negation nuance.</p>
+            <p><strong>Delta:</strong> +0.809 (Catastrophic Shift)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-table">
+      <h3>Cross-Lingual Robustness Summary</h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Explanation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total Examples</td>
+            <td>10</td>
+            <td>Completed round-trip translation pairs.</td>
+          </tr>
+          <tr>
+            <td>Sentiment Preserved</td>
+            <td>80%</td>
+            <td>Label remained the same after translation.</td>
+          </tr>
+          <tr>
+            <td>Extreme Flips</td>
+            <td>20%</td>
+            <td>Label changed from Pos->Neg or vice-versa (Exp 3, 10).</td>
+          </tr>
+          <tr>
+            <td>Avg. Confidence Delta</td>
+            <td>0.160</td>
+            <td>The average change in model probability.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Insights:</strong> The model shows significant vulnerability to minor semantic shifts (e.g., "well" vs
+        "much"). While it is robust against direct synonyms (boring/tedious), it fails when translation alters the
+        structural negation of positive words.
+      </div>
     </div>
   </div>
 
   <!-- ════════════════ ETHICAL CONSIDERATIONS ════════════════ -->
   <div class="problem-header">Ethical Considerations</div>
   <div class="problem-body">
+    <div class="step">
+      <span class="step-label">Training Data</span>
+      <div class="step-title">Bias in Training Data</div>
+      <p>The sentiment analysis model is trained on the IMDb movie review dataset, meaning its understanding of
+        "positive" and "negative" sentiment is inherently biased towards the linguistic patterns, cultural norms, and
+        demographics of IMDb reviewers. This can lead to misclassification of reviews written in different dialects,
+        socio-economic contexts, or cultural frameworks, inadvertently silencing or misrepresenting certain groups.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Data Security</span>
+      <div class="step-title">Privacy of User-Generated Text</div>
+      <p>Processing user-generated text requires stringent privacy controls. When users input text into the application,
+        they may inadvertently include personally identifiable information (PII) or sensitive personal data. If this
+        data is logged, stored, or used for further model training without explicit consent and robust anonymization, it
+        violates user privacy and risks exposing individuals to harm.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Systemic Impact</span>
+      <div class="step-title">Risks of Sentiment Analysis at Scale</div>
+      <p>Deploying sentiment analysis at scale can amplify the impact of model errors. If organizations rely on
+        automated sentiment scores for decision-making (e.g., customer service triage, product development, or content
+        moderation), the model's biases can systematically disadvantage certain users. The lack of human nuance can lead
+        to tone-deaf responses, exacerbating customer frustration and damaging brand trust.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Translation Nuance</span>
+      <div class="step-title">Cross-Lingual Harm from Translation Errors</div>
+      <p>As demonstrated in the translation analysis, neural translation models can introduce semantic shifts or lose
+        contextual nuance. When sentiment analysis relies on translated text, these errors can completely flip the
+        meaning of a statement (e.g., classifying a culturally specific positive idiom as negative). In critical
+        applications, this cross-lingual misunderstanding can alienate non-native speakers or misinterpret international
+        sentiment.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Accountability</span>
+      <div class="step-title">Engineering Responsibility</div>
+      <p>Engineers bear the responsibility of recognizing and mitigating these ethical risks. This involves
+        transparently documenting model limitations (as done in this report), implementing safeguards against PII
+        ingestion, regularly auditing models for bias, and ensuring that automated systems remain tools to assist—rather
+        than replace—human judgment. Responsible AI engineering requires a commitment to fairness, accountability, and
+        continuous evaluation of real-world impact.</p>
+    </div>
   </div>
 
   <!-- ════════════════ QUICK REFERENCE ════════════════ -->
   <div class="problem-header">Quick Reference — Run Commands</div>
   <div class="problem-body">
-    <p>Run activities in order to verify preprocessing, inspect the model, train, test the backend, and launch the app.</p>
+    <p>Run activities in order to verify preprocessing, inspect the model, train, test the backend, and launch the app.
+    </p>
     <div class="code-block">
-python activity1_preprocessing.py   <span class="comment"># Test preprocessing</span>
-python activity2_model.py            <span class="comment"># Inspect model architecture</span>
-python activity3_train.py           <span class="comment"># Train and save to saved_model/</span>
-python model_service.py             <span class="comment"># Self-test backend</span>
-streamlit run activity4_app.py      <span class="comment"># Launch web app</span>
+      python activity1_preprocessing.py <span class="comment"># Test preprocessing</span>
+      python activity2_model.py <span class="comment"># Inspect model architecture</span>
+      python activity3_train.py <span class="comment"># Train and save to saved_model/</span>
+      python model_service.py <span class="comment"># Self-test backend</span>
+      streamlit run activity4_app.py <span class="comment"># Launch web app</span>
     </div>
   </div>
 
 </body>
+
 </html>
