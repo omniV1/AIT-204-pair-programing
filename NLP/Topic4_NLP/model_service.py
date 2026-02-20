@@ -67,13 +67,16 @@ NEXT FILE:      activity4_app.py          (imports and uses this service)
 
 import json
 import torch
+import os
 
 from activity1_preprocessing import (
     Vocabulary, clean_text, tokenize, preprocess_for_model
 )
 from activity2_model import load_model
 
-MODEL_DIR = "saved_model"
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(SCRIPT_DIR, "saved_model")
 
 
 # =========================================================================
