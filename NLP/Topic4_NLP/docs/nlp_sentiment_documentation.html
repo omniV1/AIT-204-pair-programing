@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NLP Sentiment Analysis &amp; Cross-Lingual Understanding — Documentation</title>
+  <title>NLP Sentiment Analysis &amp; Cross-Lingual Understanding: Documentation</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });</script>
   <style>
@@ -350,9 +350,27 @@
       <span><strong>Assignment:</strong> NLP Sentiment Analysis and Cross-Lingual Understanding</span>
       <span><strong>Points:</strong> 70</span>
     </div>
+    <div class="meta">
+      <span><strong>Live App:</strong> <a href="https://nlp-moviereview.streamlit.app/" target="_blank" style="color: var(--purple); text-decoration: underline;">nlp-moviereview.streamlit.app</a></span>
+      <span><strong>Presentation:</strong> <a href="https://www.youtube.com/watch?v=uhCXZHZ6xOg" target="_blank" style="color: var(--purple); text-decoration: underline;">YouTube Video</a></span>
+    </div>
     <hr>
-    <div class="title">NLP Sentiment Analysis — Code Documentation &amp; Design</div>
+    <div class="title">NLP Sentiment Analysis: Code Documentation &amp; Design</div>
   </header>
+
+  <!-- ════════════════ LINKS ════════════════ -->
+  <div style="display: flex; gap: 16px; margin-bottom: 32px;">
+    <a href="https://nlp-moviereview.streamlit.app/" target="_blank"
+      style="flex: 1; display: block; background: var(--purple); color: #fff; text-align: center;
+             padding: 14px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 1em;">
+      Live App: nlp-moviereview.streamlit.app
+    </a>
+    <a href="https://www.youtube.com/watch?v=uhCXZHZ6xOg" target="_blank"
+      style="flex: 1; display: block; background: #cc0000; color: #fff; text-align: center;
+             padding: 14px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 1em;">
+      Presentation: YouTube Video
+    </a>
+  </div>
 
   <!-- ════════════════ RUBRIC SUMMARY ════════════════ -->
   <div class="problem-header">Rubric Summary (70 points)</div>
@@ -406,16 +424,17 @@
   <!-- ════════════════ SYSTEM ARCHITECTURE ════════════════ -->
   <div class="problem-header">System Architecture</div>
   <div class="problem-body">
-    <p>The project follows a clear frontend/backend split. The Streamlit app (<code>activity4_app.py</code>) handles all
-      user interaction and display; it never touches the model or vocabulary directly. Instead, it holds a single
-      <code>SentimentService</code> instance (cached at startup) and calls <code>predict(text)</code> or
-      <code>compare(original, translated)</code>. The backend (<code>model_service.py</code>) loads the saved model and
-      vocabulary once and exposes these two methods. Training and preprocessing live in Activity 1–3; at runtime only
-      the saved artifacts and the service are used.
+    <p>The project is split into two layers: a <strong>frontend</strong> that handles what users see, and a
+      <strong>backend</strong> that does all the model work. The Streamlit app
+      (<code>activity4_app.py</code>) is the frontend, it builds the web page, collects user input, and
+      displays results. It never touches the model directly. Instead it passes the user's text to the backend
+      (<code>model_service.py</code>), which loads the saved model and returns a prediction. Training only
+      runs once (Activities 1–3); after that the app just loads the saved files and uses them.
     </p>
-    <p>This separation allows swapping the UI (e.g. Streamlit for React) or the model without rewriting the other layer,
-      and keeps the backend testable on its own (e.g. <code>python model_service.py</code>). The diagram below shows how
-      the main components depend on each other and where data flows from training time to inference.</p>
+    <p>Keeping the two layers separate means changes to one side don't break the other. For example, the
+      Streamlit interface could be swapped out for a different website without touching any model code, and
+      the model could be retrained or upgraded without changing the UI. The diagram below shows how the
+      pieces connect.</p>
     <div class="diagram-wrap">
       <div class="mermaid">
         flowchart TB
@@ -443,23 +462,26 @@
     </div>
   </div>
 
-  <!-- ════════════════ ACTIVITY 1 — ML PIPELINE ════════════════ -->
-  <div class="problem-header">Activity 1 — ML Pipeline: Preprocessing Module</div>
+  <!-- ════════════════ ACTIVITY 1 - ML PIPELINE ════════════════ -->
+  <div class="problem-header">Activity 1: ML Pipeline: Preprocessing Module</div>
   <div class="problem-body">
-    <p><strong>File:</strong> <code>activity1_preprocessing.py</code>. Neural networks operate on numeric tensors, so
-      raw text must be turned into fixed-size integer sequences. This module implements that pipeline and is used both
-      during training (Activity 3) and at inference (via <code>model_service.py</code> when a user submits a review).
+    <p><strong>File:</strong> <code>activity1_preprocessing.py</code>. Neural networks can only work with
+      numbers, they cannot read words directly. So before any review reaches the model, it has to be
+      converted into a list of numbers. This module handles that conversion and is used both when training
+      the model and when the live app receives a review from a user.
     </p>
 
     <div class="step">
       <span class="step-label">Pipeline Overview</span>
       <div class="step-title">From raw text to model input</div>
-      <p>First, text is normalized: <code>clean_text()</code> lowercases, strips non-letters, and collapses whitespace
-        so that "This Movie was GREAT!!!" becomes "this movie was great". Then <code>tokenize()</code> splits on spaces
-        into word tokens. The <code>Vocabulary</code> maps each token to an integer ID (unknown words map to
-        <code>&lt;UNK&gt;</code>); <code>pad_sequence()</code> truncates or pads to a fixed <code>max_length</code> so
-        every batch has the same shape. Finally, the list of integers is wrapped in a PyTorch tensor of shape
-        <code>(1, max_length)</code> for the model. The flowchart below summarizes this sequence.
+      <p><code>clean_text()</code> starts by lowercasing the review and removing anything that isn't a
+        letter, punctuation, numbers, symbols, so "This Movie was GREAT!!!" becomes
+        "this movie was great". Then <code>tokenize()</code> splits that cleaned text into individual
+        words. Each word is then swapped out for a number using the <code>Vocabulary</code> lookup table;
+        any word the model has never seen before gets replaced with a special <code>&lt;UNK&gt;</code>
+        token. Finally, <code>pad_sequence()</code> makes every review exactly the same length by adding
+        zeros to short reviews or cutting off long ones, so all inputs to the model are the same size.
+        The flowchart below shows each step.
       </p>
       <div class="diagram-wrap">
         <div class="mermaid">
@@ -477,14 +499,14 @@
     <div class="step">
       <span class="step-label">Vocabulary and deployment</span>
       <div class="step-title">Word-to-ID mapping and persistence</div>
-      <p>The <code>Vocabulary</code> class is built from training data with <code>build(token_lists)</code> and respects
-        a <code>min_freq</code> threshold so rare words fall back to <code>&lt;UNK&gt;</code>. It provides
-        <code>encode(tokens)</code> and <code>decode(indices)</code> for the pipeline, and <code>save(filepath)</code> /
-        <code>Vocabulary.load(filepath)</code> so the exact same mapping is used in the deployed app. Special tokens
-        <code>&lt;PAD&gt;</code> (0) and <code>&lt;UNK&gt;</code> (1) are always present. The convenience function
-        <code>preprocess_for_model(text, vocab, max_length)</code> runs the full chain for a single string;
-        <code>preprocess_dataset(reviews, vocab, max_length, fit_vocab=False)</code> does batch preprocessing and can
-        optionally build the vocabulary from the given reviews.
+      <p>The <code>Vocabulary</code> class is built from the training data and gives each word a unique
+        number. Words that appear fewer than <code>min_freq</code> times are not given their own number;
+        they map to <code>&lt;UNK&gt;</code> instead. This keeps the vocabulary from getting too large
+        with rarely-used words. Two slots are always reserved: <code>&lt;PAD&gt;</code> (ID 0) is used to
+        fill blank positions when a review is shorter than <code>max_length</code>, and
+        <code>&lt;UNK&gt;</code> (ID 1) handles any word the model has not seen before. After training,
+        the vocabulary is saved to <code>vocab.json</code> so the deployed app uses the exact same
+        word-to-number mapping.
       </p>
       <div class="diagram-wrap">
         <div class="mermaid">
@@ -515,21 +537,22 @@
     </div>
   </div>
 
-  <!-- ════════════════ ACTIVITY 2 & 3 — MODEL AND TRAINING ════════════════ -->
-  <div class="problem-header">Activity 2 &amp; 3 — Model Architecture and Training</div>
+  <!-- ════════════════ ACTIVITY 2 & 3 - MODEL AND TRAINING ════════════════ -->
+  <div class="problem-header">Activity 2 &amp; 3: Model Architecture and Training</div>
   <div class="problem-body">
     <p><strong>Files:</strong> <code>activity2_model.py</code> defines the network; <code>activity3_train.py</code>
       trains it on IMDB and saves the model, vocabulary, and config.</p>
 
     <h3>SentimentClassifier</h3>
-    <p>The model turns a sequence of word IDs into a single probability. An <code>nn.Embedding</code> layer looks up a
-      dense vector for each ID; padding IDs are forced to zero via <code>padding_idx</code>. Those vectors are then
-      averaged over the sequence (ignoring padding) to get one sentence vector per batch item. That vector passes
-      through a fully connected block: Linear(embed_dim → hidden_dim), ReLU, Dropout, Linear(hidden_dim → 1), Sigmoid.
-      So the architecture is: <strong>Word IDs → Embedding → Average Pooling → FC → ReLU → Dropout → FC →
-        Sigmoid</strong>. It mirrors a Topic 2–style feed-forward net with an embedding layer at the front.
-      <code>save_model()</code> and <code>load_model()</code> persist the config and state dict so the app can load the
-      same architecture and weights.
+    <p>The model takes a list of word ID numbers and outputs a single score between 0 and 1, where values
+      near 1.0 mean positive and values near 0.0 mean negative. It processes a review in a few steps.
+      First, an <strong>Embedding layer</strong> converts each word ID into a list of 128 numbers that
+      capture something about what that word means, similar words end up with similar numbers. Next, all
+      those word vectors are averaged into one summary vector for the whole sentence, with padding tokens
+      left out of the average. That summary then passes through two fully connected layers (the same
+      structure as Topic 2's neural network), with a ReLU activation and Dropout layer in between.
+      Finally, a Sigmoid function squishes the output into the 0–1 range. <code>save_model()</code> and
+      <code>load_model()</code> handle saving and loading the trained weights so the app can reuse them.
     </p>
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -550,32 +573,94 @@
     </div>
 
     <h3>Training pipeline</h3>
-    <p>Activity 3 loads the IMDB dataset (e.g. via Hugging Face <code>datasets</code>), builds the vocabulary from the
-      training texts, and encodes and pads all sequences to <code>MAX_LENGTH</code>. It creates a
-      <code>SentimentClassifier</code> with chosen hyperparameters (e.g. <code>EMBED_DIM=128</code>,
-      <code>HIDDEN_DIM=64</code>, <code>DROPOUT=0.5</code>, <code>MIN_FREQ=5</code>), then runs a standard training
-      loop: forward pass, BCE loss, backward, Adam step. Train and validation loss and accuracy are logged per epoch and
-      plotted to <code>plots/training_curves.png</code>. After training, the script writes
-      <code>saved_model/model.pt</code>, <code>saved_model/vocab.json</code>, and <code>saved_model/config.json</code>
-      (containing <code>max_length</code>) for the app to load.
+    <p>Activity 3 loads the IMDB dataset via Hugging Face <code>datasets</code>, builds the vocabulary from the
+      training texts using <code>MIN_FREQ=5</code> to exclude rare words, and encodes and pads all sequences to
+      <code>MAX_LENGTH=200</code>. A <code>SentimentClassifier</code> is constructed with
+      <code>EMBED_DIM=128</code>, <code>HIDDEN_DIM=64</code>, and <code>DROPOUT=0.5</code>, then trained for 5 epochs
+      using Adam (lr=0.001) and BCE loss. After training, the script writes <code>saved_model/model.pt</code>,
+      <code>saved_model/vocab.json</code>, and <code>saved_model/config.json</code> for the app to load.
     </p>
+
+    <h3>Training Curve Analysis</h3>
+    <div class="diagram-wrap" style="text-align: center;">
+      <img src="../plots/training_curves.png" alt="Training and Validation Loss and Accuracy curves"
+        style="max-width: 100%; border-radius: 4px;">
+      <p class="diagram-caption">Figure 6: Training and validation loss (BCE) and accuracy over 5 epochs on IMDB.</p>
+    </div>
+    <p>Looking at the loss chart on the left, both lines drop during the first three epochs, which means the
+      model is getting better at recognizing sentiment on both the training data and the reviews it has never
+      seen before. After epoch 3, however, the training loss keeps falling while the validation loss starts
+      to creep back up. This is called <strong>overfitting</strong>, the model starts memorizing specific
+      word patterns from the training set instead of learning rules that work more generally.
+    </p>
+    <p>The accuracy chart on the right tells the same story. Validation accuracy climbs from about 80% to
+      roughly <strong>83%</strong> by epoch 3 and then levels off, while training accuracy keeps rising to
+      about 95%. That gap of roughly 12 percentage points shows the model performs noticeably better on data
+      it was trained on than on new data. Setting <code>DROPOUT=0.5</code> helped slow this down, dropout
+      randomly turns off half the neurons during each training step, which forces the network to not rely too
+      heavily on any one word, but five epochs was still enough for some overfitting to occur. Stopping
+      training at epoch 3, when the validation loss was at its lowest (~0.35), would have given the
+      best-performing version of the model.
+    </p>
+    <table class="doc-table">
+      <thead><tr><th>Metric</th><th>Epoch 1</th><th>Epoch 3</th><th>Epoch 5</th></tr></thead>
+      <tbody>
+        <tr><td>Train Loss</td><td>~0.59</td><td>~0.27</td><td>~0.15</td></tr>
+        <tr><td>Val Loss</td><td>~0.44</td><td>~0.35 (best)</td><td>~0.38</td></tr>
+        <tr><td>Train Accuracy</td><td>~70%</td><td>~88%</td><td>~95%</td></tr>
+        <tr><td>Val Accuracy</td><td>~80%</td><td>~83%</td><td>~83%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Word Embedding Analysis (PCA Projection)</h3>
+    <div class="diagram-wrap" style="text-align: center;">
+      <img src="../plots/embeddings_pca.png" alt="PCA projection of trained word embeddings"
+        style="max-width: 100%; border-radius: 4px;">
+      <p class="diagram-caption">Figure 7: Each word's learned embedding compressed into 2D.
+        Green = positive words, Red = negative words.</p>
+    </div>
+    <p>Each word in the vocabulary is stored as a list of 128 numbers (its embedding vector). To visualize
+      what the model learned, those 128 numbers are compressed down to just 2 using a technique called PCA,
+      so each word can be plotted as a single dot. If the model learned meaningful representations, positive
+      and negative words should end up in different areas of the chart, and that is exactly what happened.
+      Words like <em>great, perfect, joy, amazing,</em> and <em>outstanding</em> cluster toward the right,
+      while words like <em>worst, unwatchable, terrible, boring,</em> and <em>forgettable</em> cluster toward
+      the left. The model was never told which words were positive or negative, it figured this out on its
+      own by seeing which words appeared in positively- and negatively-labelled reviews.
+    </p>
+    <p>The chart also helps explain some of the translation experiment results. Words like <em>incredible</em>,
+      <em>horrible</em>, <em>best</em>, and <em>awful</em> end up near the middle of the chart, meaning the
+      model is not very sure about them on their own. When a translation swaps out a word that the model
+      feels strongly about for one of these middle-ground words, the overall score can shift a lot, which
+      is exactly what happened in Experiment 3 ("well" → "much", delta −0.612) and Experiment 10
+      ("had too many good movies" → "made many good films", delta +0.809). The model averages all the word
+      scores together, so losing one strongly-opinionated word can flip the whole prediction.
+    </p>
+    <div class="callout">
+      <strong>Key takeaway:</strong> The embedding chart shows the model genuinely learned which words signal
+      positive or negative sentiment. However, because it averages all words equally, words like "not" and
+      "never" do not get special treatment, so a sentence with tricky negation ("this is no different")
+      can easily be misread, especially after translation changes a few key words.
+    </div>
   </div>
 
-  <!-- ════════════════ ACTIVITY 4 — DEPLOYED APP ════════════════ -->
-  <div class="problem-header">Activity 4 — Deployed Application (Backend and Frontend)</div>
+  <!-- ════════════════ ACTIVITY 4 - DEPLOYED APP ════════════════ -->
+  <div class="problem-header">Activity 4: Deployed Application (Backend and Frontend)</div>
   <div class="problem-body">
     <p>The app is split into a backend service and a Streamlit frontend. The backend owns the model and vocabulary; the
       frontend owns the UI and calls the backend. No model logic lives in the UI code.</p>
 
     <h3>Backend: SentimentService</h3>
-    <p>On construction, <code>SentimentService</code> loads the vocabulary from <code>vocab.json</code>, the model from
-      <code>model.pt</code>, and <code>max_length</code> from <code>config.json</code>. <code>predict(text)</code> runs
-      the full preprocessing pipeline (clean, tokenize, encode, pad, tensor), passes the tensor through the model, and
-      returns a dict with sentiment label, confidence, positive/negative scores, and pipeline intermediates (cleaned
-      text, tokens, encoded IDs, known_count) for display. <code>compare(original, translated)</code> calls
-      <code>predict()</code> on both strings, computes the score delta and whether the sentiment label flipped, and
-      identifies vocabulary words that appear in one text but not the other (lost_words / new_words). The sequence
-      diagram below shows the flow when a user submits a review in the Sentiment tab.
+    <p>When the app starts, <code>SentimentService</code> loads three saved files: the model weights
+      (<code>model.pt</code>), the word-to-number lookup table (<code>vocab.json</code>), and the
+      configuration (<code>config.json</code>). <code>predict(text)</code> takes a raw review, runs it
+      through the full preprocessing pipeline, feeds it to the model, and sends back a dictionary with
+      the sentiment label, confidence score, raw probability, and the intermediate steps (cleaned text,
+      tokens, known word count) so the app can show them to the user.
+      <code>compare(original, translated)</code> runs <code>predict()</code> on both versions of a review,
+      calculates how much the score changed, notes whether the label flipped, and lists which words
+      appeared in one version but not the other. The diagram below shows the order of steps when a user
+      submits a review.
     </p>
     <div class="diagram-wrap diagram-sequence">
       <div class="mermaid">
@@ -597,26 +682,171 @@
       <p class="diagram-caption">Figure 5: Sequence of calls for a single sentiment prediction.</p>
     </div>
 
-    <h3>Frontend: Streamlit</h3>
-    <p><code>load_service()</code> is decorated with <code>@st.cache_resource</code> so one
-      <code>SentimentService()</code> is created and reused for the lifetime of the app; the model is not reloaded on
-      every button click. Tab 1 (Sentiment Analysis) provides a text area and an "Analyze Sentiment" button that calls
-      <code>service.predict(review)</code> and shows the sentiment, confidence, a positive-score progress bar, and an
-      expander with cleaned text and tokens. Tab 2 (Translation Comparison) provides two text areas (original and
-      round-trip translated); "Compare Sentiments" calls <code>service.compare(original, translated)</code> and shows
-      both predictions, the score delta, whether the label changed, and lost/new words. Deployment (e.g. Streamlit
-      Community Cloud or Hugging Face Spaces) requires the repo to include the app file, backend, Activity 1–2 modules,
-      <code>saved_model/</code>, and <code>requirements.txt</code>, with the app file as the entry point.
+    <h3>Frontend: Streamlit: Live Application</h3>
+    <p>The live application is deployed at <a href="https://nlp-moviereview.streamlit.app/" target="_blank"
+        style="color: var(--purple); font-weight: bold; text-decoration: underline;">nlp-moviereview.streamlit.app</a>.
+    </p>
+    <p>The <code>@st.cache_resource</code> decorator on <code>load_service()</code> makes sure the model
+      is only loaded once when the app first starts. After that, every button click reuses the same loaded
+      model rather than reloading it from scratch. Without this, each prediction would take a few extra
+      seconds just to reload the model files every time.
+    </p>
+
+    <h3>Tab 1: Sentiment Analysis: Output Fields</h3>
+    <p>After submitting a review, the frontend calls <code>service.predict(review)</code> and renders five output
+      elements from the returned dict:</p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>UI Element</th><th>Source Field</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Sentiment</strong> metric</td>
+          <td><code>result["sentiment"]</code></td>
+          <td>"Positive" or "Negative", if the model's score is 0.5 or above, the review is called
+            Positive; below 0.5 it is Negative.</td>
+        </tr>
+        <tr>
+          <td><strong>Confidence</strong> metric</td>
+          <td><code>result["confidence"]</code></td>
+          <td>How sure the model is. A confidence of 99% means the model is very certain; a confidence
+            near 50% means it is barely leaning one way or the other.</td>
+        </tr>
+        <tr>
+          <td><strong>Positive score</strong> bar</td>
+          <td><code>result["positive_score"]</code></td>
+          <td>The model's raw score from 0.0 to 1.0. The blue progress bar shows this directly, a full
+            bar means strongly positive, a nearly empty bar means strongly negative.</td>
+        </tr>
+        <tr>
+          <td><strong>Cleaned</strong> text</td>
+          <td><code>result["cleaned"]</code></td>
+          <td>The review after cleaning, lowercased with punctuation, numbers, and symbols removed.
+            This shows users exactly what the model actually reads.</td>
+        </tr>
+        <tr>
+          <td><strong>Tokens</strong> list</td>
+          <td><code>result["tokens"]</code></td>
+          <td>The individual words the model sees after cleaning and splitting. Long reviews have hundreds
+            of words, so they are shown in collapsible groups like <code>[0–100]</code>,
+            <code>[100–200]</code>, etc.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Example Outputs</h3>
+
+    <!-- Example 1: Shawshank Redemption -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Example 1: Shawshank Redemption (Positive Review)</h4>
+        <span class="tag tag-preserved">Positive · 99.9%</span>
+      </div>
+      <div class="experiment-body">
+        <p><strong>Input:</strong> <em>"The ultimate story of friendship, of hope, and of life, and overcoming
+            adversity. I understand why so many class this as the best film of all time, it isn't mine, but I
+            get it. If you haven't seen it, or haven't seen it for some time, you need to watch it, it's
+            amazing. 10/10."</em></p>
+        <table class="doc-table" style="margin-top: 14px;">
+          <thead><tr><th>Field</th><th>Value</th><th>Interpretation</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sentiment</td><td><strong>Positive</strong></td>
+              <td>Score is above 0.5, so the model labels it Positive.</td>
+            </tr>
+            <tr>
+              <td>Confidence</td><td><strong>99.9%</strong></td>
+              <td>The review is packed with words the model strongly associates with positive reviews,
+                such as "amazing", "best", "hope", and "friendship", leaving very little doubt.</td>
+            </tr>
+            <tr>
+              <td>Positive score</td><td><strong>0.999</strong></td>
+              <td>Very close to 1.0, so the progress bar is almost completely full.</td>
+            </tr>
+            <tr>
+              <td>Token count</td><td><strong>121 tokens</strong></td>
+              <td>After cleaning, the review splits into 121 words, shown in two groups:
+                <code>[0–100]</code> and <code>[100–121]</code>. Since it is under the 200-word
+                limit, nothing gets cut off.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Example 2: The Room -->
+    <div class="experiment-card">
+      <div class="experiment-header">
+        <h4>Example 2: The Room (Negative Review)</h4>
+        <span class="tag tag-grammatical">Negative · 80.3%</span>
+      </div>
+      <div class="experiment-body">
+        <p><strong>Input:</strong> <em>"You can obviously watch just Highlights of this, but you will never
+            know how bad it really is, if you don't watch it fully, to get the full experience of things.
+            The closest to that, without going through the whole thing, is the Honest Trailer from Screen
+            Junkies ..."</em></p>
+        <table class="doc-table" style="margin-top: 14px;">
+          <thead><tr><th>Field</th><th>Value</th><th>Interpretation</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sentiment</td><td><strong>Negative</strong></td>
+              <td>Score is below 0.5, so the model labels it Negative.</td>
+            </tr>
+            <tr>
+              <td>Confidence</td><td><strong>80.3%</strong></td>
+              <td>The phrase "how bad it really is" points negative, but a lot of the surrounding
+                text is fairly neutral, which brings the score closer to the middle compared to
+                Example 1.</td>
+            </tr>
+            <tr>
+              <td>Positive score</td><td><strong>0.197</strong></td>
+              <td>Well below 0.5, so the progress bar is less than a quarter full.</td>
+            </tr>
+            <tr>
+              <td>Token count</td><td><strong>311 tokens</strong></td>
+              <td>The full review (not just the visible excerpt) was loaded, producing 311 words
+                shown in four groups: <code>[0–100]</code>, <code>[100–200]</code>,
+                <code>[200–300]</code>, <code>[300–311]</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 16px;">
+          <strong>Note:</strong> The model only looks at the first 200 words of any review. This
+          review has 311 words, so the last 111 are cut off before the model sees it. The token
+          expander still shows all 311 words so you can see the full input, but only the first 200
+          affect the prediction.
+        </div>
+      </div>
+    </div>
+
+    <h3>Tab 2: Translation Comparison</h3>
+    <p>Tab 2 accepts two versions of the same review, the original and one that has been translated into
+      another language and back to English. Clicking "Compare Sentiments" runs the model on both and shows
+      the results side by side. A delta score shows how much the model's confidence changed between the two
+      versions. If the label flips from Positive to Negative (or the other way around), a warning appears;
+      otherwise a success message confirms the sentiment stayed the same. The tab also lists any words that
+      showed up in one version but not the other, which helps explain why the score changed. All 10
+      translation experiments in this report were tested through this tab.
+    </p>
+    <p style="margin-top: 12px;">Deployment requires the repo to contain: <code>activity4_app.py</code>,
+      <code>model_service.py</code>, <code>activity1_preprocessing.py</code>, <code>activity2_model.py</code>,
+      <code>saved_model/</code>, and <code>requirements.txt</code>, with <code>activity4_app.py</code> as the
+      Streamlit entry point. The app is hosted on
+      <a href="https://nlp-moviereview.streamlit.app/" target="_blank"
+        style="color: var(--purple); text-decoration: underline;">Streamlit Community Cloud</a>.
     </p>
   </div>
 
   <!-- ════════════════ TRANSLATION & CROSS-LINGUAL ════════════════ -->
   <div class="problem-header">Translation Analysis and Cross-Lingual Evaluation</div>
   <div class="problem-body">
-    <p>A round-trip translation experiment was conducted using 10 diverse IMDb-style reviews. Each "Original" review was
-      translated into a foreign language (Spanish, French, or Japanese) and then back to English using a neural
-      translation model. These pairs were then compared using the <code>SentimentService.compare()</code> method to
-      identify sentiment drift, label flips, and vocabulary loss.</p>
+    <p>To test how translation affects the model, 10 movie reviews were each translated into another
+      language (Spanish, French, or Japanese) and then back into English. This is called a
+      <strong>round-trip translation</strong>. Because translating twice often changes the wording slightly,
+      it is a good way to see whether the model's prediction stays the same when the meaning is mostly
+      preserved but the exact words are different. Each pair was run through the Translation Comparison tab
+      to measure how much the score changed and whether the label flipped.
+    </p>
 
     <!-- Experiment 1 -->
     <div class="experiment-card">
@@ -887,9 +1117,10 @@
       </table>
 
       <div class="callout">
-        <strong>Insights:</strong> The model shows significant vulnerability to minor semantic shifts (e.g., "well" vs
-        "much"). While it is robust against direct synonyms (boring/tedious), it fails when translation alters the
-        structural negation of positive words.
+        <strong>Takeaway:</strong> The model handles direct synonym swaps fairly well (e.g., "boring" to
+        "tedious" barely changed the score). Where it struggles is when translation changes the structure
+        of a sentence, for example, turning a negation like "not had many good movies" into "made many
+        good films" caused the model to completely misread the review.
       </div>
     </div>
   </div>
@@ -900,53 +1131,57 @@
     <div class="step">
       <span class="step-label">Training Data</span>
       <div class="step-title">Bias in Training Data</div>
-      <p>The sentiment analysis model is trained on the IMDb movie review dataset, meaning its understanding of
-        "positive" and "negative" sentiment is inherently biased towards the linguistic patterns, cultural norms, and
-        demographics of IMDb reviewers. This can lead to misclassification of reviews written in different dialects,
-        socio-economic contexts, or cultural frameworks, inadvertently silencing or misrepresenting certain groups.</p>
+      <p>This model was trained only on IMDb movie reviews, which means it learned what "positive" and
+        "negative" look like based on how a specific group of people (mostly English-speaking IMDb users)
+        write about movies. Reviews written in different dialects, by people from different cultural
+        backgrounds, or in a style that doesn't match the training data may be misclassified. The model
+        doesn't know what it doesn't know, so it can get things wrong without any warning sign.</p>
     </div>
 
     <div class="step">
       <span class="step-label">Data Security</span>
       <div class="step-title">Privacy of User-Generated Text</div>
-      <p>Processing user-generated text requires stringent privacy controls. When users input text into the application,
-        they may inadvertently include personally identifiable information (PII) or sensitive personal data. If this
-        data is logged, stored, or used for further model training without explicit consent and robust anonymization, it
-        violates user privacy and risks exposing individuals to harm.</p>
+      <p>When people type text into the app, they might accidentally include personal details like their
+        name, location, or other private information. If that text were stored or used to retrain the model
+        without the user's knowledge or permission, it would be a serious privacy violation. Any real
+        deployment of this kind of app would need clear policies about what happens to the text users submit
+        and how it is protected.</p>
     </div>
 
     <div class="step">
       <span class="step-label">Systemic Impact</span>
       <div class="step-title">Risks of Sentiment Analysis at Scale</div>
-      <p>Deploying sentiment analysis at scale can amplify the impact of model errors. If organizations rely on
-        automated sentiment scores for decision-making (e.g., customer service triage, product development, or content
-        moderation), the model's biases can systematically disadvantage certain users. The lack of human nuance can lead
-        to tone-deaf responses, exacerbating customer frustration and damaging brand trust.</p>
+      <p>A small error rate might seem acceptable in a demo, but when a model like this is used to make
+        decisions for thousands or millions of people, for example, flagging customer complaints or
+        moderating content, even a 5–10% error rate causes real harm at that scale. The model does not
+        understand context the way a human does, so relying on it too heavily for important decisions
+        can lead to unfair outcomes for users whose language or writing style it handles poorly.</p>
     </div>
 
     <div class="step">
       <span class="step-label">Translation Nuance</span>
       <div class="step-title">Cross-Lingual Harm from Translation Errors</div>
-      <p>As demonstrated in the translation analysis, neural translation models can introduce semantic shifts or lose
-        contextual nuance. When sentiment analysis relies on translated text, these errors can completely flip the
-        meaning of a statement (e.g., classifying a culturally specific positive idiom as negative). In critical
-        applications, this cross-lingual misunderstanding can alienate non-native speakers or misinterpret international
-        sentiment.</p>
+      <p>As the translation experiments showed, running text through a translation step before sentiment
+        analysis can completely change the model's prediction, even when the overall meaning stays the
+        same. This is a real problem for non-English speakers whose content might be automatically
+        translated before being analyzed. A phrase that is clearly positive in one language or culture
+        could come out looking negative after translation, leading to incorrect conclusions about what
+        that person actually meant.</p>
     </div>
 
     <div class="step">
       <span class="step-label">Accountability</span>
       <div class="step-title">Engineering Responsibility</div>
-      <p>Engineers bear the responsibility of recognizing and mitigating these ethical risks. This involves
-        transparently documenting model limitations (as done in this report), implementing safeguards against PII
-        ingestion, regularly auditing models for bias, and ensuring that automated systems remain tools to assist—rather
-        than replace—human judgment. Responsible AI engineering requires a commitment to fairness, accountability, and
-        continuous evaluation of real-world impact.</p>
+      <p>Building a model is only part of the job. Engineers are also responsible for being honest about
+        what the model can and cannot do, which is what this report tries to do. In practice that means
+        writing clear documentation, being transparent about failure cases, checking the model regularly
+        for bias, and making sure automated tools are used to help people make decisions, not to replace
+        human judgment entirely. Getting this wrong can have real consequences for real people.</p>
     </div>
   </div>
 
   <!-- ════════════════ QUICK REFERENCE ════════════════ -->
-  <div class="problem-header">Quick Reference — Run Commands</div>
+  <div class="problem-header">Quick Reference: Run Commands</div>
   <div class="problem-body">
     <p>Run activities in order to verify preprocessing, inspect the model, train, test the backend, and launch the app.
     </p>
