@@ -178,7 +178,7 @@ st.markdown("""
 
 
 # --- CONSTANTS & DEFAULTS -----------------------------------------------------
-DEFAULT_API_URL = "http://localhost:8000"
+DEFAULT_API_URL = "https://ait-204-pair-programing.onrender.com"
 DEFAULT_SEED = "the cat sat on"
 DEFAULT_NUM_WORDS = 50
 DEFAULT_TEMPERATURE = 1.0
