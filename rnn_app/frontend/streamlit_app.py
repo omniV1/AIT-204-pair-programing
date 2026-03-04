@@ -602,7 +602,7 @@ with tab_model:
                     st.markdown(f"""
                     <div class="info-card">
                         <strong>{layer['name']}</strong> — <em>{layer['type']}</em><br>
-                        <small style="color: #7c6af5;">Output: {layer['output_shape']}</small>
+                        <small style="color: #7c6af5;">Params: {layer.get('param_shapes', '')}</small>
                     </div>
                     {"<div style='text-align:center; color:#7c6af5;'>&#x2193;</div>" if arrow else ""}
                     """, unsafe_allow_html=True)
@@ -634,30 +634,52 @@ with tab_model:
             st.markdown("### Training History")
             history = get_training_history(api_url)
             if history:
-                fig = go.Figure()
                 epochs = list(range(1, len(history.get('loss', [])) + 1))
+                chart_layout = dict(
+                    plot_bgcolor='rgba(30,30,60,1)',
+                    paper_bgcolor='rgba(20,20,40,1)',
+                    font=dict(color='white'),
+                    legend=dict(bgcolor='rgba(40,40,70,1)'),
+                    xaxis_title="Epoch",
+                )
 
+                # Loss chart
+                fig_loss = go.Figure()
                 if 'loss' in history:
-                    fig.add_trace(go.Scatter(
+                    fig_loss.add_trace(go.Scatter(
                         x=epochs, y=history['loss'],
                         name='Training Loss', line=dict(color='#7c6af5', width=2)
                     ))
                 if 'val_loss' in history:
-                    fig.add_trace(go.Scatter(
+                    fig_loss.add_trace(go.Scatter(
                         x=epochs, y=history['val_loss'],
                         name='Validation Loss', line=dict(color='#f56a6a', width=2, dash='dot')
                     ))
+                fig_loss.update_layout(title="Loss Over Epochs", yaxis_title="Loss", **chart_layout)
+                st.plotly_chart(fig_loss, use_container_width=True)
 
-                fig.update_layout(
-                    title="Loss Over Epochs",
-                    xaxis_title="Epoch",
-                    yaxis_title="Loss",
-                    plot_bgcolor='rgba(30,30,60,1)',
-                    paper_bgcolor='rgba(20,20,40,1)',
-                    font=dict(color='white'),
-                    legend=dict(bgcolor='rgba(40,40,70,1)')
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                # Accuracy chart
+                fig_acc = go.Figure()
+                if 'accuracy' in history:
+                    fig_acc.add_trace(go.Scatter(
+                        x=epochs, y=[v * 100 for v in history['accuracy']],
+                        name='Training Accuracy', line=dict(color='#7c6af5', width=2)
+                    ))
+                if 'val_accuracy' in history:
+                    fig_acc.add_trace(go.Scatter(
+                        x=epochs, y=[v * 100 for v in history['val_accuracy']],
+                        name='Validation Accuracy', line=dict(color='#f56a6a', width=2, dash='dot')
+                    ))
+                fig_acc.update_layout(title="Accuracy Over Epochs", yaxis_title="Accuracy (%)", **chart_layout)
+                st.plotly_chart(fig_acc, use_container_width=True)
+
+                # Summary stats
+                st.markdown("#### Training Summary")
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Total Epochs", len(epochs))
+                m2.metric("Best Val Loss", f"{min(history.get('val_loss', [0])):.4f}")
+                m3.metric("Final Train Acc", f"{history.get('accuracy', [0])[-1]*100:.1f}%")
+                m4.metric("Best Val Acc", f"{max(history.get('val_accuracy', [0]))*100:.1f}%")
             else:
                 st.info("Training history not available. Train the model first.")
     else:
