@@ -1,0 +1,11 @@
+{
+  "sequence_length": 120,
+  "hidden_units": 64,
+  "num_layers": 2,
+  "dropout_rate": 0.2,
+  "batch_size": 256,
+  "epochs": 50,
+  "learning_rate": 0.001,
+  "validation_split": 0.1,
+  "subsample_step": 6
+}

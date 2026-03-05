@@ -401,8 +401,10 @@ class TemperatureForecaster:
             history['loss'].append(train_loss)
             history['val_loss'].append(val_loss)
 
+            current_lr = optimizer.param_groups[0]['lr']
             print(f"Epoch {epoch+1:3d}/{self.config['epochs']}  "
-                  f"loss: {train_loss:.6f}  val_loss: {val_loss:.6f}")
+                  f"loss: {train_loss:.6f}  val_loss: {val_loss:.6f}  "
+                  f"lr: {current_lr:.2e}")
 
             scheduler.step(val_loss)
 
@@ -418,6 +420,15 @@ class TemperatureForecaster:
                     print(f"  Early stopping at epoch {epoch+1} "
                           f"(no improvement for 10 epochs)")
                     break
+
+            # ── Stop if learning rate has bottomed out ─────────────────────────
+            # If the scheduler has reduced LR to min_lr AND val_loss isn't
+            # improving, further training is wasteful — the optimizer can
+            # no longer make meaningful updates.
+            if current_lr <= 1.1e-6 and patience_counter >= 3:
+                print(f"  Stopping at epoch {epoch+1}: learning rate hit "
+                      f"minimum ({current_lr:.2e}) with no improvement")
+                break
 
         # Restore best weights
         self.model.load_state_dict(
