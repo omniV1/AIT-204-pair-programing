@@ -100,7 +100,7 @@ st.markdown("""
 
 
 # --- CONSTANTS ----------------------------------------------------------------
-DEFAULT_API_URL = "https://ait-204-pair-programing.onrender.com"
+DEFAULT_API_URL = "https://ait-204-pair-programing-1.onrender.com"
 
 # --- PLOTLY CHART LAYOUT ------------------------------------------------------
 CHART_LAYOUT = dict(
