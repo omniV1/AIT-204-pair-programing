@@ -688,114 +688,528 @@ with tab_model:
 
 # -- TAB 4: ABOUT --------------------------------------------------------------
 with tab_about:
-    st.markdown("### About This Application")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("""
-        #### What This App Does
-        This application demonstrates **LSTM-based text generation**:
-
-        1. **LSTM Model** learns patterns in text data
-        2. **FastAPI Backend** serves the trained model via HTTP
-        3. **Streamlit Frontend** (this page) provides the user interface
-
-        #### System Architecture
-        ```
-        You (browser)
-              | HTTP
-        Streamlit App (:8501)
-              | HTTP POST /generate
-        FastAPI Server (:8000)
-              | Keras inference
-        LSTM Model (models/)
-        ```
-
-        #### Technology Stack
-        | Component | Technology |
-        |-----------|------------|
-        | Deep Learning | PyTorch LSTM |
-        | Backend API | FastAPI + Uvicorn |
-        | Frontend | Streamlit |
-        | Visualization | Plotly |
-        """)
-
-    with col2:
-        st.markdown("""
-        #### Building an Alternative Frontend
-
-        The FastAPI backend accepts standard HTTP requests.
-        You can build your own frontend using any technology!
-
-        **API Contract (POST /generate):**
-        ```json
-        Request:
-        {
-            "seed_text": "string",
-            "num_words": 50,
-            "temperature": 1.0
-        }
-
-        Response:
-        {
-            "seed_text": "string",
-            "generated_text": "string",
-            "num_words_requested": 50,
-            "temperature": 1.0,
-            "model_info": {...}
-        }
-        ```
-
-        **Alternative frontend ideas:**
-        - React (TypeScript) SPA
-        - Vue.js with Vuetify
-        - Flutter (mobile app)
-        - Jupyter Notebook widget
-        - CLI tool (click/typer)
-        """)
+    st.markdown("""
+    <h2 style='text-align: center; background: linear-gradient(135deg, #7c6af5, #6af5c8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+    LSTM & RNN Guide
+    </h2>
+    <p style='text-align: center; color: #aaaacc;'>
+    Understanding Recurrent Neural Networks for Character-Level Text Generation
+    </p>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
+
+    # --- Section 1: RNN Fundamentals ---
+    st.markdown("### 1. RNN Fundamentals")
     st.markdown("""
-    #### Learning Objectives
-    This activity demonstrates:
-
-    - **RNN/LSTM theory** -> working implementation (text_generator.py)
-    - **ML pipeline**: data -> preprocessing -> sequences -> training -> inference
-    - **API design**: RESTful endpoints with FastAPI and Pydantic validation
-    - **Frontend integration**: Streamlit consuming a backend API
-    - **Software architecture**: separation of concerns (data/model/api/ui)
-
-    #### Project Structure
-    ```
-    rnn_app/
-    ├── backend/
-    │   ├── app/
-    │   │   ├── text_generator.py    # Core LSTM logic
-    │   │   ├── train.py             # Training script
-    │   │   └── main.py              # FastAPI server
-    │   ├── data/
-    │   │   └── training_text.txt    # Training corpus
-    │   ├── models/                  # Saved model files
-    │   └── requirements.txt
-    └── frontend/
-        ├── streamlit_app.py         # This file
-        └── requirements.txt
-    ```
+    A **Recurrent Neural Network (RNN)** is a class of neural networks designed to process
+    **sequential data** — data where order matters. Unlike feedforward networks that treat each
+    input independently, RNNs maintain a **hidden state** that carries information from
+    previous timesteps, creating a form of memory.
     """)
 
-    # Quick start
-    st.markdown("---")
-    st.markdown("#### Quick Start")
-    st.code("""
-# Terminal 1: Backend
-cd rnn_app/backend
-pip install -r requirements.txt
-python app/train.py          # Train the model
-uvicorn app.main:app --reload  # Start API server
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">Why Sequential Data Needs Special Treatment</strong><br><br>
+    Consider predicting the next word in a sentence. A standard neural network would look at each
+    word in isolation. But language follows patterns — "the cat sat on the" strongly suggests "mat"
+    or "chair" as the next word. An RNN captures these <em>sequential dependencies</em>
+    by maintaining state across timesteps, letting past context inform future predictions.
+    </div>
+    """, unsafe_allow_html=True)
 
-# Terminal 2: Frontend (this app)
-cd rnn_app/frontend
-pip install -r requirements.txt
-streamlit run streamlit_app.py
-    """, language="bash")
+    st.markdown("""
+    At each timestep *t*, an RNN cell takes two inputs: the current input *x_t* (e.g., the current
+    word embedding) and the hidden state from the previous timestep *h_{t-1}* (memory). It produces
+    a new hidden state *h_t* (updated memory) using the equation:
+    """)
+
+    st.latex(r"h_t = \tanh(W_{hh} \cdot h_{t-1} + W_{xh} \cdot x_t + b_h)")
+
+    st.code("""
+       x_1          x_2          x_3          x_4
+    ("the")      ("cat")      ("sat")      ("on")
+        |            |            |            |
+   +----v----+  +----v----+  +----v----+  +----v----+
+   |  RNN    |--|  RNN    |--|  RNN    |--|  RNN    |
+   |  Cell   |  |  Cell   |  |  Cell   |  |  Cell   |
+   +----+----+  +----+----+  +----+----+  +----+----+
+        |            |            |            |
+       h_1          h_2          h_3          h_4
+                                               |
+                                          +----v----+
+                                          | Softmax |
+                                          |  Layer  |
+                                          +----+----+
+                                               |
+                                          P(next word)""", language="text")
+
+    st.markdown("""
+    The same weight matrices *W_hh* and *W_xh* are shared across all timesteps. This parameter
+    sharing is what makes RNNs efficient for sequences of any length — the model size does not
+    grow with sequence length.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 2: Vanishing Gradient ---
+    st.markdown("### 2. The Vanishing Gradient Problem")
+    st.markdown("""
+    While RNNs are theoretically capable of learning long-range dependencies, in practice they struggle.
+    During backpropagation through time (BPTT), gradients must flow through many timesteps. At each step,
+    the gradient is multiplied by the weight matrix and passed through the tanh derivative.
+    """)
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: rgba(245, 200, 106, 0.4); background: linear-gradient(135deg, rgba(245, 200, 106, 0.05), rgba(245, 200, 106, 0.1));">
+    <strong style="color: #f5d76a;">The Core Problem</strong><br><br>
+    When the tanh derivative (which is always &le; 1) and weight values are repeatedly multiplied
+    across many timesteps, the gradient either <strong>vanishes</strong> (approaches 0, so the network
+    cannot learn from distant past inputs) or <strong>explodes</strong> (grows extremely large, making
+    training unstable).<br><br>
+    For text generation with a sequence length of 50 tokens, a vanilla RNN would struggle to
+    learn that an opening quotation mark 40 words ago means a closing quote is needed, because
+    the gradient signal would effectively disappear after passing through ~50 multiplication steps.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("This is precisely why **LSTMs** were invented.")
+
+    st.markdown("---")
+
+    # --- Section 3: LSTM Architecture ---
+    st.markdown("### 3. LSTM Architecture")
+    st.markdown("""
+    The **Long Short-Term Memory (LSTM)** network, introduced by Hochreiter & Schmidhuber (1997),
+    solves the vanishing gradient problem with a carefully designed gating mechanism. Instead of
+    a single hidden state, an LSTM cell maintains two states: the **cell state** *c_t* (the long-term
+    memory highway) and the **hidden state** *h_t* (the working memory and output).
+    """)
+
+    st.markdown("#### The Four Components of an LSTM Cell")
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">1. Forget Gate</strong><br><br>
+    Decides what information to <em>discard</em> from the cell state. The sigmoid function outputs
+    values between 0 and 1 — a value of 0 means "completely forget this," and 1 means "completely
+    keep this." For text generation, the forget gate might learn to discard information about a
+    completed clause while retaining the overall topic and tone of the passage.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)")
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">2. Input Gate</strong><br><br>
+    Decides what <em>new</em> information to store in the cell state. It has two parts: a sigmoid
+    layer decides <em>which</em> values to update, and a tanh layer creates a vector of <em>candidate</em>
+    new values. Together, they determine what new information enters the cell state.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)")
+    st.latex(r"\tilde{c}_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c)")
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">3. Cell State Update</strong><br><br>
+    Combines the forget gate and input gate to update the long-term memory. This is the key
+    innovation: the cell state is updated through <em>addition</em>, not multiplication. Gradients
+    can flow through the addition operation without vanishing, enabling the network to remember
+    information across many timesteps.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t")
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">4. Output Gate</strong><br><br>
+    Decides what part of the cell state to <em>output</em> as the hidden state. The output gate
+    filters the cell state to produce the hidden state, which serves as both the output at this
+    timestep and the input to the next LSTM cell.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)")
+    st.latex(r"h_t = o_t \odot \tanh(c_t)")
+
+    st.code("""
+            Cell State Highway (c_{t-1} ----------------> c_t)
+                     |                           ^
+                     |     +---------+           |
+                     +---->|  Forget  |---- x ----+
+                     |     |  Gate    |           |
+                     |     +---------+           |
+                     |                    +------+
+                     |     +---------+    |      |
+                     +---->|  Input   |-- x -- + --
+                     |     |  Gate    |    |
+                     |     +---------+    |
+                     |     +---------+    |
+                     +---->|Candidate |----+
+                     |     |  (tanh)  |
+                     |     +---------+
+                     |                        +---------+
+                     +----------------------->|  Output  |--> h_t
+                                              |  Gate    |
+                          [h_{t-1}, x_t]      +---------+""", language="text")
+
+    st.markdown("""
+    The cell state acts as a **highway** for gradient flow. During backpropagation, the gradient
+    passes through the cell state update equation. Since *f_t* is controlled by a learned gate
+    (not a fixed weight matrix), the network can learn to keep the forget gate close to 1 for
+    important long-term information, allowing gradients to flow unimpeded across hundreds of timesteps.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 4: Text Generation as Classification ---
+    st.markdown("### 4. Text Generation as a Classification Task")
+    st.markdown("""
+    Text generation is fundamentally a **classification problem** — at each step, the model must
+    choose the next word from a fixed vocabulary. This differs from regression tasks like temperature
+    forecasting where the output is a continuous value.
+    """)
+
+    st.markdown("#### How It Differs from Regression")
+    st.markdown("""
+    | Aspect | Text Generation (Classification) | Temperature Forecasting (Regression) |
+    |--------|----------------------------------|--------------------------------------|
+    | Input | Sequence of word IDs (discrete integers) | Sequence of temperature values (continuous floats) |
+    | Embedding | Required (word ID to dense vector) | Not needed (values are already continuous) |
+    | Output | Probability distribution over vocabulary | Single scalar value (predicted temperature) |
+    | Loss Function | CrossEntropyLoss | Mean Squared Error (MSE) |
+    | Evaluation | Accuracy, Perplexity | RMSE (Root Mean Squared Error) |
+    """)
+
+    st.markdown("""
+    The LSTM processes the sequence of input word embeddings and its final hidden state *h_T*
+    encodes the sequential context. A fully connected layer then projects this encoding to a
+    vector of size *V* (the vocabulary size), and a softmax function converts it into a
+    probability distribution over all possible next words.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 5: Word Embeddings ---
+    st.markdown("### 5. Word Embeddings")
+    st.markdown("""
+    Words are discrete symbols — they have no inherent numerical relationship. The word "cat" is
+    not mathematically closer to "dog" than to "refrigerator" in a raw integer encoding. **Word
+    embeddings** solve this by mapping each word to a dense vector in a continuous space, where
+    semantically similar words end up near each other.
+    """)
+
+    st.latex(r"\text{Embedding}: \mathbb{Z}^{|V|} \rightarrow \mathbb{R}^{d}")
+
+    st.markdown("""
+    In our model, the embedding dimension is **100**, meaning each word in the vocabulary is
+    represented as a 100-dimensional vector. These vectors are learned during training — the
+    model discovers which dimensions are useful for capturing word relationships. After training,
+    words that appear in similar contexts (like "warm" and "hot," or "the" and "a") will have
+    embedding vectors that are close together in this 100-dimensional space.
+
+    The embedding layer is the first layer of our text generation model. It takes a sequence of
+    integer word IDs and outputs a sequence of dense vectors, which the LSTM then processes.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 6: Tokenization ---
+    st.markdown("### 6. Tokenization and Sequence Creation")
+    st.markdown("""
+    Before the LSTM can process text, the raw text must be converted into numerical sequences.
+    This involves two steps: **tokenization** (mapping words to integers) and **sequence creation**
+    (building input-output pairs for training).
+    """)
+
+    st.markdown("#### Tokenization")
+    st.markdown("""
+    The tokenizer builds a vocabulary from the training corpus, assigning each unique word an
+    integer ID. Words that appear below a frequency threshold are mapped to a special unknown
+    token. The tokenizer is saved as a pickle file so the same mapping can be used during inference.
+    """)
+
+    st.markdown("#### Sliding Window for Text")
+    st.code("""
+Text:    "the cat sat on the warm mat by the fire"
+Tokens:  [4, 12, 87, 15, 4, 203, 156, 31, 4, 89]
+
+Sequence length = 5:
+
+  Input: [4, 12, 87, 15, 4]    ->  Target: 203  ("warm")
+  Input: [12, 87, 15, 4, 203]  ->  Target: 156  ("mat")
+  Input: [87, 15, 4, 203, 156] ->  Target: 31   ("by")
+  Input: [15, 4, 203, 156, 31] ->  Target: 4    ("the")""", language="text")
+
+    st.markdown("""
+    Each window of *sequence_length* words becomes one training sample. The input *X* is the
+    window of word IDs, and the target *y* is the single word ID that follows the window.
+    Our model uses a sequence length of **50 words**, which provides enough context for the
+    LSTM to learn sentence structure, paragraph flow, and stylistic patterns from the training
+    corpus.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 7: Temperature Sampling ---
+    st.markdown("### 7. Temperature Sampling")
+    st.markdown("""
+    During text generation, the model outputs a probability distribution over the entire vocabulary.
+    Rather than always picking the most probable word (which produces repetitive, boring text), we
+    use **temperature sampling** to control the randomness of the selection.
+    """)
+
+    st.markdown("The temperature *T* rescales the model's raw logits before applying softmax:")
+
+    st.latex(r"P(w_i) = \frac{\exp(\text{logit}_i / T)}{\sum_j \exp(\text{logit}_j / T)}")
+
+    st.markdown("""
+    **Low temperature (0.3-0.7)** sharpens the distribution, making the model strongly prefer
+    high-probability words. The output is conservative, predictable, and grammatically safe, but
+    can feel repetitive.
+
+    **Medium temperature (0.8-1.2)** maintains the learned distribution roughly as-is, producing
+    a balance of coherence and creativity. A temperature of 1.0 is the unmodified distribution.
+
+    **High temperature (1.3-2.0+)** flattens the distribution, giving lower-probability words a
+    better chance of being selected. The output becomes more creative and surprising, but risks
+    incoherence as rare words are chosen more frequently.
+
+    Temperature is the key creative control in text generation. It lets users dial between
+    "safe and repetitive" and "wild and creative" without retraining the model.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 8: Model Architecture ---
+    st.markdown("### 8. Our Model Architecture")
+
+    st.code("""
+Input: (batch, 50) -- sequence of 50 word IDs
+               |
+        +------v------+
+        | Embedding    |  vocab_size -> 100 dims
+        +------+------+
+               |
+        +------v------+
+        |   LSTM       |  hidden_size=150
+        |   Layer      |  processes all 50 timesteps
+        +------+------+
+               |
+        +------v------+
+        |   Dropout    |  p=0.2
+        +------+------+
+               |
+        +------v------+
+        |   Linear     |  150 -> vocab_size
+        +------+------+
+               |
+        +------v------+
+        |   Softmax    |  probability over vocabulary
+        +------+------+
+               |
+Output: (batch, vocab_size) -- P(next word)""", language="text")
+
+    st.markdown("#### PyTorch Implementation")
+    st.code("""
+class TextGeneratorLSTM(nn.Module):
+    def __init__(self, vocab_size, embedding_dim=100,
+                 lstm_units=150, dropout_rate=0.2):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(
+            input_size=embedding_dim,
+            hidden_size=lstm_units,
+            batch_first=True
+        )
+        self.dropout = nn.Dropout(dropout_rate)
+        self.fc = nn.Linear(lstm_units, vocab_size)
+
+    def forward(self, x):
+        # x: (batch, seq_len) -- word IDs
+        embedded = self.embedding(x)       # (batch, seq_len, 100)
+        out, (h, c) = self.lstm(embedded)  # process sequence
+        final_hidden = self.dropout(h[-1]) # last hidden state
+        return self.fc(final_hidden)       # (batch, vocab_size)""", language="python")
+
+    st.markdown("---")
+
+    # --- Section 9: Training ---
+    st.markdown("### 9. Training the Model")
+    st.markdown("""
+    Training optimizes the model's weights to minimize prediction error. For text generation,
+    we use **Cross-Entropy Loss**, which measures how well the predicted probability distribution
+    matches the true next word:
+    """)
+
+    st.latex(r"\mathcal{L} = -\sum_{i=1}^{V} y_i \log(\hat{y}_i)")
+
+    st.markdown("""
+    where *y* is the one-hot encoded true next word and *y_hat* is the predicted probability
+    distribution. Since only one word is correct, this simplifies to the negative log probability
+    of the correct word.
+
+    The training loop follows these steps for each epoch:
+
+    **Step 1 — Forward pass:** Feed a batch of input sequences through the embedding and LSTM
+    to get probability distributions over the vocabulary.
+
+    **Step 2 — Loss computation:** Calculate Cross-Entropy Loss between predictions and actual
+    next words.
+
+    **Step 3 — Backpropagation through time (BPTT):** Compute gradients of the loss with respect
+    to all weights by unrolling the LSTM across timesteps.
+
+    **Step 4 — Gradient clipping:** Cap gradient norms at 1.0 to prevent exploding gradients.
+
+    **Step 5 — Weight update:** Apply the Adam optimizer to update weights.
+    """)
+
+    st.markdown("#### Training Strategies")
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: rgba(106, 245, 200, 0.4); background: linear-gradient(135deg, rgba(106, 245, 200, 0.03), rgba(106, 245, 200, 0.08));">
+    <strong style="color: #6af5c8;">Early Stopping</strong><br><br>
+    We monitor validation loss after each epoch. If it does not improve for 10 consecutive
+    epochs, training stops early to prevent overfitting. The best model checkpoint (lowest
+    validation loss) is restored. This prevents the model from simply memorizing the training
+    text rather than learning generalizable language patterns.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: rgba(106, 245, 200, 0.4); background: linear-gradient(135deg, rgba(106, 245, 200, 0.03), rgba(106, 245, 200, 0.08));">
+    <strong style="color: #6af5c8;">Learning Rate Scheduling</strong><br><br>
+    We use <code>ReduceLROnPlateau</code> — if validation loss plateaus for 5 epochs,
+    the learning rate is halved. This allows fine-grained optimization as the model
+    approaches a minimum, preventing it from overshooting good parameter configurations.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="generated-text-box" style="border-color: rgba(106, 245, 200, 0.4); background: linear-gradient(135deg, rgba(106, 245, 200, 0.03), rgba(106, 245, 200, 0.08));">
+    <strong style="color: #6af5c8;">Validation Split</strong><br><br>
+    10% of the training data is held out for validation. Unlike time-series data which must be
+    split chronologically, text data can be shuffled before splitting since we are learning
+    general language patterns rather than temporal trends.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # --- Section 10: Evaluation ---
+    st.markdown("### 10. Evaluation Metrics")
+    st.markdown("""
+    Text generation models are evaluated differently from regression models. The two primary
+    metrics are **accuracy** and **perplexity**.
+
+    **Accuracy** measures the percentage of time the model's highest-probability prediction
+    matches the actual next word. For language modeling, even 20-30% accuracy can produce
+    reasonable text, because many positions have multiple valid continuations.
+
+    **Perplexity** is the exponentiation of the cross-entropy loss:
+    """)
+
+    st.latex(r"\text{Perplexity} = e^{\mathcal{L}} = e^{-\frac{1}{N}\sum \log P(w_i)}")
+
+    st.markdown("""
+    Perplexity can be interpreted as the effective number of equally likely choices the model
+    considers at each step. A perplexity of 50 means the model is, on average, as uncertain as
+    if it were choosing uniformly among 50 words. Lower perplexity indicates a more confident
+    and accurate model.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 11: Hyperparameters ---
+    st.markdown("### 11. Hyperparameter Choices")
+    st.markdown("""
+    | Parameter | Value | Rationale |
+    |-----------|-------|-----------|
+    | Sequence length | 50 words | Long enough to capture sentence structure and paragraph context |
+    | Embedding dim | 100 | Standard size for moderate vocabularies; captures word relationships |
+    | LSTM units | 150 | Sufficient capacity for language patterns without excessive overfitting |
+    | Dropout | 0.2 | Mild regularization; prevents memorizing specific phrases verbatim |
+    | Batch size | 128 | Balances gradient stability with memory constraints |
+    | Learning rate | 0.001 | Standard Adam default; reduced automatically by scheduler on plateau |
+    | Epochs | 100 (max) | Early stopping typically halts training well before this limit |
+    | Vocab size | 4,167 | All unique words in the training corpus above frequency threshold |
+    | Validation split | 10% | Enough data to reliably estimate generalization performance |
+    """)
+
+    st.markdown("---")
+
+    # --- Section 12: Observations ---
+    st.markdown("### 12. Observations and Results")
+    st.markdown("""
+    **Common words and patterns are learned first.** The model quickly learns high-frequency
+    words like "the," "and," and "of," along with basic subject-verb-object structure. This
+    produces grammatically plausible but generic text within the first few epochs.
+
+    **Style and vocabulary emerge with more training.** As training progresses, the model picks
+    up stylistic patterns from the training corpus — characteristic phrases, sentence lengths,
+    and thematic vocabulary. The generated text begins to feel more like the source material.
+
+    **Temperature is the key creative control.** Low temperature (0.5) produces safe, repetitive
+    text that closely mirrors the most common patterns. High temperature (1.5+) introduces variety
+    but risks incoherence. A temperature around 0.8-1.0 typically produces the best balance.
+
+    **Vocabulary size affects quality.** A larger vocabulary allows more expressive text but makes
+    the classification problem harder (more classes to predict). Rare words are difficult for the
+    model to learn because they appear in few training examples.
+
+    **Overfitting manifests as memorization.** Without dropout and early stopping, the model
+    begins reproducing exact passages from the training text rather than generating novel
+    continuations. The gap between training loss and validation loss is the key indicator.
+    """)
+
+    st.markdown("#### Potential Improvements")
+    st.markdown("""
+    **Multi-layer LSTM** would stack two or more LSTM layers for hierarchical feature extraction —
+    lower layers learning local syntax and upper layers capturing longer-range semantic patterns.
+
+    **Attention mechanisms** would allow the model to attend to specific past tokens rather than
+    relying solely on a compressed hidden state, improving coherence over longer generated passages.
+
+    **Subword tokenization** (such as Byte-Pair Encoding) would handle rare and out-of-vocabulary
+    words gracefully by breaking them into known subword units, dramatically reducing the unknown
+    token rate.
+
+    **Beam search** decoding would maintain multiple candidate sequences and select the one with
+    the highest overall probability, producing more globally coherent text than greedy or purely
+    sampled generation.
+
+    **Transformer-based models** such as GPT use self-attention to process all tokens in parallel,
+    achieving superior performance on text generation compared to sequential LSTM processing.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 13: References ---
+    st.markdown("### 13. References")
+    st.markdown("""
+    1. Hochreiter, S., & Schmidhuber, J. (1997). Long Short-Term Memory.
+    *Neural Computation*, 9(8), 1735-1780.
+
+    2. Graves, A. (2013). Generating Sequences with Recurrent Neural Networks.
+    *arXiv preprint arXiv:1308.0850*.
+
+    3. Chollet, F. (2017). *Deep Learning with Python*. Manning Publications.
+    Chapter 8: Text generation with LSTM.
+
+    4. Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep Learning*. MIT Press.
+    Chapter 10: Sequence Modeling.
+
+    5. Mikolov, T., et al. (2013). Efficient Estimation of Word Representations in Vector Space.
+    *arXiv preprint arXiv:1301.3781*.
+
+    6. PyTorch Documentation. torch.nn.LSTM & torch.nn.Embedding. PyTorch Foundation.
+    """)
+
+    st.markdown("""
+    <div style="text-align: center; color: #aaaacc; margin-top: 20px; padding-top: 15px;
+    border-top: 1px solid #333355; font-size: 0.9em;">
+    AIT-204 — LSTM Text Generation
+    </div>
+    """, unsafe_allow_html=True)

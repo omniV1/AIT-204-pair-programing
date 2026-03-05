@@ -524,99 +524,562 @@ with tab_model:
 
 # -- TAB 5: ABOUT -------------------------------------------------------------
 with tab_about:
-    st.markdown("### About This Application")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("""
-        #### What This App Does
-        This application demonstrates **LSTM-based temperature forecasting**
-        using the Jena Climate dataset:
-
-        1. **Data Processing** — Load CSV, extract temperature, normalize
-        2. **Sequence Creation** — Sliding window (5 days) to predict next hour
-        3. **LSTM Model** — Two-layer LSTM learns temporal patterns
-        4. **FastAPI Backend** — Serves predictions via REST API
-        5. **Streamlit Frontend** — Interactive visualization dashboard
-
-        #### The Jena Climate Dataset
-        - **Source:** Max Planck Institute for Biogeochemistry
-        - **Period:** January 2009 to December 2016
-        - **Features:** 14 weather measurements (temperature, pressure,
-          humidity, wind, etc.)
-        - **Interval:** Every 10 minutes (~420,000 observations)
-        - **Our focus:** Temperature column (`T (degC)`)
-        - **Subsampling:** Every 6th row (hourly) for tractable training
-
-        #### System Architecture
-        ```
-        You (browser)
-              | HTTP
-        Streamlit App (:8501)
-              | HTTP requests
-        FastAPI Server (:8000)
-              | PyTorch inference
-        LSTM Model (models/)
-              |
-        Jena Climate CSV (data/)
-        ```
-        """)
-
-    with col2:
-        st.markdown("""
-        #### Technology Stack
-        | Component | Technology |
-        |-----------|------------|
-        | Deep Learning | PyTorch LSTM |
-        | Data Processing | pandas, scikit-learn |
-        | Backend API | FastAPI + Uvicorn |
-        | Frontend | Streamlit |
-        | Visualization | Plotly |
-        | Scaling | MinMaxScaler |
-
-        #### Key Concepts
-        - **LSTM** — Long Short-Term Memory networks handle sequential
-          data by maintaining cell state across timesteps
-        - **Sliding Window** — Use N past observations to predict the next
-        - **Min-Max Scaling** — Normalize to [0,1] for efficient training
-        - **RMSE** — Root Mean Squared Error measures prediction accuracy
-          in the original units (degrees Celsius)
-        - **Chronological Split** — Test set uses the latest data only
-          (no data leakage from the future)
-
-        #### Project Structure
-        ```
-        rnn_app/
-        +-- backend/
-        |   +-- app/
-        |   |   +-- temperature_forecaster.py
-        |   |   +-- train.py
-        |   |   +-- main.py
-        |   +-- data/
-        |   |   +-- jena_climate_2009_2016.csv
-        |   +-- models/
-        |   +-- requirements.txt
-        +-- frontend/
-        |   +-- streamlit_app.py
-        |   +-- requirements.txt
-        +-- docs/
-        |   +-- lstm_rnn_guide.html
-        +-- README.md
-        ```
-        """)
+    st.markdown("""
+    <h2 style='text-align: center; background: linear-gradient(135deg, #7c6af5, #6af5c8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+    LSTM & RNN Guide
+    </h2>
+    <p style='text-align: center; color: #aaaacc;'>
+    Understanding Recurrent Neural Networks for Time-Series Temperature Forecasting<br>
+    Applied to the Jena Climate Dataset
+    </p>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("#### Quick Start")
-    st.code("""
-# Terminal 1: Backend
-cd rnn_app/backend
-pip install -r requirements.txt
-python app/train.py                # Train the model
-uvicorn app.main:app --reload      # Start API server
 
-# Terminal 2: Frontend
-cd rnn_app/frontend
-pip install -r requirements.txt
-streamlit run streamlit_app.py     # Start web UI
-    """, language="bash")
+    # --- Section 1: RNN Fundamentals ---
+    st.markdown("### 1. RNN Fundamentals")
+    st.markdown("""
+    A **Recurrent Neural Network (RNN)** is a class of neural networks designed to process
+    **sequential data** — data where order matters. Unlike feedforward networks that treat each
+    input independently, RNNs maintain a **hidden state** that carries information from
+    previous timesteps, creating a form of memory.
+    """)
+
+    st.markdown("""
+    <div class="info-card">
+    <strong style="color: #7c6af5;">Why Sequential Data Needs Special Treatment</strong><br><br>
+    Consider predicting tomorrow's temperature. A standard neural network would look at today's
+    temperature in isolation. But temperature follows patterns — it was warm yesterday, cooling
+    today, so it might be cooler tomorrow. An RNN captures these <em>temporal dependencies</em>
+    by maintaining state across timesteps.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    At each timestep *t*, an RNN cell takes two inputs: the current input *x_t* (e.g., today's
+    temperature) and the hidden state from the previous timestep *h_{t-1}* (memory). It produces
+    a new hidden state *h_t* (updated memory) using the equation:
+    """)
+
+    st.latex(r"h_t = \tanh(W_{hh} \cdot h_{t-1} + W_{xh} \cdot x_t + b_h)")
+
+    st.code("""
+       x_1          x_2          x_3          x_4
+        |            |            |            |
+   +----v----+  +----v----+  +----v----+  +----v----+
+   |  RNN    |--|  RNN    |--|  RNN    |--|  RNN    |
+   |  Cell   |  |  Cell   |  |  Cell   |  |  Cell   |
+   +----+----+  +----+----+  +----+----+  +----+----+
+        |            |            |            |
+       h_1          h_2          h_3          h_4
+                                               |
+                                          +----v----+
+                                          |  Output |
+                                          |  Layer  |
+                                          +----+----+
+                                               |
+                                             y_hat""", language="text")
+
+    st.markdown("""
+    The same weight matrices *W_hh* and *W_xh* are shared across all timesteps. This parameter
+    sharing is what makes RNNs efficient for sequences of any length — the model size does not
+    grow with sequence length.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 2: Vanishing Gradient ---
+    st.markdown("### 2. The Vanishing Gradient Problem")
+    st.markdown("""
+    While RNNs are theoretically capable of learning long-range dependencies, in practice they struggle.
+    During backpropagation through time (BPTT), gradients must flow through many timesteps. At each step,
+    the gradient is multiplied by the weight matrix and passed through the tanh derivative.
+    """)
+
+    st.markdown("""
+    <div class="info-card" style="border-color: rgba(245, 200, 106, 0.4); background: rgba(245, 200, 106, 0.05);">
+    <strong style="color: #f5d76a;">The Core Problem</strong><br><br>
+    When the tanh derivative (which is always &le; 1) and weight values are repeatedly multiplied
+    across many timesteps, the gradient either <strong>vanishes</strong> (approaches 0, so the network
+    cannot learn from distant past inputs) or <strong>explodes</strong> (grows extremely large, making
+    training unstable).<br><br>
+    For temperature forecasting with 120 hourly observations, a vanilla RNN would struggle to
+    learn patterns from 5 days ago because the gradient signal would effectively disappear
+    after passing through ~120 multiplication steps.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("This is precisely why **LSTMs** were invented.")
+
+    st.markdown("---")
+
+    # --- Section 3: LSTM Architecture ---
+    st.markdown("### 3. LSTM Architecture")
+    st.markdown("""
+    The **Long Short-Term Memory (LSTM)** network, introduced by Hochreiter & Schmidhuber (1997),
+    solves the vanishing gradient problem with a carefully designed gating mechanism. Instead of
+    a single hidden state, an LSTM cell maintains two states: the **cell state** *c_t* (the long-term
+    memory highway) and the **hidden state** *h_t* (the working memory and output).
+    """)
+
+    st.markdown("#### The Four Components of an LSTM Cell")
+
+    st.markdown("""
+    <div class="info-card" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">1. Forget Gate</strong><br><br>
+    Decides what information to <em>discard</em> from the cell state. The sigmoid function outputs
+    values between 0 and 1 — a value of 0 means "completely forget this," and 1 means "completely
+    keep this." For temperature forecasting, the forget gate might learn to discard information from
+    unusually anomalous readings while retaining the general trend.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)")
+
+    st.markdown("""
+    <div class="info-card" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">2. Input Gate</strong><br><br>
+    Decides what <em>new</em> information to store in the cell state. It has two parts: a sigmoid
+    layer decides <em>which</em> values to update, and a tanh layer creates a vector of <em>candidate</em>
+    new values. Together, they determine what new information enters the cell state.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)")
+    st.latex(r"\tilde{c}_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c)")
+
+    st.markdown("""
+    <div class="info-card" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">3. Cell State Update</strong><br><br>
+    Combines the forget gate and input gate to update the long-term memory. This is the key
+    innovation: the cell state is updated through <em>addition</em>, not multiplication. Gradients
+    can flow through the addition operation without vanishing, enabling the network to remember
+    information across many timesteps.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t")
+
+    st.markdown("""
+    <div class="info-card" style="border-color: #7c6af5;">
+    <strong style="color: #7c6af5;">4. Output Gate</strong><br><br>
+    Decides what part of the cell state to <em>output</em> as the hidden state. The output gate
+    filters the cell state to produce the hidden state, which serves as both the output at this
+    timestep and the input to the next LSTM cell.
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)")
+    st.latex(r"h_t = o_t \odot \tanh(c_t)")
+
+    st.code("""
+            Cell State Highway (c_{t-1} ----------------> c_t)
+                     |                           ^
+                     |     +---------+           |
+                     +---->|  Forget  |---- x ----+
+                     |     |  Gate    |           |
+                     |     +---------+           |
+                     |                    +------+
+                     |     +---------+    |      |
+                     +---->|  Input   |-- x -- + --
+                     |     |  Gate    |    |
+                     |     +---------+    |
+                     |     +---------+    |
+                     +---->|Candidate |----+
+                     |     |  (tanh)  |
+                     |     +---------+
+                     |                        +---------+
+                     +----------------------->|  Output  |--> h_t
+                                              |  Gate    |
+                          [h_{t-1}, x_t]      +---------+""", language="text")
+
+    st.markdown("""
+    The cell state acts as a **highway** for gradient flow. During backpropagation, the gradient
+    passes through the cell state update equation. Since *f_t* is controlled by a learned gate
+    (not a fixed weight matrix), the network can learn to keep the forget gate close to 1 for
+    important long-term information, allowing gradients to flow unimpeded across hundreds of timesteps.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 4: Time-Series Forecasting ---
+    st.markdown("### 4. Time-Series Forecasting with LSTMs")
+    st.markdown("""
+    Time-series forecasting is the task of predicting future values based on past observations.
+    Temperature is a classic example — it follows daily cycles (warm during day, cool at night),
+    seasonal patterns (warm in summer, cold in winter), and weather-driven trends.
+    """)
+
+    st.markdown("#### Classification vs. Regression")
+    st.markdown("""
+    | Aspect | Text Generation (Classification) | Temperature Forecasting (Regression) |
+    |--------|----------------------------------|--------------------------------------|
+    | Input | Sequence of word IDs (discrete integers) | Sequence of temperature values (continuous floats) |
+    | Embedding | Required (word ID to dense vector) | Not needed (values are already continuous) |
+    | Output | Probability distribution over vocabulary | Single scalar value (predicted temperature) |
+    | Loss Function | CrossEntropyLoss | Mean Squared Error (MSE) |
+    | Evaluation | Accuracy, Perplexity | RMSE (Root Mean Squared Error) |
+    """)
+
+    st.markdown("""
+    The LSTM processes the sequence of past temperatures and its final hidden state *h_T* encodes
+    the temporal patterns. A linear layer then projects this encoding to a single predicted value.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 5: Sliding Window ---
+    st.markdown("### 5. The Sliding Window Approach")
+    st.markdown("""
+    To train an LSTM for forecasting, we need to create input-output pairs from the raw time series.
+    The **sliding window** (or rolling window) approach does this by moving a fixed-size window
+    across the data:
+    """)
+
+    st.code("""
+Time Series: [t1, t2, t3, t4, t5, t6, t7, t8, t9, ...]
+
+Window size = 5:
+
+  Window 1: [t1, t2, t3, t4, t5]  ->  target: t6
+  Window 2: [t2, t3, t4, t5, t6]  ->  target: t7
+  Window 3: [t3, t4, t5, t6, t7]  ->  target: t8
+  Window 4: [t4, t5, t6, t7, t8]  ->  target: t9""", language="text")
+
+    st.markdown("""
+    Each window becomes one training sample. The input *X* is the window of past values, and
+    the target *y* is the next value immediately following the window.
+
+    In our implementation, we use a window of **120 hourly observations** (5 days). This choice
+    captures **daily cycles** (the 24-hour temperature oscillation), **multi-day trends** (warming
+    or cooling patterns over several days), and **weather patterns** (frontal systems that typically
+    last 2-5 days). A window that is too short (e.g., 6 hours) would miss daily cycles. A window
+    that is too long (e.g., 30 days) would add computational cost without proportional benefit,
+    as very old data has diminishing predictive value for the next hour.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 6: Normalization ---
+    st.markdown("### 6. Min-Max Normalization")
+    st.markdown("""
+    Neural networks learn most efficiently when input values are small and in a consistent range.
+    Raw temperature values in the Jena dataset range from approximately -23 C to +37 C.
+    **Min-Max scaling** transforms these to the range [0, 1]:
+    """)
+
+    st.latex(r"x_{normalized} = \frac{x - x_{min}}{x_{max} - x_{min}}")
+
+    st.markdown("For the inverse transformation (converting predictions back to degrees C):")
+
+    st.latex(r"x_{original} = x_{normalized} \times (x_{max} - x_{min}) + x_{min}")
+
+    st.markdown("""
+    Normalization provides three key benefits. First, **gradient stability** — large input values produce
+    large gradients, which can cause unstable training, and normalized values keep gradients in a
+    manageable range. Second, **faster convergence** — when inputs are on a similar scale, the loss
+    surface is more uniform, and gradient descent converges faster. Third, **numerical precision** —
+    Float32 arithmetic is more precise near 0 than at large magnitudes.
+    """)
+
+    st.markdown("#### Min-Max vs. Standard Scaling")
+    st.markdown("""
+    | Method | Formula | Range | Best For |
+    |--------|---------|-------|----------|
+    | Min-Max | (x - min) / (max - min) | [0, 1] | Bounded data, preserves distribution shape |
+    | Standard (Z-score) | (x - mean) / std | Unbounded | Gaussian-distributed data, outlier-resistant |
+
+    We chose Min-Max scaling because temperature has natural physical bounds and we want the
+    output to be bounded, matching common neural network activation ranges.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 7: Training ---
+    st.markdown("### 7. Training the Model")
+    st.markdown("""
+    Training optimizes the model's weights to minimize prediction error. Our training loop follows
+    these steps for each epoch:
+
+    **Step 1 — Forward pass:** Feed a batch of input sequences through the LSTM to get predictions.
+
+    **Step 2 — Loss computation:** Calculate Mean Squared Error between predictions and actual values.
+    """)
+    st.latex(r"MSE = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2")
+
+    st.markdown("""
+    **Step 3 — Backpropagation through time (BPTT):** Compute gradients of the loss with respect
+    to all weights by unrolling the LSTM across timesteps.
+
+    **Step 4 — Gradient clipping:** Cap gradient norms at 1.0 to prevent exploding gradients.
+
+    **Step 5 — Weight update:** Apply the Adam optimizer to update weights.
+    """)
+
+    st.markdown("#### Training Strategies")
+
+    st.markdown("""
+    <div class="info-card" style="border-color: rgba(106, 245, 200, 0.4); background: rgba(106, 245, 200, 0.05);">
+    <strong style="color: #6af5c8;">Early Stopping</strong><br><br>
+    We monitor validation loss after each epoch. If it does not improve for 10 consecutive
+    epochs, training stops early to prevent overfitting. The best model checkpoint (lowest
+    validation loss) is restored.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="info-card" style="border-color: rgba(106, 245, 200, 0.4); background: rgba(106, 245, 200, 0.05);">
+    <strong style="color: #6af5c8;">Learning Rate Scheduling</strong><br><br>
+    We use <code>ReduceLROnPlateau</code> — if validation loss plateaus for 5 epochs,
+    the learning rate is halved. This allows fine-grained optimization as the model
+    approaches a minimum.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="info-card" style="border-color: rgba(106, 245, 200, 0.4); background: rgba(106, 245, 200, 0.05);">
+    <strong style="color: #6af5c8;">Chronological Data Split</strong><br><br>
+    Time-series data must be split <em>chronologically</em>, not randomly. Random splitting would
+    leak future information into the training set (data leakage), producing misleadingly good
+    results. We use the earliest 80% for training and the most recent 20% for testing.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # --- Section 8: Evaluation ---
+    st.markdown("### 8. Evaluation: RMSE")
+    st.markdown("""
+    **Root Mean Squared Error (RMSE)** is the standard evaluation metric for regression tasks.
+    It measures the average magnitude of prediction errors:
+    """)
+
+    st.latex(r"RMSE = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2}")
+
+    st.markdown("""
+    RMSE is measured in the same units as the target variable (degrees C), making it directly
+    interpretable — an RMSE of 2.0 means "predictions are off by about 2 C on average." It also
+    penalizes large errors more heavily than small ones due to the squaring, which is desirable
+    because a 10 C error is much worse than ten 1 C errors.
+    """)
+
+    st.markdown("#### Interpreting RMSE")
+    st.markdown("""
+    | RMSE (C) | Interpretation |
+    |----------|----------------|
+    | < 1.0 | Excellent — predictions are very close to actual values |
+    | 1.0 - 2.0 | Good — typical for hourly temperature prediction |
+    | 2.0 - 4.0 | Moderate — room for improvement |
+    | > 4.0 | Poor — model may need more capacity or data |
+    """)
+
+    st.markdown("---")
+
+    # --- Section 9: Jena Dataset ---
+    st.markdown("### 9. The Jena Climate Dataset")
+    st.markdown("""
+    The Jena Climate dataset is a widely used benchmark for time-series forecasting, collected
+    by the weather station at the Max Planck Institute for Biogeochemistry in Jena, Germany.
+
+    | Property | Value |
+    |----------|-------|
+    | Location | Jena, Germany (50.9 N, 11.6 E) |
+    | Period | January 1, 2009 — December 31, 2016 |
+    | Recording Interval | Every 10 minutes |
+    | Total Observations | ~420,000 |
+    | Number of Features | 14 |
+    """)
+
+    st.markdown("#### Features in the Dataset")
+    st.markdown("""
+    | Column | Description | Unit |
+    |--------|-------------|------|
+    | Date Time | Timestamp | DD.MM.YYYY HH:MM:SS |
+    | p (mbar) | Atmospheric pressure | mbar |
+    | **T (degC)** | **Air temperature (our target)** | **C** |
+    | Tpot (K) | Potential temperature | K |
+    | Tdew (degC) | Dew point temperature | C |
+    | rh (%) | Relative humidity | % |
+    | VPmax (mbar) | Saturation vapor pressure | mbar |
+    | VPact (mbar) | Actual vapor pressure | mbar |
+    | VPdef (mbar) | Vapor pressure deficit | mbar |
+    | sh (g/kg) | Specific humidity | g/kg |
+    | H2OC (mmol/mol) | Water vapor concentration | mmol/mol |
+    | rho (g/m3) | Air density | g/m3 |
+    | wv (m/s) | Wind speed | m/s |
+    | max. wv (m/s) | Maximum wind speed | m/s |
+    | wd (deg) | Wind direction | degrees |
+    """)
+
+    st.markdown("""
+    The raw dataset at 10-minute intervals contains ~420,000 data points. Using all of them
+    with a window of 720 timesteps (5 days at 10-min resolution) would create an enormous
+    number of training sequences. By subsampling every 6th row, we get hourly data (~70,000
+    points) with a window of 120 timesteps (still 5 days). This dramatically reduces
+    computation while preserving the important temperature patterns.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 10: Implementation ---
+    st.markdown("### 10. Our Implementation")
+    st.markdown("#### Model Architecture")
+
+    st.code("""
+Input: (batch, 120, 1) -- 120 hours of normalized temperature
+               |
+        +------v------+
+        |   LSTM       |  hidden_size=64
+        |   Layer 1    |  processes all 120 timesteps
+        +------+------+
+               |
+        +------v------+
+        |   Dropout    |  p=0.2
+        +------+------+
+               |
+        +------v------+
+        |   LSTM       |  hidden_size=64
+        |   Layer 2    |  returns final hidden state h_T
+        +------+------+
+               |
+        +------v------+
+        |   Dropout    |  p=0.2
+        +------+------+
+               |
+        +------v------+
+        |   Linear     |  64 -> 1
+        +------+------+
+               |
+Output: (batch, 1) -- predicted temperature (normalized)""", language="text")
+
+    st.markdown("#### PyTorch Implementation")
+    st.code("""
+class TemperatureLSTM(nn.Module):
+    def __init__(self, input_size=1, hidden_units=64,
+                 num_layers=2, dropout_rate=0.2):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_units,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout_rate if num_layers > 1 else 0.0
+        )
+        self.dropout = nn.Dropout(dropout_rate)
+        self.fc = nn.Linear(hidden_units, 1)
+
+    def forward(self, x):
+        # x: (batch, seq_len, 1) -- normalized temperatures
+        out, (h, c) = self.lstm(x)
+        # h[-1]: final hidden state from last LSTM layer
+        final_hidden = self.dropout(h[-1])
+        return self.fc(final_hidden)  # (batch, 1)""", language="python")
+
+    st.markdown("#### Data Pipeline")
+    st.code("""
+# 1. Load CSV
+df = pd.read_csv('jena_climate_2009_2016.csv')
+
+# 2. Subsample to hourly (every 6th row)
+df = df.iloc[::6].reset_index(drop=True)
+
+# 3. Extract temperature column
+temperature = df['T (degC)'].values
+
+# 4. Min-Max normalize to [0, 1]
+scaler = MinMaxScaler()
+normalized = scaler.fit_transform(temperature.reshape(-1, 1))
+
+# 5. Create sliding window sequences
+X, y = [], []
+for i in range(120, len(normalized)):
+    X.append(normalized[i-120:i])  # 120 past hours
+    y.append(normalized[i])         # next hour
+
+# 6. Chronological split (80/20)
+split = int(len(X) * 0.8)
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]""", language="python")
+
+    st.markdown("---")
+
+    # --- Section 11: Hyperparameters ---
+    st.markdown("### 11. Hyperparameter Choices")
+    st.markdown("""
+    | Parameter | Value | Rationale |
+    |-----------|-------|-----------|
+    | Sequence length | 120 hours (5 days) | Captures daily cycles and multi-day weather trends |
+    | Hidden units | 64 | Sufficient capacity for univariate forecasting without overfitting |
+    | LSTM layers | 2 | Stacking enables hierarchical feature extraction (short-term + long-term patterns) |
+    | Dropout | 0.2 | Mild regularization; prevents memorizing noise in temperature readings |
+    | Batch size | 256 | Large enough for stable gradient estimates; small enough to fit in memory |
+    | Learning rate | 0.001 | Standard Adam default; reduced automatically by scheduler on plateau |
+    | Subsample step | 6 (hourly) | Reduces dataset from 420k to 70k points while preserving patterns |
+    | Optimizer | Adam | Adaptive learning rates per parameter; robust to hyperparameter choices |
+    """)
+
+    st.markdown("---")
+
+    # --- Section 12: Observations ---
+    st.markdown("### 12. Observations and Results")
+    st.markdown("""
+    **Daily patterns are learned quickly.** The model captures the 24-hour temperature cycle within the
+    first few epochs, as this is the strongest signal in the data.
+
+    **Seasonal trends require more data.** The model sees seasonal variation across the 5+ years of data.
+    The chronological test split means the test set contains weather patterns not seen in training
+    (the most recent years).
+
+    **Extreme temperatures are harder.** The model tends to under-predict temperature spikes and
+    over-predict cold snaps, as these events are less frequent in the training data.
+
+    **Subsampling to hourly is effective.** 10-minute resolution adds noise without meaningful additional
+    information for next-hour prediction.
+
+    **Two LSTM layers outperform one.** The second layer helps capture hierarchical patterns — intra-day
+    variation on layer 1, multi-day trends on layer 2.
+    """)
+
+    st.markdown("#### Potential Improvements")
+    st.markdown("""
+    **Multivariate input** would include pressure, humidity, and wind speed as additional features.
+    These variables influence temperature and could improve predictions.
+
+    **Attention mechanisms** would allow the model to attend to specific past timesteps rather than
+    relying solely on a compressed hidden state.
+
+    **Longer prediction horizons** could predict 24 or 48 hours ahead instead of just the next hour,
+    using a sequence-to-sequence architecture.
+
+    **Ensemble methods** would train multiple models with different hyperparameters and average their
+    predictions for more robust forecasting.
+
+    **Transformer-based models** such as the Temporal Fusion Transformer can outperform LSTMs on
+    complex time-series tasks.
+    """)
+
+    st.markdown("---")
+
+    # --- Section 13: References ---
+    st.markdown("### 13. References")
+    st.markdown("""
+    1. Hochreiter, S., & Schmidhuber, J. (1997). Long Short-Term Memory.
+    *Neural Computation*, 9(8), 1735-1780.
+
+    2. Graves, A. (2012). *Supervised Sequence Labelling with Recurrent Neural Networks*. Springer.
+
+    3. Chollet, F. (2017). *Deep Learning with Python*. Manning Publications.
+    Chapter 6: Deep learning for text and sequences.
+
+    4. Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep Learning*. MIT Press.
+    Chapter 10: Sequence Modeling.
+
+    5. Max Planck Institute for Biogeochemistry. Jena Climate Dataset.
+    Department of Biogeochemical Integration.
+
+    6. PyTorch Documentation. torch.nn.LSTM. PyTorch Foundation.
+    """)
+
+    st.markdown("""
+    <div style="text-align: center; color: #aaaacc; margin-top: 20px; padding-top: 15px;
+    border-top: 1px solid #333355; font-size: 0.9em;">
+    AIT-204 — LSTM Temperature Forecasting with the Jena Climate Dataset
+    </div>
+    """, unsafe_allow_html=True)
