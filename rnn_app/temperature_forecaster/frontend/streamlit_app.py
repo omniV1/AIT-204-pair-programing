@@ -108,7 +108,6 @@ CHART_LAYOUT = dict(
     paper_bgcolor='rgba(20,20,40,1)',
     font=dict(color='white'),
     legend=dict(bgcolor='rgba(40,40,70,1)'),
-    xaxis_title="Time Step",
 )
 
 
