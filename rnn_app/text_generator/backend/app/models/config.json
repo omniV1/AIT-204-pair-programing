@@ -1,0 +1,11 @@
+{
+  "sequence_length": 50,
+  "embedding_dim": 100,
+  "lstm_units": 150,
+  "dropout_rate": 0.2,
+  "batch_size": 128,
+  "epochs": 100,
+  "learning_rate": 0.001,
+  "validation_split": 0.1,
+  "vocab_size": 325
+}
