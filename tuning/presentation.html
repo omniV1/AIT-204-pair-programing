@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIT-204 | Neural Network Optimization &mdash; Interactive Presentation</title>
+<script>
+  window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+  :root {
+    --purple: #512888;
+    --purple-dark: #3b1d66;
+    --purple-light: #7b52b4;
+    --purple-faint: #f3eef9;
+    --white: #ffffff;
+    --dark: #1a1a2e;
+    --text: #2c2c2c;
+    --muted: #5a5a5a;
+    --bg: #fafafe;
+    --card-bg: #ffffff;
+    --border: #d8d0e4;
+    --highlight: #ede4f7;
+    --correct: #2e7d32;
+    --incorrect: #c62828;
+    --blue: #1565c0;
+    --orange: #e65100;
+    --teal: #00695c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+  }
+
+  header {
+    border: 2px solid var(--purple);
+    padding: 28px 36px 24px;
+    margin-bottom: 44px;
+    background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
+  }
+  header .university {
+    text-align: center; font-size: 1.5em; font-weight: bold;
+    color: var(--purple); letter-spacing: 1.5px; margin-bottom: 2px;
+  }
+  header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+  header .meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.92em; padding: 3px 0; flex-wrap: wrap; gap: 4px;
+  }
+  header .title {
+    text-align: center; font-size: 1.3em; font-weight: bold;
+    margin-top: 12px; color: var(--dark);
+  }
+
+  .toc {
+    background: var(--purple-faint); border: 1px solid var(--border);
+    border-radius: 8px; padding: 24px 30px; margin-bottom: 36px;
+  }
+  .toc h3 { color: var(--purple); margin-bottom: 12px; font-size: 1.1em; }
+  .toc ol { margin-left: 24px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--purple); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .section-header {
+    background: var(--purple); color: #fff;
+    padding: 14px 24px; font-size: 1.2em; font-weight: bold;
+    margin: 48px 0 0; border-radius: 6px 6px 0 0;
+    cursor: pointer; user-select: none;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .section-header:hover { background: var(--purple-dark); }
+  .section-header .toggle { font-size: 0.8em; transition: transform 0.3s; }
+  .section-header.collapsed .toggle { transform: rotate(-90deg); }
+  .section-body {
+    border: 1px solid var(--border); border-top: none;
+    padding: 28px 30px; background: var(--card-bg);
+    border-radius: 0 0 6px 6px; margin-bottom: 12px;
+    overflow: hidden; transition: max-height 0.4s ease;
+  }
+  .section-body.collapsed { max-height: 0; padding: 0 30px; border: none; }
+
+  h3 { color: var(--purple); font-size: 1.1em; margin: 24px 0 10px; }
+  h4 { color: var(--purple-dark); font-size: 1.0em; margin: 18px 0 8px; }
+  p { margin-bottom: 12px; }
+  ul, ol { margin-left: 24px; margin-bottom: 14px; }
+  li { margin-bottom: 4px; }
+
+  .step { margin: 28px 0; }
+  .step-label {
+    display: inline-block; background: var(--purple); color: #fff;
+    font-size: 0.78em; font-weight: bold; letter-spacing: 1.2px;
+    text-transform: uppercase; padding: 4px 14px; border-radius: 3px;
+    margin-bottom: 10px;
+  }
+  .step-label.blue { background: var(--blue); }
+  .step-label.orange { background: var(--orange); }
+  .step-label.teal { background: var(--teal); }
+  .step-title { font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
+
+  .callout {
+    background: var(--purple-faint); border-left: 4px solid var(--purple-light);
+    padding: 14px 20px; margin: 20px 0; font-size: 0.95em;
+  }
+  .callout strong { color: var(--purple); }
+  .callout.warning { border-left-color: var(--orange); background: #fff3e0; }
+  .callout.success { border-left-color: var(--correct); background: #e8f5e9; }
+
+  .code-block {
+    background: #2d2d2d; color: #e0e0e0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85em; line-height: 1.5;
+    padding: 18px 22px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0;
+    border: 1px solid var(--border);
+    white-space: pre;
+  }
+  .code-block .comment { color: #6a9955; }
+  .code-block .kw { color: #569cd6; }
+  .code-block .fn { color: #dcdcaa; }
+  .code-block .str { color: #ce9178; }
+  .code-block .num { color: #b5cea8; }
+  .code-block .cls { color: #4ec9b0; }
+  .code-block .op { color: #d4d4d4; }
+
+  table.doc-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0; font-size: 0.92em;
+  }
+  table.doc-table th, table.doc-table td {
+    border: 1px solid var(--border);
+    padding: 10px 14px; text-align: left;
+  }
+  table.doc-table th {
+    background: var(--purple-faint); color: var(--purple); font-weight: bold;
+  }
+  table.doc-table tr:nth-child(even) { background: #fafafa; }
+
+  .formula {
+    background: var(--purple-faint); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 20px; text-align: center;
+    margin: 16px 0; font-size: 1.02em;
+  }
+  .formula-label {
+    font-weight: bold; color: var(--purple); font-size: 0.88em;
+    text-align: left; margin-bottom: 6px;
+  }
+
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; align-items: start;
+  }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin: 20px 0;
+  }
+  .stat-box {
+    background: var(--purple-faint); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; text-align: center;
+  }
+  .stat-box .stat-val {
+    font-size: 1.5em; font-weight: bold; color: var(--purple); line-height: 1.2;
+  }
+  .stat-box .stat-label { font-size: 0.8em; color: var(--muted); margin-top: 4px; }
+
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap; justify-content: center; margin: 20px 0;
+  }
+  .pipeline-step {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 16px; text-align: center; min-width: 100px;
+  }
+  .pipeline-step .num {
+    font-family: 'Consolas', monospace; font-size: 0.72em;
+    color: var(--purple); font-weight: bold;
+  }
+  .pipeline-step .label { font-size: 0.85em; font-weight: 600; color: var(--dark); }
+  .pipeline-arrow { font-size: 1.1em; color: var(--purple-light); padding: 0 4px; }
+
+  .demo-area {
+    background: var(--purple-faint); border: 1px solid var(--border);
+    border-radius: 6px; padding: 24px; margin: 24px 0; text-align: center;
+  }
+  .demo-area .demo-title {
+    font-weight: bold; font-size: 1em; color: var(--purple); margin-bottom: 16px;
+  }
+  .btn-demo {
+    padding: 8px 22px; font-size: 0.88em; font-family: 'Georgia', serif;
+    background: var(--purple); color: #fff; border: none;
+    border-radius: 4px; cursor: pointer; margin: 4px;
+  }
+  .btn-demo:hover { background: var(--purple-dark); }
+  .btn-demo:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-demo.active { background: var(--purple-dark); box-shadow: 0 0 0 3px rgba(81,40,136,0.3); }
+
+  .slider-group { margin: 20px 0; text-align: center; }
+  .slider-group label { font-weight: bold; color: var(--purple); font-size: 0.95em; }
+  .slider-group input[type="range"] {
+    width: 80%; max-width: 400px; margin: 8px 0;
+    accent-color: var(--purple);
+  }
+  .slider-value {
+    font-family: 'Consolas', monospace; font-size: 1.1em;
+    color: var(--purple); font-weight: bold;
+  }
+
+  .chart-container {
+    width: 100%; max-width: 600px; margin: 20px auto;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; overflow: hidden;
+  }
+  .chart-container .chart-title {
+    font-size: 0.95em; font-weight: bold; color: var(--dark); margin-bottom: 12px;
+    text-align: center;
+  }
+  canvas { display: block; margin: 0 auto; }
+
+  .answer-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin: 14px 0; flex-wrap: wrap;
+  }
+  .answer-row input[type="text"], .answer-row select {
+    padding: 8px 12px; font-size: 1em; font-family: 'Georgia', serif;
+    border: 2px solid var(--border); border-radius: 4px; text-align: center;
+    transition: border-color 0.3s;
+  }
+  .answer-row input:focus, .answer-row select:focus {
+    outline: none; border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(81,40,136,0.18);
+  }
+  .answer-row input.correct { border-color: var(--correct); background: #e8f5e9; }
+  .answer-row input.incorrect { border-color: var(--incorrect); background: #ffebee; }
+  .btn {
+    padding: 8px 20px; font-size: 0.9em; font-family: 'Georgia', serif;
+    border: none; border-radius: 4px; cursor: pointer;
+  }
+  .btn-check { background: var(--purple); color: #fff; }
+  .btn-check:hover { background: var(--purple-dark); }
+  .btn-hint { background: transparent; color: var(--purple); border: 1px solid var(--purple); }
+  .btn-hint:hover { background: rgba(81,40,136,0.08); }
+  .feedback {
+    font-size: 0.92em; font-weight: bold; min-width: 24px;
+    transition: opacity 0.3s; opacity: 0;
+  }
+  .feedback.visible { opacity: 1; }
+  .feedback.correct { color: var(--correct); }
+  .feedback.incorrect { color: var(--incorrect); }
+  .hint-box {
+    background: var(--purple-faint); border: 1px dashed var(--purple-light);
+    border-radius: 4px; padding: 12px 18px; margin: 10px 0;
+    font-size: 0.92em; display: none; text-align: center;
+  }
+  .hint-box.visible { display: block; }
+
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px; margin: 20px 0;
+  }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; transition: box-shadow 0.3s;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(81,40,136,0.12); }
+  .card h4 { color: var(--purple); margin: 0 0 8px 0; }
+  .card .card-tag {
+    display: inline-block; font-size: 0.75em; font-weight: bold;
+    padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;
+    background: var(--purple-faint); color: var(--purple);
+  }
+
+  .outcome {
+    background: #e8ddf5; border-left: 4px solid var(--purple-light);
+    padding: 14px 20px; margin: 20px 0;
+  }
+  .outcome-label {
+    font-weight: bold; font-size: 0.82em; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--purple); margin-bottom: 4px;
+  }
+
+  .bar-chart {
+    display: flex; align-items: flex-end; gap: 8px;
+    justify-content: center; margin: 20px 0; height: 200px;
+    padding: 0 20px;
+  }
+  .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 80px; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 0 0;
+    transition: height 0.8s ease; min-height: 4px;
+  }
+  .bar-label { font-size: 0.72em; color: var(--muted); margin-top: 6px; text-align: center; word-break: break-word; }
+  .bar-value { font-size: 0.78em; font-weight: bold; color: var(--purple); margin-bottom: 4px; }
+
+  hr.section-break { border: none; border-top: 2px solid var(--border); margin: 48px 0; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media print {
+    body { padding: 20px; }
+    .section-header { break-before: page; }
+    .section-header .toggle { display: none; }
+    .section-body.collapsed { max-height: none; padding: 28px 30px; border: 1px solid var(--border); border-top: none; }
+  }
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 60px; }
+    header .meta { flex-direction: column; }
+    .section-header { font-size: 1em; padding: 12px 18px; }
+    .section-body { padding: 18px 16px; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header>
+  <div class="university">Grand Canyon University</div>
+  <hr>
+  <div class="meta">
+    <span><strong>Course:</strong> AIT-204 &mdash; Artificial Intelligence</span>
+    <span><strong>Instructor:</strong> Professor Artzi</span>
+  </div>
+  <div class="meta">
+    <span><strong>Authors:</strong> Owen Lindsey &amp; Tyler Friesen</span>
+    <span><strong>Date:</strong> April 2026</span>
+  </div>
+  <hr>
+  <div class="title">Neural Network Optimization: Tuning Strategies Across Architectures<br>
+  <span style="font-size:0.8em; font-weight:normal; color:var(--muted);">Interactive Presentation</span></div>
+</header>
+
+<!-- ════════════════ TABLE OF CONTENTS ════════════════ -->
+<nav class="toc">
+  <h3>What We'll Cover</h3>
+  <ol>
+    <li><a href="#sec1">Why Tuning is Hard</a></li>
+    <li><a href="#sec2">What Actually Impacts Performance</a></li>
+    <li><a href="#sec3">A Practical Tuning Workflow</a></li>
+    <li><a href="#sec4">Learning Rate &mdash; The One That Matters Most</a></li>
+    <li><a href="#sec5">Regularization &mdash; Fighting Overfitting</a></li>
+    <li><a href="#sec6">ANN vs. CNN vs. RNN &mdash; Different Beasts, Different Tricks</a></li>
+    <li><a href="#sec7">What Developers Are Actually Doing</a></li>
+    <li><a href="#sec8">Test Yourself</a></li>
+    <li><a href="#sec9">The Big Takeaways</a></li>
+  </ol>
+</nav>
+
+
+<!-- ═══════════════ SECTION 1 ═══════════════ -->
+<div class="section-header" id="sec1" onclick="toggleSection(this)">
+  1. Why Tuning is Hard <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">The Problem</span>
+    <div class="step-title">You Built a Network. Now What?</div>
+    <p>If you've ever trained a neural network and watched the loss curve do something completely unexpected, you already know the problem. Getting a model to run is easy. Getting it to <em>work well</em> is a different story.</p>
+    <p>Formally, we're trying to find parameters that minimize a loss function:</p>
+    <div class="formula">
+      $$ \theta^* = \arg\min_\theta \; \frac{1}{N}\sum_{i=1}^{N}\mathcal{L}\bigl(f(\mathbf{x}_i;\theta),\, y_i\bigr) + \lambda\,\Omega(\theta) $$
+    </div>
+    <p>That looks clean on paper. In practice, the loss landscape is non-convex, high-dimensional, and full of local minima and saddle points. And you have a ton of knobs to turn&mdash;learning rate, batch size, depth, width, dropout, optimizer choice&mdash;all of which interact with each other in hard-to-predict ways.</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-val">10+</div>
+      <div class="stat-label">Hyperparameters to consider</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">10<sup>26</sup></div>
+      <div class="stat-label">Grid search configs (10 values each)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">80&ndash;90%</div>
+      <div class="stat-label">Gains from the first serious pass</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">&infin;</div>
+      <div class="stat-label">Diminishing returns after that</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The good news:</strong> You don't need to search the whole space. The research is pretty clear that the first round of disciplined tuning&mdash;getting the learning rate right, picking an appropriate architecture, and cleaning up the data&mdash;captures the vast majority of the gains. After that, returns drop off fast.
+  </div>
+</div>
+
+
+<!-- ═══════════════ SECTION 2 ═══════════════ -->
+<div class="section-header" id="sec2" onclick="toggleSection(this)">
+  2. What Actually Impacts Performance <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">Ranked</span>
+    <div class="step-title">Not Everything Matters Equally</div>
+    <p>We went through the research and this is roughly how the factors stack up. Click any bar to get the details.</p>
+  </div>
+
+  <div class="bar-chart" id="impact-chart">
+    <div class="bar-group" onclick="showImpactDetail('data')">
+      <div class="bar-value">Critical</div>
+      <div class="bar" style="height:180px; background:var(--purple); cursor:pointer; border: 2px solid var(--purple-dark);" id="bar-data"></div>
+      <div class="bar-label">Data Quality</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('lr')">
+      <div class="bar-value">Critical</div>
+      <div class="bar" style="height:170px; background:var(--purple-light); cursor:pointer;" id="bar-lr"></div>
+      <div class="bar-label">Learning Rate</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('arch')">
+      <div class="bar-value">High</div>
+      <div class="bar" style="height:140px; background:#7b52b4; cursor:pointer;" id="bar-arch"></div>
+      <div class="bar-label">Architecture</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('batch')">
+      <div class="bar-value">High</div>
+      <div class="bar" style="height:120px; background:#9575cd; cursor:pointer;" id="bar-batch"></div>
+      <div class="bar-label">Batch Size</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('reg')">
+      <div class="bar-value">Medium</div>
+      <div class="bar" style="height:100px; background:#b39ddb; cursor:pointer;" id="bar-reg"></div>
+      <div class="bar-label">Regularization</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('opt')">
+      <div class="bar-value">Medium</div>
+      <div class="bar" style="height:90px; background:#ce93d8; cursor:pointer;" id="bar-opt"></div>
+      <div class="bar-label">Optimizer</div>
+    </div>
+    <div class="bar-group" onclick="showImpactDetail('init')">
+      <div class="bar-value">Low</div>
+      <div class="bar" style="height:60px; background:#e1bee7; cursor:pointer;" id="bar-init"></div>
+      <div class="bar-label">Weight Init</div>
+    </div>
+  </div>
+
+  <div id="impact-detail" class="callout" style="display:none; animation: fadeIn 0.3s ease;">
+    <div id="impact-detail-text"></div>
+  </div>
+
+  <div class="step">
+    <span class="step-label">The Math Behind It</span>
+    <div class="step-title">Bias-Variance Trade-off</div>
+    <p>Every tuning decision connects back to this. It is the theoretical reason why "just make the model bigger" doesn't always work:</p>
+    <div class="formula">
+      $$ \mathbb{E}[\text{error}] = \underbrace{\text{Bias}^2}_{\text{underfitting}} + \underbrace{\text{Variance}}_{\text{overfitting}} + \underbrace{\sigma^2}_{\text{noise you can't fix}} $$
+    </div>
+    <div class="two-col">
+      <div>
+        <h4>More complexity &rarr;</h4>
+        <ul>
+          <li>More layers, wider layers</li>
+          <li>Less regularization</li>
+          <li>Train for longer</li>
+        </ul>
+        <p><strong>Bias goes down, variance goes up.</strong></p>
+      </div>
+      <div>
+        <h4>More regularization &rarr;</h4>
+        <ul>
+          <li>Dropout, weight decay</li>
+          <li>Early stopping</li>
+          <li>Data augmentation</li>
+        </ul>
+        <p><strong>Variance goes down, bias goes up.</strong></p>
+      </div>
+    </div>
+    <p>Tuning is basically navigating this trade-off for your specific problem.</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SECTION 3 ═══════════════ -->
+<div class="section-header" id="sec3" onclick="toggleSection(this)">
+  3. A Practical Tuning Workflow <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">Process</span>
+    <div class="step-title">Stop Guessing, Follow a System</div>
+    <p>It's tempting to just start changing things randomly. We've done it, and it wastes a lot of time. The research points to a much more structured approach.</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-step"><div class="num">01</div><div class="label">Baseline</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">02</div><div class="label">Verify</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">03</div><div class="label">Tune LR</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">04</div><div class="label">Regularize</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">05</div><div class="label">Scale Up</div></div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-tag">Step 1</div>
+      <h4>Get a Baseline Running</h4>
+      <p>Start simple. Pick a known architecture, use default hyperparameters, and just get something that trains without crashing and does better than random. Don't optimize yet.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Step 2</div>
+      <h4>Sanity Check the Pipeline</h4>
+      <p>Feed the model 32 training samples and try to memorize them. If the loss won't go to zero, you have a bug&mdash;not a tuning problem. This step is easy to skip and painful when you do.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Step 3</div>
+      <h4>Find the Right Learning Rate</h4>
+      <p>Use the LR range test: sweep from 1e-7 to 10 over a few hundred iterations, plot loss vs. LR, and pick a value about 10x below the minimum. This alone can make or break training.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Step 4</div>
+      <h4>Watch the Train/Val Gap</h4>
+      <p>When training loss keeps going down but validation loss stalls or rises, you're overfitting. Add dropout, weight decay, or data augmentation&mdash;don't shrink the model.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Step 5</div>
+      <h4>Scale and Refine</h4>
+      <p>Now you can try deeper/wider models, learning rate schedules (cosine annealing, one-cycle), and secondary hyperparameter tuning. Keep monitoring that gap.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label">Code</span>
+    <div class="step-title">Step 2 in Practice: The Overfit Test</div>
+    <p>Here's what the pipeline check looks like. If this doesn't drive the loss to near-zero, stop and debug before doing anything else.</p>
+  </div>
+  <div class="code-block"><span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+<span class="kw">import</span> torch.optim <span class="kw">as</span> optim
+
+model <span class="op">=</span> <span class="cls">SimpleNet</span>(input_dim<span class="op">=</span><span class="num">10</span>, hidden_dim<span class="op">=</span><span class="num">128</span>, output_dim<span class="op">=</span><span class="num">1</span>)
+optimizer <span class="op">=</span> optim.<span class="fn">Adam</span>(model.<span class="fn">parameters</span>(), lr<span class="op">=</span><span class="num">1e-3</span>)
+criterion <span class="op">=</span> nn.<span class="cls">MSELoss</span>()
+
+<span class="comment"># Grab a tiny subset and try to memorize it</span>
+small_X, small_y <span class="op">=</span> X_train[:<span class="num">32</span>], y_train[:<span class="num">32</span>]
+
+<span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(<span class="num">200</span>):
+    loss <span class="op">=</span> <span class="fn">criterion</span>(<span class="fn">model</span>(small_X), small_y)
+    optimizer.<span class="fn">zero_grad</span>()
+    loss.<span class="fn">backward</span>()
+    optimizer.<span class="fn">step</span>()
+<span class="comment"># Loss should be ~0 if everything is wired up right</span></div>
+</div>
+
+
+<!-- ═══════════════ SECTION 4 ═══════════════ -->
+<div class="section-header" id="sec4" onclick="toggleSection(this)">
+  4. Learning Rate &mdash; The One That Matters Most <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">Interactive</span>
+    <div class="step-title">See It for Yourself</div>
+    <p>Drag the slider to change the learning rate, then hit "Run" to watch gradient descent try to find the minimum of $L(\theta) = \theta^2 + 0.3\sin(5\theta)$. Notice how too small is slow and too big is chaotic.</p>
+  </div>
+
+  <div class="demo-area">
+    <div class="demo-title">Gradient Descent on a Bumpy Loss Surface</div>
+    <canvas id="lr-canvas" width="560" height="280"></canvas>
+    <div class="slider-group">
+      <label>Learning Rate: <span class="slider-value" id="lr-val">0.10</span></label><br>
+      <input type="range" id="lr-slider" min="1" max="100" value="10" oninput="updateLR()">
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn-demo" onclick="runGD()">Run Gradient Descent</button>
+      <button class="btn-demo" onclick="resetGD()" style="background:var(--muted);">Reset</button>
+    </div>
+    <p id="lr-status" style="margin-top:12px; font-size:0.9em; color:var(--muted);"></p>
+  </div>
+
+  <div class="step">
+    <span class="step-label">The Math</span>
+    <div class="step-title">What's Actually Happening</div>
+    <p>The basic SGD update is straightforward. You compute the gradient and take a step in the opposite direction, scaled by $\eta$:</p>
+    <div class="formula">
+      <div class="formula-label">Stochastic Gradient Descent</div>
+      $$ \theta_{t+1} = \theta_t - \eta \cdot \nabla_\theta \mathcal{L}(\theta_t) $$
+    </div>
+    <p>The whole game is picking the right $\eta$. Every source we looked at agreed: this is the single most impactful hyperparameter.</p>
+    <div class="two-col">
+      <div>
+        <h4>Too small ($\eta \ll 0.01$)</h4>
+        <ul>
+          <li>Takes forever to converge</li>
+          <li>Can get stuck in bad local minima</li>
+          <li>Wastes compute for no reason</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Too large ($\eta \gg 0.1$)</h4>
+        <ul>
+          <li>Overshoots the minimum</li>
+          <li>Loss bounces around or diverges</li>
+          <li>Training becomes useless</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label">Schedules</span>
+    <div class="step-title">Nobody Uses a Fixed LR Anymore</div>
+    <p>Pretty much every modern training run varies the learning rate over time. Here are the main approaches we found in the literature:</p>
+  </div>
+
+  <table class="doc-table">
+    <tr>
+      <th>Schedule</th>
+      <th>How It Works</th>
+      <th>Good For</th>
+    </tr>
+    <tr>
+      <td><strong>Step Decay</strong></td>
+      <td>$\eta_t = \eta_0 \cdot \gamma^{\lfloor t/s \rfloor}$</td>
+      <td>Simple and reliable; good default</td>
+    </tr>
+    <tr>
+      <td><strong>Cosine Annealing</strong></td>
+      <td>$\eta_t = \eta_{\min} + \frac{1}{2}(\eta_{\max}-\eta_{\min})(1+\cos(\frac{t}{T}\pi))$</td>
+      <td>Smooth decay; popular for fine-tuning</td>
+    </tr>
+    <tr>
+      <td><strong>One-Cycle</strong></td>
+      <td>Ramp up &rarr; Ramp down</td>
+      <td>"Super-convergence" &mdash; faster and often better</td>
+    </tr>
+    <tr>
+      <td><strong>Warmup + Decay</strong></td>
+      <td>Linear warmup, then cosine or step</td>
+      <td>Transformers and large models</td>
+    </tr>
+  </table>
+
+  <div class="step">
+    <span class="step-label">Code</span>
+    <div class="step-title">One-Cycle Policy</div>
+    <p>This is the one Smith's paper highlighted for "super-convergence." It ramps the LR up for the first 30% of training, then anneals it down. We've seen it work well in practice.</p>
+  </div>
+  <div class="code-block"><span class="kw">from</span> torch.optim.lr_scheduler <span class="kw">import</span> <span class="cls">OneCycleLR</span>
+
+optimizer <span class="op">=</span> optim.<span class="fn">SGD</span>(model.<span class="fn">parameters</span>(), lr<span class="op">=</span><span class="num">0.01</span>,
+                      momentum<span class="op">=</span><span class="num">0.9</span>, weight_decay<span class="op">=</span><span class="num">1e-4</span>)
+
+scheduler <span class="op">=</span> <span class="cls">OneCycleLR</span>(
+    optimizer,
+    max_lr<span class="op">=</span><span class="num">0.1</span>,
+    epochs<span class="op">=</span><span class="num">100</span>,
+    steps_per_epoch<span class="op">=</span><span class="fn">len</span>(train_loader),
+    pct_start<span class="op">=</span><span class="num">0.3</span>,       <span class="comment"># 30% of training is warmup</span>
+    anneal_strategy<span class="op">=</span><span class="str">'cos'</span>
+)
+
+<span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(<span class="num">100</span>):
+    <span class="kw">for</span> X_batch, y_batch <span class="kw">in</span> train_loader:
+        loss <span class="op">=</span> <span class="fn">criterion</span>(<span class="fn">model</span>(X_batch), y_batch)
+        optimizer.<span class="fn">zero_grad</span>()
+        loss.<span class="fn">backward</span>()
+        optimizer.<span class="fn">step</span>()
+        scheduler.<span class="fn">step</span>()  <span class="comment"># important: call per batch</span></div>
+</div>
+
+
+<!-- ═══════════════ SECTION 5 ═══════════════ -->
+<div class="section-header" id="sec5" onclick="toggleSection(this)">
+  5. Regularization &mdash; Fighting Overfitting <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">The Idea</span>
+    <div class="step-title">Constraining the Model So It Doesn't Memorize Noise</div>
+    <p>Overfitting is what happens when your model learns the training data <em>too</em> well&mdash;including all its noise and quirks&mdash;and then falls apart on new data. Regularization adds constraints to prevent this. The general form just adds a penalty term to the loss:</p>
+    <div class="formula">
+      $$ \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{data}} + \lambda \, \Omega(\theta) $$
+    </div>
+    <p>But there are several different flavors, and they work in surprisingly different ways.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-tag">L2 / Weight Decay</div>
+      <h4>$\Omega(\theta) = \frac{1}{2}\|\theta\|_2^2$</h4>
+      <p>Pushes all weights toward zero without actually zeroing them out. Spreads the model's "attention" across features instead of leaning hard on a few. This is the most common regularizer and a safe default.</p>
+      <p><strong>Typical range:</strong> $10^{-4}$ to $10^{-2}$</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">L1 / Sparsity</div>
+      <h4>$\Omega(\theta) = \|\theta\|_1$</h4>
+      <p>Unlike L2, this actually drives some weights to exactly zero, which effectively prunes features. Useful when you suspect a lot of your input features are noise.</p>
+      <p><strong>Effect:</strong> Built-in feature selection</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Dropout</div>
+      <h4>$\tilde{h} = h \odot m, \;\; m_i \sim \text{Bernoulli}(1-p)$</h4>
+      <p>Randomly shuts off neurons during training. The intuition is that it forces the network to be redundant&mdash;no single neuron can be relied on. It's like training a bunch of smaller networks and averaging them.</p>
+      <p><strong>Typical $p$:</strong> 0.1&ndash;0.5</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Batch Normalization</div>
+      <h4>$\hat{x} = \frac{x - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}$</h4>
+      <p>Normalizes each layer's input using mini-batch statistics. The nice side effect: it smooths the loss landscape, which means you can use higher learning rates. It also provides a bit of regularization for free.</p>
+      <p><strong>Placement:</strong> After linear/conv, before activation</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Early Stopping</div>
+      <h4>Just... Stop Training</h4>
+      <p>Track validation loss. When it hasn't improved for $p$ epochs in a row (the "patience"), stop and use the best checkpoint. It's the simplest regularizer there is&mdash;and it's free.</p>
+      <p><strong>Typical patience:</strong> 5&ndash;20 epochs</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Data Augmentation</div>
+      <h4>Make More Data (Sort Of)</h4>
+      <p>Apply random transformations (crop, flip, rotate, color changes) to create new training examples from existing ones. Mainly a CNN thing, but the idea applies to audio and text too. Cheap and effective.</p>
+      <p><strong>Effect:</strong> Reduces overfitting without changing the model at all</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label">Interactive</span>
+    <div class="step-title">Dropout in Action</div>
+    <p>Click "Drop!" to simulate one forward pass with dropout ($p = 0.3$). Purple neurons are active; gray ones got turned off for this pass. Hit it a few times to see how different sub-networks emerge each time.</p>
+  </div>
+
+  <div class="demo-area" id="dropout-demo">
+    <div class="demo-title">Neural Network with Dropout</div>
+    <canvas id="dropout-canvas" width="560" height="200"></canvas>
+    <div style="margin-top:14px;">
+      <button class="btn-demo" onclick="simulateDropout()">Drop!</button>
+      <button class="btn-demo" onclick="resetDropout()" style="background:var(--muted);">Reset (All Active)</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SECTION 6 ═══════════════ -->
+<div class="section-header" id="sec6" onclick="toggleSection(this)">
+  6. ANN vs. CNN vs. RNN &mdash; Different Beasts, Different Tricks <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">The Big Question</span>
+    <div class="step-title">Is There One Tuning Process That Works for Everything?</div>
+    <p>Sort of. The general workflow from Section 3 (baseline &rarr; verify &rarr; tune LR &rarr; regularize &rarr; scale up) applies no matter what architecture you're using. But once you get into the details, each one has its own quirks and its own ways of going wrong. Click through below to see the differences.</p>
+  </div>
+
+  <div style="text-align:center; margin: 20px 0;">
+    <button class="btn-demo" id="btn-ann" onclick="showArch('ann')">ANN / MLP</button>
+    <button class="btn-demo" id="btn-cnn" onclick="showArch('cnn')">CNN</button>
+    <button class="btn-demo" id="btn-rnn" onclick="showArch('rnn')">RNN / LSTM</button>
+  </div>
+
+  <!-- ANN Detail -->
+  <div id="arch-ann" class="card" style="display:none; animation: fadeIn 0.3s ease;">
+    <h4>Feedforward Networks (MLPs)</h4>
+    <p>These are the simplest architecture and still surprisingly competitive on tabular data. The main tuning challenge is overfitting&mdash;they'll happily memorize a small dataset if you let them.</p>
+    <table class="doc-table">
+      <tr><th>What to Tune</th><th>Our Recommendation</th></tr>
+      <tr><td>Depth</td><td>2&ndash;4 layers is usually enough for tabular data; going deeper rarely helps</td></tr>
+      <tr><td>Width</td><td>128&ndash;512 units; wider tends to work better than deeper here</td></tr>
+      <tr><td>Activation</td><td>ReLU for hidden layers, task-appropriate for output</td></tr>
+      <tr><td>Initialization</td><td>He init: $W \sim \mathcal{N}(0, \sqrt{2/n_{\text{in}}})$</td></tr>
+      <tr><td>Regularization</td><td>Dropout (0.1&ndash;0.5) plus weight decay ($\sim$1e-4)</td></tr>
+    </table>
+    <div class="code-block"><span class="kw">class</span> <span class="cls">TunedANN</span>(nn.<span class="cls">Module</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, in_dim, hidden<span class="op">=</span><span class="num">256</span>, out<span class="op">=</span><span class="num">10</span>, drop<span class="op">=</span><span class="num">0.3</span>):
+        <span class="fn">super</span>().__init__()
+        self.net <span class="op">=</span> nn.<span class="cls">Sequential</span>(
+            nn.<span class="cls">Linear</span>(in_dim, hidden),
+            nn.<span class="cls">BatchNorm1d</span>(hidden),
+            nn.<span class="cls">ReLU</span>(),
+            nn.<span class="cls">Dropout</span>(drop),
+            nn.<span class="cls">Linear</span>(hidden, hidden),
+            nn.<span class="cls">BatchNorm1d</span>(hidden),
+            nn.<span class="cls">ReLU</span>(),
+            nn.<span class="cls">Dropout</span>(drop),
+            nn.<span class="cls">Linear</span>(hidden, out)
+        )
+        <span class="comment"># He init for ReLU layers</span>
+        <span class="kw">for</span> m <span class="kw">in</span> self.<span class="fn">modules</span>():
+            <span class="kw">if</span> <span class="fn">isinstance</span>(m, nn.<span class="cls">Linear</span>):
+                nn.init.<span class="fn">kaiming_normal_</span>(m.weight)</div>
+  </div>
+
+  <!-- CNN Detail -->
+  <div id="arch-cnn" class="card" style="display:none; animation: fadeIn 0.3s ease;">
+    <h4>Convolutional Neural Networks</h4>
+    <p>For vision tasks, the single most impactful thing you can do is <strong>not train from scratch</strong>. Pre-trained models (ResNet, EfficientNet, etc.) already know how to detect edges, textures, and shapes. Just swap the final layer and fine-tune.</p>
+    <table class="doc-table">
+      <tr><th>What to Tune</th><th>Our Recommendation</th></tr>
+      <tr><td>Transfer learning</td><td><strong>Start here.</strong> Always. Pre-trained weights are basically free accuracy.</td></tr>
+      <tr><td>Filter pattern</td><td>Increase filters as spatial dims shrink: 32&rarr;64&rarr;128</td></tr>
+      <tr><td>Learning rate</td><td>Low for pre-trained layers (1e-5), higher for the new head (1e-3)</td></tr>
+      <tr><td>Augmentation</td><td>Random crops, flips, color jitter. Essential, not optional.</td></tr>
+      <tr><td>BN placement</td><td>Conv &rarr; BN &rarr; ReLU &rarr; Pool</td></tr>
+    </table>
+    <div class="code-block"><span class="kw">import</span> torchvision.models <span class="kw">as</span> models
+
+<span class="comment"># Grab a pre-trained ResNet and swap the head</span>
+model <span class="op">=</span> models.<span class="fn">resnet18</span>(weights<span class="op">=</span><span class="str">'IMAGENET1K_V1'</span>)
+<span class="kw">for</span> p <span class="kw">in</span> model.<span class="fn">parameters</span>(): p.requires_grad <span class="op">=</span> <span class="kw">False</span>
+
+model.fc <span class="op">=</span> nn.<span class="cls">Sequential</span>(
+    nn.<span class="cls">Linear</span>(<span class="num">512</span>, <span class="num">256</span>), nn.<span class="cls">ReLU</span>(),
+    nn.<span class="cls">Dropout</span>(<span class="num">0.3</span>),
+    nn.<span class="cls">Linear</span>(<span class="num">256</span>, num_classes))
+
+<span class="comment"># Phase 1: train the new head (frozen backbone)</span>
+opt <span class="op">=</span> optim.<span class="fn">Adam</span>(model.fc.<span class="fn">parameters</span>(), lr<span class="op">=</span><span class="num">1e-3</span>)
+
+<span class="comment"># Phase 2: unfreeze the last block, drop the LR</span>
+<span class="kw">for</span> p <span class="kw">in</span> model.layer4.<span class="fn">parameters</span>(): p.requires_grad <span class="op">=</span> <span class="kw">True</span></div>
+  </div>
+
+  <!-- RNN Detail -->
+  <div id="arch-rnn" class="card" style="display:none; animation: fadeIn 0.3s ease;">
+    <h4>Recurrent Networks (LSTMs, GRUs)</h4>
+    <p>We worked with LSTMs earlier this semester for temperature forecasting, and the gradient issues are very real. Without gradient clipping, our training was all over the place. These networks have unique instabilities because of the repeated matrix multiplications across time steps.</p>
+    <table class="doc-table">
+      <tr><th>What to Tune</th><th>Our Recommendation</th></tr>
+      <tr><td>Gradient clipping</td><td><strong>Non-negotiable.</strong> Clip at $\tau = 1.0$&ndash;$5.0$.</td></tr>
+      <tr><td>Architecture</td><td>Use LSTM or GRU for sequences longer than ~20 steps; vanilla RNNs can't handle it</td></tr>
+      <tr><td>Initialization</td><td>Orthogonal init for the recurrent weight matrices</td></tr>
+      <tr><td>Dropout</td><td>Between LSTM layers, not inside them; 0.2&ndash;0.3 is typical</td></tr>
+      <tr><td>Sequence length</td><td>Truncated BPTT if sequences are very long; batch by similar lengths</td></tr>
+    </table>
+    <div class="formula">
+      <div class="formula-label">Gradient Clipping &mdash; keeps things from exploding</div>
+      $$ \hat{g} = \begin{cases} g & \text{if } \|g\| \leq \tau \\ \frac{\tau}{\|g\|}\, g & \text{if } \|g\| > \tau \end{cases} $$
+    </div>
+    <div class="code-block"><span class="comment"># LSTM with gradient clipping (we used this pattern</span>
+<span class="comment"># in our temperature forecasting project)</span>
+model <span class="op">=</span> <span class="cls">TunedLSTM</span>(input_dim<span class="op">=</span><span class="num">1</span>, hidden<span class="op">=</span><span class="num">128</span>, layers<span class="op">=</span><span class="num">2</span>)
+opt <span class="op">=</span> optim.<span class="fn">Adam</span>(model.<span class="fn">parameters</span>(), lr<span class="op">=</span><span class="num">1e-3</span>)
+
+<span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(num_epochs):
+    <span class="kw">for</span> X_b, y_b <span class="kw">in</span> train_loader:
+        loss <span class="op">=</span> <span class="fn">criterion</span>(<span class="fn">model</span>(X_b), y_b)
+        opt.<span class="fn">zero_grad</span>()
+        loss.<span class="fn">backward</span>()
+        nn.utils.<span class="fn">clip_grad_norm_</span>(
+            model.<span class="fn">parameters</span>(), <span class="num">1.0</span>)  <span class="comment"># the magic line</span>
+        opt.<span class="fn">step</span>()</div>
+  </div>
+
+  <div class="step" style="margin-top:28px;">
+    <span class="step-label">Side by Side</span>
+    <div class="step-title">Quick Comparison</div>
+  </div>
+
+  <table class="doc-table">
+    <tr>
+      <th>Aspect</th>
+      <th>ANN (MLP)</th>
+      <th>CNN</th>
+      <th>RNN / LSTM</th>
+    </tr>
+    <tr>
+      <td><strong>Top priority</strong></td>
+      <td>Width/depth, dropout</td>
+      <td>Transfer learning, augmentation</td>
+      <td>Gradient clipping, seq. length</td>
+    </tr>
+    <tr>
+      <td><strong>Learning rate</strong></td>
+      <td>1e-3 to 1e-2</td>
+      <td>1e-5 (pretrained) to 1e-3 (head)</td>
+      <td>1e-3 with warmup</td>
+    </tr>
+    <tr>
+      <td><strong>Init strategy</strong></td>
+      <td>He / Xavier</td>
+      <td>Pre-trained weights</td>
+      <td>Orthogonal for recurrent</td>
+    </tr>
+    <tr>
+      <td><strong>How it breaks</strong></td>
+      <td>Overfits small datasets</td>
+      <td>Poor augmentation</td>
+      <td>Gradient explosion/vanishing</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════ SECTION 7 ═══════════════ -->
+<div class="section-header" id="sec7" onclick="toggleSection(this)">
+  7. What Developers Are Actually Doing <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label">Automation</span>
+    <div class="step-title">Let the Computer Tune Itself</div>
+    <p>Manually trying hyperparameter combos gets old fast. Bayesian optimization is the smarter alternative&mdash;it builds a model of which configurations are promising and focuses the search there instead of brute-forcing the whole space:</p>
+    <div class="formula">
+      $$ \lambda^* = \arg\max_\lambda \; \alpha\bigl(\lambda \mid \mathcal{D}_{1:t}\bigr) $$
+    </div>
+    <p>In practice, Optuna makes this surprisingly painless. You define what to search, it figures out where to look:</p>
+  </div>
+
+  <div class="code-block"><span class="kw">import</span> optuna
+
+<span class="kw">def</span> <span class="fn">objective</span>(trial):
+    lr     <span class="op">=</span> trial.<span class="fn">suggest_float</span>(<span class="str">'lr'</span>, <span class="num">1e-5</span>, <span class="num">1e-1</span>, log<span class="op">=</span><span class="kw">True</span>)
+    hidden <span class="op">=</span> trial.<span class="fn">suggest_int</span>(<span class="str">'hidden'</span>, <span class="num">64</span>, <span class="num">512</span>, step<span class="op">=</span><span class="num">64</span>)
+    drop   <span class="op">=</span> trial.<span class="fn">suggest_float</span>(<span class="str">'dropout'</span>, <span class="num">0.0</span>, <span class="num">0.5</span>)
+
+    model <span class="op">=</span> <span class="fn">build_model</span>(hidden, drop)
+    opt   <span class="op">=</span> optim.<span class="fn">Adam</span>(model.<span class="fn">parameters</span>(), lr<span class="op">=</span>lr)
+    <span class="kw">return</span> <span class="fn">train_and_evaluate</span>(model, opt)
+
+study <span class="op">=</span> optuna.<span class="fn">create_study</span>(direction<span class="op">=</span><span class="str">'minimize'</span>)
+study.<span class="fn">optimize</span>(objective, n_trials<span class="op">=</span><span class="num">100</span>)
+<span class="fn">print</span>(<span class="str">f"Best: </span>{study.best_params}<span class="str">"</span>)</div>
+
+  <div class="step">
+    <span class="step-label">Practices</span>
+    <div class="step-title">The Stuff That Separates Hobbyists from Practitioners</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-tag">Experiment Tracking</div>
+      <h4>W&amp;B / MLflow / TensorBoard</h4>
+      <p>Once you've run more than a handful of experiments, you <em>need</em> a way to track what you tried and what worked. Logging hyperparameters and metrics for every run isn't optional at scale.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Mixed Precision</div>
+      <h4>FP16 Training</h4>
+      <p>Modern GPUs can do 16-bit math about 2x faster. PyTorch's <code>torch.cuda.amp</code> handles the details. You get faster training and lower memory usage with basically no accuracy cost. No reason not to use it.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Ensembles</div>
+      <h4>$\hat{y} = \frac{1}{K}\sum_{k=1}^{K} f_k(\mathbf{x})$</h4>
+      <p>Train 3&ndash;5 models independently, average their predictions. It's dead simple, it almost always helps (1&ndash;3% on classification), and it's used in virtually every ML competition.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag">Reproducibility</div>
+      <h4>Seed Everything</h4>
+      <p>Set seeds for Python, NumPy, PyTorch, and CUDA. Run experiments multiple times. Report mean &plusmn; standard deviation. If someone can't reproduce your results, they might as well not exist.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SECTION 8 ═══════════════ -->
+<div class="section-header" id="sec8" onclick="toggleSection(this)">
+  8. Test Yourself <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="step">
+    <span class="step-label blue">Question 1</span>
+    <div class="step-title">Which single hyperparameter has the biggest impact on training?</div>
+    <div class="answer-row">
+      <select id="q1-ans">
+        <option value="">Pick one...</option>
+        <option value="batch">Batch size</option>
+        <option value="lr">Learning rate</option>
+        <option value="dropout">Dropout rate</option>
+        <option value="depth">Network depth</option>
+      </select>
+      <button class="btn btn-check" onclick="checkQ('q1')">Check</button>
+      <span class="feedback" id="q1-fb"></span>
+    </div>
+    <div class="hint-box" id="q1-hint">
+      <strong>Right.</strong> Every source we looked at agreed on this one. The learning rate controls step size in gradient descent&mdash;get it wrong and nothing else matters.
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label blue">Question 2</span>
+    <div class="step-title">What's the first thing you should do to check that your training pipeline works?</div>
+    <div class="answer-row">
+      <select id="q2-ans">
+        <option value="">Pick one...</option>
+        <option value="tune">Tune the learning rate</option>
+        <option value="overfit">Overfit a small batch</option>
+        <option value="augment">Add data augmentation</option>
+        <option value="ensemble">Build an ensemble</option>
+      </select>
+      <button class="btn btn-check" onclick="checkQ('q2')">Check</button>
+      <span class="feedback" id="q2-fb"></span>
+    </div>
+    <div class="hint-box" id="q2-hint">
+      <strong>Exactly.</strong> If the model can't memorize 32 samples, there's a bug in your code. Fix that before you tune anything.
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label blue">Question 3</span>
+    <div class="step-title">Which technique is critical for RNNs but usually not needed for CNNs?</div>
+    <div class="answer-row">
+      <select id="q3-ans">
+        <option value="">Pick one...</option>
+        <option value="aug">Data augmentation</option>
+        <option value="clip">Gradient clipping</option>
+        <option value="bn">Batch normalization</option>
+        <option value="transfer">Transfer learning</option>
+      </select>
+      <button class="btn btn-check" onclick="checkQ('q3')">Check</button>
+      <span class="feedback" id="q3-fb"></span>
+    </div>
+    <div class="hint-box" id="q3-hint">
+      <strong>Yes.</strong> The repeated matrix multiplications across time steps make RNN gradients prone to exploding. Clipping caps the gradient norm at a threshold $\tau$ and keeps training stable.
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-label blue">Question 4</span>
+    <div class="step-title">If the gradient shrinks by half at each time step and you backpropagate through 10 steps, how much gradient is left?</div>
+    <div class="answer-row">
+      <input type="text" id="q4-ans" placeholder="e.g. 0.001">
+      <button class="btn btn-check" onclick="checkQ('q4')">Check</button>
+      <button class="btn btn-hint" onclick="document.getElementById('q4-hint-box').classList.toggle('visible')">Hint</button>
+      <span class="feedback" id="q4-fb"></span>
+    </div>
+    <div class="hint-box" id="q4-hint-box">
+      <strong>Hint:</strong> $0.5^{10} = \frac{1}{2^{10}} = \frac{1}{1024} \approx 0.000977$. That's basically nothing&mdash;which is exactly why vanilla RNNs can't learn long-range dependencies.
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SECTION 9 ═══════════════ -->
+<div class="section-header" id="sec9" onclick="toggleSection(this)">
+  9. The Big Takeaways <span class="toggle">&#9660;</span>
+</div>
+<div class="section-body">
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-val">#1</div>
+      <div class="stat-label">Data and learning rate trump everything else</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">#2</div>
+      <div class="stat-label">Follow a system, don't guess</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">#3</div>
+      <div class="stat-label">Each architecture has its own tricks</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">#4</div>
+      <div class="stat-label">Automate what you can, track everything</div>
+    </div>
+  </div>
+
+  <div class="outcome">
+    <div class="outcome-label">What We Took Away from the Research</div>
+    <ol>
+      <li><strong>Data comes first.</strong> Garbage in, garbage out. Normalize it, check for label noise, balance your classes. No model can fix bad data.</li>
+      <li><strong>The learning rate is king.</strong> Use the range test to find it. Use a schedule (cosine, one-cycle) to adjust it during training. This single knob matters more than any other.</li>
+      <li><strong>Have a process.</strong> Baseline &rarr; verify &rarr; tune LR &rarr; regularize &rarr; scale up. It's not glamorous, but it works and saves a lot of wasted time.</li>
+      <li><strong>Know your architecture.</strong> CNNs need transfer learning and augmentation. RNNs need gradient clipping. ANNs need careful capacity control. The general workflow is the same, but the details matter.</li>
+      <li><strong>Don't chase perfection.</strong> The first serious tuning pass gets 80&ndash;90% of the way there. After that, you're fighting for scraps. At some point, improving your data is a better use of time.</li>
+      <li><strong>Use the tools.</strong> Optuna for search, W&amp;B for tracking, mixed precision for speed, ensembles for that final push. These aren't optional for serious work.</li>
+    </ol>
+  </div>
+
+  <div class="callout success">
+    <strong>Bottom line:</strong> Tuning isn't magic&mdash;it's a disciplined process. Understand the math, follow a systematic approach, use the right tools for your architecture, and know when to stop. The gap between a model that barely works and one that performs well usually comes down to these fundamentals.
+  </div>
+
+  <h3>References</h3>
+  <ol style="font-size:0.9em;">
+    <li>Yu, T. &amp; Zhu, H. (2020). Hyper-Parameter Optimization: A Review. <em>arXiv:2003.05689</em>.</li>
+    <li>Smith, L. N. (2018). A Disciplined Approach to Neural Network Hyper-Parameters. <em>arXiv:1803.09820</em>.</li>
+    <li>Kingma, D. P. &amp; Ba, J. (2015). Adam: A Method for Stochastic Optimization. <em>ICLR</em>.</li>
+    <li>Srivastava, N. et al. (2014). Dropout. <em>JMLR</em>, 15, 1929&ndash;1958.</li>
+    <li>He, K. et al. (2016). Deep Residual Learning. <em>CVPR</em>, 770&ndash;778.</li>
+    <li>Pascanu, R. et al. (2013). On the Difficulty of Training RNNs. <em>ICML</em>.</li>
+    <li>Goodfellow, I. et al. (2016). <em>Deep Learning</em>. MIT Press.</li>
+    <li>Feurer, M. &amp; Hutter, F. (2019). Hyperparameter Optimization. <em>AutoML</em>, Springer.</li>
+    <li>He, T. et al. (2019). Bag of Tricks for Image Classification with CNNs. <em>CVPR</em>.</li>
+    <li>Ioffe, S. &amp; Szegedy, C. (2015). Batch Normalization. <em>ICML</em>.</li>
+  </ol>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                                 -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<script>
+// ── Section collapse/expand ──
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  header.classList.toggle('collapsed');
+  body.classList.toggle('collapsed');
+}
+
+// ── Impact detail ──
+const impactDetails = {
+  data: '<strong>Data Quality:</strong> This is number one for a reason. We saw it in our own projects&mdash;messy data kills everything downstream. Performance scales as a power law with dataset size, and even 5&ndash;10% label noise can tank accuracy by several points. Always normalize to zero mean and unit variance.',
+  lr: '<strong>Learning Rate:</strong> Every source we read agreed: this is the single most important hyperparameter. Too high and the loss diverges. Too low and you wait forever. The LR range test (sweep from 1e-7 to 10, pick below the dip) is the best way to find the right ballpark.',
+  arch: '<strong>Architecture:</strong> This is about matching the model to the data. CNNs exploit spatial structure, RNNs handle sequences, Transformers capture long-range patterns. Picking the wrong architecture for your problem is a ceiling you can\'t tune your way past.',
+  batch: '<strong>Batch Size:</strong> Smaller batches mean noisier gradients, which actually helps with generalization (acts like implicit regularization). Bigger batches train faster but may need more explicit regularization. 32&ndash;512 is the typical range.',
+  reg: '<strong>Regularization:</strong> Dropout, weight decay, batch norm, early stopping, augmentation&mdash;these keep the model from memorizing the training set. The right combo depends on your data size and architecture.',
+  opt: '<strong>Optimizer:</strong> Adam is the safe choice&mdash;adaptive per-parameter LR means less sensitivity to your initial LR. But well-tuned SGD with momentum can match or beat it. The catch is "well-tuned" takes more effort.',
+  init: '<strong>Weight Initialization:</strong> He init for ReLU layers, Xavier for tanh/sigmoid. Gets the gradient scale right from the start. Honestly, this is mostly "set it and forget it"&mdash;it rarely needs tweaking beyond the standard recipe.'
+};
+
+function showImpactDetail(key) {
+  const el = document.getElementById('impact-detail');
+  const txt = document.getElementById('impact-detail-text');
+  txt.innerHTML = impactDetails[key];
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'fadeIn 0.3s ease';
+}
+
+// ── Architecture tabs ──
+function showArch(arch) {
+  ['ann','cnn','rnn'].forEach(a => {
+    document.getElementById('arch-' + a).style.display = a === arch ? 'block' : 'none';
+    document.getElementById('btn-' + a).classList.toggle('active', a === arch);
+  });
+}
+
+// ── Learning Rate GD Visualization ──
+let gdPoints = [];
+let gdRunning = false;
+let gdAnimId = null;
+
+function lossFunc(x) { return x * x + 0.3 * Math.sin(5 * x); }
+function lossGrad(x) { return 2 * x + 1.5 * Math.cos(5 * x); }
+
+function drawLossLandscape(canvas, points) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = 40;
+  ctx.clearRect(0, 0, W, H);
+
+  const xMin = -3, xMax = 3, yMin = -0.5, yMax = 10;
+  function toX(x) { return pad + (x - xMin) / (xMax - xMin) * (W - 2 * pad); }
+  function toY(y) { return H - pad - (y - yMin) / (yMax - yMin) * (H - 2 * pad); }
+
+  // Axes
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, H - pad); ctx.lineTo(W - pad, H - pad);
+  ctx.moveTo(pad, H - pad); ctx.lineTo(pad, pad);
+  ctx.stroke();
+
+  ctx.fillStyle = '#5a5a5a'; ctx.font = '11px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('\u03B8', W / 2, H - 8);
+  ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Loss', 0, 0); ctx.restore();
+
+  // Loss curve
+  ctx.beginPath(); ctx.strokeStyle = '#512888'; ctx.lineWidth = 2.5;
+  for (let px = pad; px <= W - pad; px++) {
+    const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
+    if (px === pad) ctx.moveTo(px, toY(lossFunc(x)));
+    else ctx.lineTo(px, toY(lossFunc(x)));
+  }
+  ctx.stroke();
+
+  // Path
+  if (points.length > 1) {
+    ctx.beginPath(); ctx.strokeStyle = 'rgba(230, 81, 0, 0.5)'; ctx.lineWidth = 1.5;
+    points.forEach((pt, i) => {
+      const px = toX(pt), py = toY(lossFunc(pt));
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+  }
+
+  // Points
+  points.forEach((pt, i) => {
+    ctx.beginPath();
+    ctx.arc(toX(pt), toY(lossFunc(pt)), i === points.length - 1 ? 6 : 3, 0, 2 * Math.PI);
+    ctx.fillStyle = i === points.length - 1 ? '#e65100' : 'rgba(230, 81, 0, 0.4)';
+    ctx.fill();
+  });
+}
+
+function updateLR() {
+  document.getElementById('lr-val').textContent = (document.getElementById('lr-slider').value / 100).toFixed(2);
+}
+
+function resetGD() {
+  gdRunning = false;
+  if (gdAnimId) clearTimeout(gdAnimId);
+  gdPoints = [];
+  drawLossLandscape(document.getElementById('lr-canvas'), []);
+  document.getElementById('lr-status').textContent = '';
+}
+
+function runGD() {
+  if (gdRunning) return;
+  gdRunning = true;
+  const lr = document.getElementById('lr-slider').value / 100;
+  let theta = 2.5;
+  gdPoints = [theta];
+  const canvas = document.getElementById('lr-canvas');
+  let step = 0, maxSteps = 40;
+
+  function animate() {
+    if (!gdRunning || step >= maxSteps) {
+      gdRunning = false;
+      const fl = lossFunc(theta);
+      document.getElementById('lr-status').textContent =
+        fl > 5 ? `Diverged! Loss = ${fl.toFixed(2)}. LR is too high.` :
+        step === maxSteps && fl > 1 ? `Still going after ${maxSteps} steps. Loss: ${fl.toFixed(4)}. LR might be too low.` :
+        `Done after ${step} steps. \u03B8 = ${theta.toFixed(4)}, Loss = ${fl.toFixed(4)}`;
+      return;
+    }
+    const grad = lossGrad(theta);
+    theta -= lr * grad;
+    if (Math.abs(theta) > 10 || isNaN(theta)) {
+      gdPoints.push(theta > 0 ? 10 : -10);
+      drawLossLandscape(canvas, gdPoints);
+      gdRunning = false;
+      document.getElementById('lr-status').textContent = 'Diverged! LR way too high.';
+      return;
+    }
+    gdPoints.push(theta);
+    drawLossLandscape(canvas, gdPoints);
+    if (Math.abs(grad) < 0.01) {
+      gdRunning = false;
+      document.getElementById('lr-status').textContent =
+        `Converged at step ${step + 1}. \u03B8 = ${theta.toFixed(4)}, Loss = ${lossFunc(theta).toFixed(4)}`;
+      return;
+    }
+    step++;
+    gdAnimId = setTimeout(animate, 120);
+  }
+  drawLossLandscape(canvas, gdPoints);
+  animate();
+}
+
+// ── Dropout Visualization ──
+const dropoutLayers = [4, 6, 6, 4, 3];
+let neuronStates = dropoutLayers.map(n => new Array(n).fill(true));
+
+function drawNetwork(canvas, states) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const gap = W / (states.length + 1);
+  const layerX = states.map((_, l) => gap * (l + 1));
+
+  // Connections
+  for (let l = 0; l < states.length - 1; l++) {
+    for (let i = 0; i < states[l].length; i++) {
+      for (let j = 0; j < states[l + 1].length; j++) {
+        const active = states[l][i] && states[l + 1][j];
+        const y1 = H / (states[l].length + 1) * (i + 1);
+        const y2 = H / (states[l + 1].length + 1) * (j + 1);
+        ctx.beginPath();
+        ctx.moveTo(layerX[l], y1); ctx.lineTo(layerX[l + 1], y2);
+        ctx.strokeStyle = active ? 'rgba(81, 40, 136, 0.15)' : 'rgba(200, 200, 200, 0.08)';
+        ctx.lineWidth = active ? 1 : 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Neurons
+  for (let l = 0; l < states.length; l++) {
+    const yGap = H / (states[l].length + 1);
+    for (let i = 0; i < states[l].length; i++) {
+      ctx.beginPath();
+      ctx.arc(layerX[l], yGap * (i + 1), 12, 0, 2 * Math.PI);
+      ctx.fillStyle = states[l][i] ? '#512888' : '#ccc';
+      ctx.fill();
+      ctx.strokeStyle = states[l][i] ? '#3b1d66' : '#aaa';
+      ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+
+  // Labels
+  ctx.fillStyle = '#5a5a5a'; ctx.font = '10px Georgia'; ctx.textAlign = 'center';
+  ['Input', 'Hidden 1', 'Hidden 2', 'Hidden 3', 'Output'].forEach((lbl, l) => {
+    ctx.fillText(lbl, layerX[l], H - 5);
+  });
+}
+
+function simulateDropout() {
+  neuronStates = dropoutLayers.map((n, l) => {
+    if (l === 0 || l === dropoutLayers.length - 1) return new Array(n).fill(true);
+    return Array.from({length: n}, () => Math.random() > 0.3);
+  });
+  drawNetwork(document.getElementById('dropout-canvas'), neuronStates);
+}
+
+function resetDropout() {
+  neuronStates = dropoutLayers.map(n => new Array(n).fill(true));
+  drawNetwork(document.getElementById('dropout-canvas'), neuronStates);
+}
+
+// ── Quiz ──
+const quizAnswers = {
+  q1: {correct: 'lr', type: 'select'},
+  q2: {correct: 'overfit', type: 'select'},
+  q3: {correct: 'clip', type: 'select'},
+  q4: {correct: 0.000977, type: 'number', tolerance: 0.0005}
+};
+
+function checkQ(id) {
+  const q = quizAnswers[id];
+  const fb = document.getElementById(id + '-fb');
+  const hint = document.getElementById(id + '-hint');
+  let ok = false;
+  if (q.type === 'select') {
+    ok = document.getElementById(id + '-ans').value === q.correct;
+  } else {
+    const val = parseFloat(document.getElementById(id + '-ans').value);
+    ok = !isNaN(val) && Math.abs(val - q.correct) <= q.tolerance;
+  }
+  fb.textContent = ok ? '\u2713 Correct!' : '\u2717 Try again';
+  fb.className = 'feedback visible ' + (ok ? 'correct' : 'incorrect');
+  if (hint && ok) hint.classList.add('visible');
+}
+
+// ── Init ──
+window.addEventListener('load', function() {
+  drawLossLandscape(document.getElementById('lr-canvas'), []);
+  drawNetwork(document.getElementById('dropout-canvas'), neuronStates);
+});
+</script>
+
+</body>
+</html>

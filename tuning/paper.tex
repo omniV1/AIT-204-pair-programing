@@ -1,0 +1,684 @@
+\documentclass[12pt, letterpaper]{article}
+
+% ── Geometry ──
+\usepackage[margin=1in, headheight=14.5pt]{geometry}
+\raggedbottom                   % Don't stretch pages vertically
+
+% ── Encoding & Fonts ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+
+% ── Math ──
+\usepackage{amsmath, amssymb}
+
+% ── Graphics & Color ──
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{gcupurple}{HTML}{512888}
+
+% ── Code Listings ──
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red!70!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  frame=single,
+  framesep=5pt,
+  backgroundcolor=\color{gray!5},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  showstringspaces=false,
+  xleftmargin=1.5em,
+  framexleftmargin=1.5em,
+  aboveskip=0.8em,
+  belowskip=0.8em,
+  float=H                      % Keep listings from floating away
+}
+
+% ── Tables & Floats ──
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{array}
+\usepackage{needspace}          % Prevent awkward page breaks
+
+% ── Hyperlinks ──
+\usepackage[colorlinks=true, linkcolor=gcupurple, citecolor=gcupurple, urlcolor=gcupurple]{hyperref}
+
+% ── Bibliography ──
+\usepackage[numbers, sort&compress]{natbib}
+
+% ── Section Styling ──
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{gcupurple}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{gcupurple!80!black}}{\thesubsection}{0.5em}{}
+
+% ── Header / Footer ──
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gray}AIT-204: Neural Network Optimization}
+\fancyhead[R]{\small\color{gray}Lindsey \& Friesen}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Paragraph Formatting ──
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ── Prevent orphans/widows ──
+\widowpenalty=10000
+\clubpenalty=10000
+
+\begin{document}
+
+% ═══════════════════════════════════════════════════
+%  TITLE PAGE
+% ═══════════════════════════════════════════════════
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Large\bfseries\color{gcupurple} Grand Canyon University}\\[4pt]
+{\large College of Science, Engineering and Technology}\\[1cm]
+\rule{\textwidth}{1.2pt}\\[1.4cm]
+
+{\LARGE\bfseries Neural Network Optimization:\\[6pt]
+Tuning Strategies Across Architectures}\\[1.4cm]
+
+\rule{\textwidth}{1.2pt}\\[2cm]
+
+{\large
+\begin{tabular}{rl}
+\textbf{Authors:} & Owen Lindsey \& Tyler Friesen \\[6pt]
+\textbf{Course:} & AIT-204 --- Artificial Intelligence \\[6pt]
+\textbf{Instructor:} & Professor Artzi \\[6pt]
+\textbf{Date:} & April 2026 \\
+\end{tabular}
+}
+
+\vfill
+{\small A technical paper exploring the practical strategies, mathematical foundations, and architecture-specific considerations behind tuning neural networks, drawn from current research.}
+\end{titlepage}
+
+% ═══════════════════════════════════════════════════
+%  ABSTRACT
+% ═══════════════════════════════════════════════════
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+Getting a neural network to actually work well turns out to be just as hard as designing one. In this paper, we dig into the research behind neural network optimization --- what makes the biggest difference in performance, how developers approach the tuning process, and whether there is a one-size-fits-all strategy or if architectures like CNNs, RNNs, and standard ANNs each need their own playbook. We pulled from several recent papers and surveys to piece together a practical picture of the current landscape. What we found is that while the broad strokes of tuning (get your learning rate right, regularize, don't skip data cleaning) apply everywhere, each architecture has its own quirks and failure modes that you have to account for. We include mathematical background and Python code throughout to keep things grounded.
+
+\textbf{Keywords:} neural network optimization, hyperparameter tuning, learning rate scheduling, regularization, deep learning
+
+\newpage
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════
+%  1. INTRODUCTION
+% ═══════════════════════════════════════════════════
+\section{Introduction}
+
+Anyone who has trained a neural network knows the feeling: you set up your model, hit train, and watch the loss curve do something completely unexpected. Maybe it flatlines. Maybe it spikes. Maybe it looks great on training data and falls apart on anything new. The gap between ``I have a neural network'' and ``I have a neural network that actually works'' is where tuning lives, and it is a bigger gap than most introductory courses let on.
+
+The core problem is that training a deep network means searching a massive, non-convex loss landscape full of local minima, saddle points, and flat regions \cite{goodfellow2016deep}. On top of that, the hyperparameter space is huge --- learning rate, batch size, depth, width, dropout, optimizer, weight initialization --- and these all interact with each other in ways that are hard to predict. Change the learning rate and suddenly your batch size choice matters differently. Add dropout and maybe you need a higher learning rate to compensate.
+
+Different architectures make this even more complicated. A CNN processes spatial data with shared filters. An RNN carries hidden state across time steps. A basic feedforward ANN just maps inputs to outputs layer by layer. Each of these has its own set of things that tend to go wrong and its own bag of tricks for fixing them.
+
+In this paper, we work through the following questions based on what we found in the research:
+
+\begin{enumerate}
+    \item What has the biggest impact on how well a neural network performs?
+    \item What does a practical tuning process look like?
+    \item What should you realistically expect when you are done tuning?
+    \item Do CNNs, RNNs, and ANNs need fundamentally different approaches?
+    \item What are developers actually doing in practice right now?
+\end{enumerate}
+
+% ═══════════════════════════════════════════════════
+%  2. LITERATURE REVIEW
+% ═══════════════════════════════════════════════════
+\section{Literature Review}
+
+\subsection{Hyperparameter Optimization Surveys}
+
+Yu and Zhu \cite{yu2020hyper} put together a solid survey of hyperparameter optimization methods, breaking them into grid search, random search, Bayesian optimization, and gradient-based methods. One of the more interesting takeaways is that random search consistently beats grid search when you have the same compute budget. This was originally shown by Bergstra and Bengio \cite{bergstra2012random}, and the reason makes intuitive sense: not all hyperparameters matter equally. Learning rate usually dominates everything else, and grid search wastes a lot of evaluations testing fine-grained differences in parameters that barely matter.
+
+\subsection{Learning Rate and Optimization Algorithms}
+
+Pretty much every source we looked at agreed on one thing: the learning rate is the single most important hyperparameter \cite{goodfellow2016deep}. Smith \cite{smith2018disciplined} takes this further with the idea of ``super-convergence'' --- training with surprisingly large learning rates using a cyclical schedule, and getting both faster convergence and better final performance. The learning rate range test he describes (sweep from tiny to huge, plot the loss, pick a value just below the minimum) has become a go-to technique.
+
+On the optimizer side, adaptive methods like Adam \cite{kingma2015adam} have become the default starting point because they are less sensitive to the initial learning rate. But there is an interesting counterpoint from Wilson et al.\ \cite{wilson2017marginal}, who show that well-tuned SGD with momentum often matches or beats Adam on test accuracy. The catch is ``well-tuned'' --- SGD needs more careful scheduling to get there.
+
+\subsection{Regularization and Generalization}
+
+Overfitting is the constant enemy, and the research covers several ways to fight it. Dropout \cite{srivastava2014dropout} randomly shuts off neurons during training, which works like training a bunch of smaller networks and averaging them. Batch normalization \cite{ioffe2015batch} normalizes layer inputs and has the nice side effect of smoothing the loss landscape, which lets you use higher learning rates. Luo et al.\ \cite{luo2019adaptive} found that adjusting regularization strength during training can outperform keeping it fixed, which makes sense --- the model's needs change as it learns.
+
+\subsection{Architecture-Specific Optimization}
+
+This is where things diverge. For CNNs, transfer learning and data augmentation are basically mandatory \cite{he2019bag}. For RNNs, you need gradient clipping and careful weight initialization because the repeated matrix multiplications across time steps make gradients either explode or vanish \cite{pascanu2013difficulty}. Transformers need warmup schedules and careful attention to layer normalization \cite{vaswani2017attention}. The takeaway from the literature is that there is no escaping architecture-specific knowledge.
+
+\subsection{Automated Machine Learning}
+
+The complexity of all this has pushed people toward automation. Neural Architecture Search can find architectures that compete with hand-designed ones \cite{zoph2018learning}, and frameworks like Optuna make Bayesian hyperparameter search much more accessible. Feurer and Hutter \cite{feurer2019hyperparameter} point out that combining algorithm selection with hyperparameter optimization (what they call CASH) often does better than tuning any single algorithm in isolation.
+
+% ═══════════════════════════════════════════════════
+%  3. IMPACT ANALYSIS
+% ═══════════════════════════════════════════════════
+\section{What Impacts the Performance of a Neural Network?}
+
+Not everything matters equally. Based on the research, we can roughly rank the factors that affect performance.
+
+\subsection{Data Quality and Quantity}
+
+This comes first for a reason. We have seen this firsthand in our own class projects --- no amount of architecture tweaking or hyperparameter tuning saves a model trained on messy data.
+
+Deep networks are hungry for data, and performance tends to follow a power law with dataset size: $\text{error} \propto n^{-\alpha}$, where $\alpha$ depends on the problem \cite{hestness2017deep}. Label noise is especially damaging; even 5--10\% mislabeled examples can drop accuracy by several points.
+
+Preprocessing matters too. Normalizing inputs to zero mean and unit variance is one of those things that seems simple but makes a real difference:
+\begin{equation}
+    \hat{x}_i = \frac{x_i - \mu}{\sigma}, \quad \mu = \frac{1}{N}\sum_{j=1}^{N} x_j, \quad \sigma = \sqrt{\frac{1}{N}\sum_{j=1}^{N}(x_j - \mu)^2}
+\end{equation}
+
+Without this, features on different scales pull the gradient in uneven directions and convergence slows way down. Here is how it looks in PyTorch:
+
+\begin{lstlisting}[caption={Data normalization in PyTorch}]
+import torch
+
+# Compute stats from training set only
+train_mean = X_train.mean(dim=0)
+train_std  = X_train.std(dim=0)
+
+# Apply to both splits (avoids data leakage)
+X_train_norm = (X_train - train_mean) / (train_std + 1e-8)
+X_test_norm  = (X_test - train_mean) / (train_std + 1e-8)
+\end{lstlisting}
+
+\subsection{Architecture Design}
+
+Choosing the right architecture is really about matching the model's inductive biases to the structure of your data. A few things consistently matter:
+
+\textbf{Depth vs.\ width.} Deeper networks can represent more complex functions, but they are harder to train. The universal approximation theorem tells us a wide enough single-layer network can approximate anything, but in practice, going deeper gets you the same representational power with far fewer parameters.
+
+\textbf{Capacity.} Too few parameters and the model underfits. Too many and it memorizes training noise. Finding the sweet spot is a recurring theme in tuning.
+
+\textbf{Skip connections.} Residual connections \cite{he2016deep} were a breakthrough for training deep networks. The idea is straightforward --- let the gradient bypass layers through an identity shortcut:
+\begin{equation}
+    \mathbf{y} = \mathcal{F}(\mathbf{x}, \{W_i\}) + \mathbf{x}
+\end{equation}
+This keeps gradients from vanishing through very deep stacks.
+
+\subsection{Hyperparameter Selection}
+
+These are the knobs you turn during tuning. Table~\ref{tab:hyperparams} ranks the key ones by how much they typically affect results.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Key hyperparameters ranked by typical impact}
+\label{tab:hyperparams}
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Hyperparameter} & \textbf{Impact} & \textbf{What it does} \\
+\midrule
+Learning rate & Critical & Step size in gradient descent \\
+Batch size    & High     & Gradient noise vs.\ speed \\
+Network depth & High     & Representational capacity \\
+Hidden units  & Medium   & Per-layer capacity \\
+Dropout rate  & Medium   & Regularization (0.1--0.5) \\
+Weight decay  & Medium   & L2 penalty on weights \\
+Optimizer     & Medium   & Adam vs.\ SGD vs.\ others \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Optimization Algorithm}
+
+The optimizer determines how the network moves through the loss landscape. Standard SGD takes a step proportional to the gradient:
+\begin{equation}
+    \theta_{t+1} = \theta_t - \eta \cdot \nabla_\theta \mathcal{L}(\theta_t)
+\end{equation}
+
+Adam \cite{kingma2015adam} gets fancier by keeping running averages of the gradient and its square, giving each parameter its own effective learning rate:
+\begin{align}
+    m_t &= \beta_1 m_{t-1} + (1 - \beta_1)\, g_t \\
+    v_t &= \beta_2 v_{t-1} + (1 - \beta_2)\, g_t^2 \\
+    \theta_{t+1} &= \theta_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon}\, \hat{m}_t
+\end{align}
+where $\hat{m}_t$ and $\hat{v}_t$ are bias-corrected versions. This is especially helpful when your features live on very different scales.
+
+% ═══════════════════════════════════════════════════
+%  4. TUNING DISCUSSION
+% ═══════════════════════════════════════════════════
+\section{How Should One Approach Tuning a Network?}
+
+\subsection{A Practical Tuning Workflow}
+
+After going through the literature, we think the most useful way to present this is as a step-by-step process. It is tempting to just start tweaking things, but a structured approach saves a lot of wasted time.
+
+\needspace{8\baselineskip}
+\textbf{Step 1 --- Establish a baseline.} Start with something simple and known to work. Use default hyperparameters. The goal here is just to get a model that trains without crashing and does better than random.
+
+\textbf{Step 2 --- Verify the pipeline.} This one is easy to skip and painful when you do. Feed the model a tiny batch (32 samples) and train until it memorizes them. If the loss does not go to near-zero, you have a bug --- not a tuning problem.
+
+\begin{lstlisting}[caption={Sanity check: can the model memorize a small batch?}]
+model = SimpleNet(input_dim=10, hidden_dim=128, output_dim=1)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+criterion = nn.MSELoss()
+
+small_X, small_y = X_train[:32], y_train[:32]
+for epoch in range(200):
+    loss = criterion(model(small_X), small_y)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+# If loss doesn't approach 0, something is broken
+\end{lstlisting}
+
+\textbf{Step 3 --- Find the right learning rate.} Smith's learning rate range test \cite{smith2018disciplined} is the go-to here. Sweep the LR from very small (1e-7) to very large (10) over a few hundred iterations, and plot loss vs.\ LR. Pick a value about one order of magnitude below where loss is lowest.
+
+\begin{lstlisting}[caption={Learning rate range test}]
+from torch.optim.lr_scheduler import ExponentialLR
+
+lr_min, lr_max = 1e-7, 10
+num_steps = 300
+gamma = (lr_max / lr_min) ** (1 / num_steps)
+
+optimizer = optim.SGD(model.parameters(), lr=lr_min)
+scheduler = ExponentialLR(optimizer, gamma=gamma)
+
+lrs, losses = [], []
+for step in range(num_steps):
+    X_b, y_b = next(iter(train_loader))
+    loss = criterion(model(X_b), y_b)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    scheduler.step()
+    lrs.append(optimizer.param_groups[0]['lr'])
+    losses.append(loss.item())
+# Plot lrs vs losses -- pick lr just below the dip
+\end{lstlisting}
+
+\textbf{Step 4 --- Regularize.} Watch the gap between training and validation loss. When training loss keeps dropping but validation loss stalls or rises, you are overfitting. Add dropout, weight decay, or data augmentation rather than shrinking the model.
+
+\textbf{Step 5 --- Scale up.} Gradually increase model capacity (more layers, more units). Keep monitoring that train/val gap. Use a learning rate schedule --- the one-cycle policy in particular has been shown to enable much faster convergence \cite{smith2018disciplined}.
+
+\subsection{Learning Rate Schedules}
+
+Almost nobody trains with a fixed learning rate anymore. The most common schedules we found in the literature:
+
+\textbf{Step decay} drops the LR by a factor every few epochs:
+$\eta_t = \eta_0 \cdot \gamma^{\lfloor t / s \rfloor}$
+
+\textbf{Cosine annealing} smoothly ramps it down:
+\begin{equation}
+    \eta_t = \eta_{\min} + \tfrac{1}{2}(\eta_{\max} - \eta_{\min})\bigl(1 + \cos(\tfrac{t}{T}\pi)\bigr)
+\end{equation}
+
+\textbf{One-cycle} ramps up and then back down, and is behind the ``super-convergence'' results Smith reported:
+
+\begin{lstlisting}[caption={One-cycle policy in PyTorch}]
+from torch.optim.lr_scheduler import OneCycleLR
+
+optimizer = optim.SGD(model.parameters(), lr=0.01,
+                      momentum=0.9, weight_decay=1e-4)
+scheduler = OneCycleLR(
+    optimizer, max_lr=0.1, epochs=100,
+    steps_per_epoch=len(train_loader),
+    pct_start=0.3, anneal_strategy='cos')
+
+for epoch in range(100):
+    for X_b, y_b in train_loader:
+        loss = criterion(model(X_b), y_b)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        scheduler.step()  # call per batch, not per epoch
+\end{lstlisting}
+
+\subsection{Early Stopping}
+
+Early stopping is the simplest form of regularization: track validation loss, and stop training when it has not improved for $p$ consecutive epochs (the ``patience''). Save the best checkpoint and use that as your final model.
+
+% ═══════════════════════════════════════════════════
+%  5. EXPECTED OUTCOMES
+% ═══════════════════════════════════════════════════
+\section{What Can Be Expected at the End of Tuning?}
+
+It is worth setting realistic expectations. Tuning is not going to hand you a perfect model.
+
+\textbf{Diminishing returns.} The first round of serious tuning --- getting the learning rate right, choosing an appropriate architecture, cleaning the data --- captures the bulk of the gains. Everything after that is incremental. We saw this pattern repeatedly in the literature, and it matches our experience in class projects.
+
+\textbf{Trade-offs everywhere.} Accuracy, speed, and memory are in tension. A bigger model might be more accurate but slower to train and deploy. Tuning explores this trade-off space, but it does not eliminate it.
+
+\textbf{Results vary between runs.} Random initialization, data shuffling, and GPU non-determinism mean that running the same hyperparameters twice can give different results. The responsible thing is to run multiple seeds and report mean $\pm$ standard deviation.
+
+\textbf{Every architecture has a ceiling.} No amount of tuning will make a feedforward MLP beat a CNN on image classification. An RNN will always struggle with extremely long sequences compared to a Transformer. Tuning gets you closer to the ceiling, but the ceiling is set by the architecture.
+
+% ═══════════════════════════════════════════════════
+%  6. ARCHITECTURE-SPECIFIC TUNING
+% ═══════════════════════════════════════════════════
+\section{Generic vs.\ Architecture-Specific Tuning}
+
+The workflow from Section~4.1 applies broadly. But once you get past the basics, each architecture has its own priorities and its own ways of breaking.
+
+\subsection{ANNs / MLPs}
+
+Feedforward networks are the simplest starting point. For tabular data, they are still competitive with more exotic architectures. The main tuning considerations:
+
+\begin{itemize}
+    \item \textbf{Width over depth.} For tabular tasks, 2--4 layers with plenty of hidden units tends to work better than going very deep.
+    \item \textbf{He initialization} keeps the variance of activations stable across layers: $W \sim \mathcal{N}(0, \sqrt{2/n_{\text{in}}})$
+    \item \textbf{Dropout} in the 0.1--0.5 range is the primary regularizer.
+    \item \textbf{Main failure mode:} overfitting on small datasets.
+\end{itemize}
+
+\begin{lstlisting}[caption={A well-structured feedforward network}]
+class TunedANN(nn.Module):
+    def __init__(self, in_dim, hidden=256, out=10, drop=0.3):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.BatchNorm1d(hidden), nn.ReLU(),
+            nn.Dropout(drop),
+            nn.Linear(hidden, hidden),
+            nn.BatchNorm1d(hidden), nn.ReLU(),
+            nn.Dropout(drop),
+            nn.Linear(hidden, out))
+        for m in self.modules():       # He init
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+
+    def forward(self, x):
+        return self.net(x)
+\end{lstlisting}
+
+\subsection{CNNs}
+
+CNNs are where transfer learning really shines. For most vision tasks, starting from a pre-trained model (ResNet, EfficientNet, etc.) and fine-tuning is drastically better than training from scratch \cite{he2019bag}. The typical approach:
+
+\begin{enumerate}
+    \item Freeze all layers, replace the classification head, train only the new layers with a moderate LR ($\sim$1e-3).
+    \item Unfreeze later layers and fine-tune with a smaller LR ($\sim$1e-4 to 1e-5).
+\end{enumerate}
+
+\begin{lstlisting}[caption={Transfer learning with progressive unfreezing}]
+model = models.resnet18(weights='IMAGENET1K_V1')
+
+for p in model.parameters():      # freeze everything
+    p.requires_grad = False
+
+model.fc = nn.Sequential(         # new head
+    nn.Linear(512, 256), nn.ReLU(),
+    nn.Dropout(0.3),
+    nn.Linear(256, num_classes))
+
+# Phase 1: train head only
+opt = optim.Adam(model.fc.parameters(), lr=1e-3)
+
+# Phase 2: unfreeze last conv block, lower lr
+for p in model.layer4.parameters():
+    p.requires_grad = True
+opt = optim.Adam([
+    {'params': model.layer4.parameters(), 'lr': 1e-4},
+    {'params': model.fc.parameters(), 'lr': 1e-3}])
+\end{lstlisting}
+
+Data augmentation (random crops, flips, color jitter) is also essential for CNNs --- it effectively multiplies your dataset and is one of the cheapest forms of regularization.
+
+\subsection{RNNs / LSTMs / GRUs}
+
+Recurrent networks have unique challenges. The repeated matrix multiplications across time steps make gradients either vanish (for long sequences) or explode. Two things are non-negotiable:
+
+\textbf{Gradient clipping} rescales the gradient when its norm exceeds a threshold $\tau$:
+\begin{equation}
+    \hat{g} = \begin{cases}
+        g & \text{if } \|g\| \leq \tau \\[4pt]
+        \frac{\tau}{\|g\|}\, g & \text{if } \|g\| > \tau
+    \end{cases}
+\end{equation}
+
+We used this in our own LSTM temperature forecasting project earlier this semester and it made a noticeable difference --- without clipping, training was erratic.
+
+\textbf{Use LSTMs or GRUs} instead of vanilla RNNs for anything longer than about 20--30 time steps. The gating mechanisms are specifically designed to let gradients flow over longer distances.
+
+\begin{lstlisting}[caption={LSTM training with gradient clipping}]
+class TunedLSTM(nn.Module):
+    def __init__(self, in_dim, hidden=128, layers=2, drop=0.2):
+        super().__init__()
+        self.lstm = nn.LSTM(in_dim, hidden, layers,
+                            batch_first=True,
+                            dropout=drop if layers > 1 else 0)
+        self.fc = nn.Linear(hidden, 1)
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        return self.fc(out[:, -1, :])
+
+model = TunedLSTM(in_dim=1)
+opt = optim.Adam(model.parameters(), lr=1e-3)
+
+for epoch in range(num_epochs):
+    for X_b, y_b in train_loader:
+        loss = criterion(model(X_b), y_b)
+        opt.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        opt.step()
+\end{lstlisting}
+
+\subsection{Comparing the Three}
+
+Table~\ref{tab:arch_comparison} puts the key differences side by side.
+
+\begin{table}[H]
+\centering
+\small
+\caption{How tuning priorities differ across architectures}
+\label{tab:arch_comparison}
+\begin{tabular}{@{}p{2.4cm}p{3.3cm}p{3.3cm}p{3.3cm}@{}}
+\toprule
+\textbf{Aspect} & \textbf{ANN / MLP} & \textbf{CNN} & \textbf{RNN / LSTM} \\
+\midrule
+Top priority    & Width, dropout       & Transfer learning    & Gradient clipping \\
+Regularization  & Dropout, wt.\ decay  & Data augmentation    & Recurrent dropout \\
+Learning rate   & 1e-3 to 1e-2         & 1e-5 (pretrained)    & 1e-3 with warmup \\
+Initialization  & He / Xavier          & Pre-trained weights  & Orthogonal \\
+Failure mode    & Overfitting          & Poor augmentation    & Exploding gradients \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ═══════════════════════════════════════════════════
+%  7. KEY PRACTICES
+% ═══════════════════════════════════════════════════
+\section{Key Practices in Use Today}
+
+\subsection{Automated Hyperparameter Search}
+
+Manually trying different hyperparameter combinations does not scale. Bayesian optimization models the relationship between hyperparameters and performance as a Gaussian process, then intelligently picks the next configuration to try:
+\begin{equation}
+    \lambda^* = \arg\max_\lambda \; \alpha(\lambda \mid \mathcal{D}_{1:t})
+\end{equation}
+where $\alpha$ is an acquisition function like Expected Improvement. In practice, Optuna makes this surprisingly easy:
+
+\begin{lstlisting}[caption={Hyperparameter search with Optuna}]
+import optuna
+
+def objective(trial):
+    lr   = trial.suggest_float('lr', 1e-5, 1e-1, log=True)
+    h    = trial.suggest_int('hidden', 64, 512, step=64)
+    drop = trial.suggest_float('dropout', 0.0, 0.5)
+
+    model = build_model(h, drop)
+    opt   = optim.Adam(model.parameters(), lr=lr)
+    return train_and_evaluate(model, opt)
+
+study = optuna.create_study(direction='minimize')
+study.optimize(objective, n_trials=100)
+print(f"Best: {study.best_params}")
+\end{lstlisting}
+
+\subsection{Mixed-Precision Training}
+
+Modern GPUs can do math in 16-bit floating point about twice as fast as 32-bit, and PyTorch's AMP (Automatic Mixed Precision) makes it easy to take advantage of this:
+
+\begin{lstlisting}[caption={Mixed-precision training}]
+from torch.cuda.amp import autocast, GradScaler
+
+scaler = GradScaler()
+for X_b, y_b in train_loader:
+    opt.zero_grad()
+    with autocast():
+        loss = criterion(model(X_b), y_b)
+    scaler.scale(loss).backward()
+    scaler.step(opt)
+    scaler.update()
+\end{lstlisting}
+
+\subsection{Experiment Tracking and Reproducibility}
+
+Keeping track of what you tried and what worked is essential once you go beyond a handful of experiments. Tools like Weights \& Biases and MLflow log hyperparameters, metrics, and model checkpoints automatically. We also found that seeding everything (Python, NumPy, PyTorch, CUDA) and reporting results over multiple runs is considered standard practice in the research community.
+
+\subsection{Ensembles}
+
+Averaging predictions from 3--5 independently trained models ($\hat{y} = \frac{1}{K}\sum_{k=1}^{K} f_k(\mathbf{x})$) is one of the most reliable ways to squeeze out an extra 1--3\% accuracy. It is simple, it works, and it is used in almost every competitive ML setting.
+
+% ═══════════════════════════════════════════════════
+%  8. MATH SUMMARY
+% ═══════════════════════════════════════════════════
+\section{Mathematical Background Summary}
+
+To tie the math together in one place: the core problem is minimizing the regularized empirical loss:
+\begin{equation}
+    \theta^* = \arg\min_\theta \; \frac{1}{N} \sum_{i=1}^{N} \mathcal{L}\bigl(f(\mathbf{x}_i; \theta),\, y_i\bigr) + \lambda\,\Omega(\theta)
+\end{equation}
+
+The regularization term $\Omega(\theta)$ is usually L2 (weight decay: $\frac{1}{2}\|\theta\|_2^2$) or L1 (sparsity: $\|\theta\|_1$). For the loss $\mathcal{L}$, classification tasks typically use cross-entropy ($-\sum_c y_c \log \hat{y}_c$) and regression tasks use mean squared error ($\frac{1}{N}\sum_i (y_i - \hat{y}_i)^2$).
+
+Everything in tuning ultimately connects back to the bias-variance trade-off:
+\begin{equation}
+    \mathbb{E}[\text{error}] = \text{Bias}^2 + \text{Variance} + \text{Irreducible Noise}
+\end{equation}
+
+Making the model more complex reduces bias but increases variance. Regularization does the opposite. The tuning process is, at its core, about finding the sweet spot between these two forces for your particular problem.
+
+% ═══════════════════════════════════════════════════
+%  9. CONCLUSION
+% ═══════════════════════════════════════════════════
+\section{Conclusion}
+
+After going through the research, a few things stand out.
+
+Data quality and learning rate matter more than everything else. Before spending hours on architecture search or fancy hyperparameter sweeps, clean your data and run a learning rate range test. These two steps alone will get you most of the way there.
+
+There is a general tuning workflow that applies across architectures: start simple, verify the pipeline, find the right learning rate, add regularization as needed, then scale up. But the details differ significantly. CNNs live and die by transfer learning and data augmentation. RNNs need gradient clipping to stay stable. ANNs on tabular data need careful control over capacity and dropout.
+
+Diminishing returns are real. That first round of disciplined tuning captures 80--90\% of the achievable improvement, and everything after that is incremental. At some point, it is more productive to improve your data than to keep tweaking hyperparameters.
+
+The field is also moving toward automation. Tools like Optuna for hyperparameter search, mixed-precision training, and experiment tracking platforms are becoming standard. Knowing how to use them is as important as understanding the math behind gradient descent.
+
+If there is one thing we would tell someone just getting started with tuning: do not skip the fundamentals. Understand what each hyperparameter actually does, verify your pipeline before you optimize, and let the data guide your decisions.
+
+% ═══════════════════════════════════════════════════
+%  REFERENCES
+% ═══════════════════════════════════════════════════
+\newpage
+\begin{thebibliography}{20}
+
+\bibitem{goodfellow2016deep}
+I.\ Goodfellow, Y.\ Bengio, and A.\ Courville,
+\textit{Deep Learning}.
+MIT Press, 2016.
+
+\bibitem{yu2020hyper}
+T.\ Yu and H.\ Zhu,
+``Hyper-Parameter Optimization: A Review of Algorithms and Applications,''
+\textit{arXiv preprint arXiv:2003.05689}, 2020.
+
+\bibitem{bergstra2012random}
+J.\ Bergstra and Y.\ Bengio,
+``Random Search for Hyper-Parameter Optimization,''
+\textit{Journal of Machine Learning Research}, vol.~13, pp.~281--305, 2012.
+
+\bibitem{smith2018disciplined}
+L.~N.\ Smith,
+``A Disciplined Approach to Neural Network Hyper-Parameters: Part~1,''
+\textit{arXiv preprint arXiv:1803.09820}, 2018.
+
+\bibitem{kingma2015adam}
+D.~P.\ Kingma and J.\ Ba,
+``Adam: A Method for Stochastic Optimization,''
+in \textit{Proc.\ ICLR}, 2015.
+
+\bibitem{wilson2017marginal}
+A.~C.\ Wilson, R.\ Roelofs, M.\ Stern, N.\ Srebro, and B.\ Recht,
+``The Marginal Value of Adaptive Gradient Methods in Machine Learning,''
+in \textit{Advances in NeurIPS}, 2017.
+
+\bibitem{srivastava2014dropout}
+N.\ Srivastava, G.\ Hinton, A.\ Krizhevsky, I.\ Sutskever, and R.\ Salakhutdinov,
+``Dropout: A Simple Way to Prevent Neural Networks from Overfitting,''
+\textit{JMLR}, vol.~15, pp.~1929--1958, 2014.
+
+\bibitem{ioffe2015batch}
+S.\ Ioffe and C.\ Szegedy,
+``Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift,''
+in \textit{Proc.\ ICML}, 2015.
+
+\bibitem{luo2019adaptive}
+P.\ Luo, X.\ Wang, W.\ Shao, and Z.\ Peng,
+``Towards Understanding Regularization in Batch Normalization,''
+in \textit{Proc.\ ICLR}, 2019.
+
+\bibitem{he2016deep}
+K.\ He, X.\ Zhang, S.\ Ren, and J.\ Sun,
+``Deep Residual Learning for Image Recognition,''
+in \textit{Proc.\ CVPR}, pp.~770--778, 2016.
+
+\bibitem{he2019bag}
+T.\ He \textit{et al.},
+``Bag of Tricks for Image Classification with CNNs,''
+in \textit{Proc.\ CVPR}, 2019.
+
+\bibitem{pascanu2013difficulty}
+R.\ Pascanu, T.\ Mikolov, and Y.\ Bengio,
+``On the Difficulty of Training Recurrent Neural Networks,''
+in \textit{Proc.\ ICML}, 2013.
+
+\bibitem{vaswani2017attention}
+A.\ Vaswani \textit{et al.},
+``Attention Is All You Need,''
+in \textit{Advances in NeurIPS}, 2017.
+
+\bibitem{zoph2018learning}
+B.\ Zoph, V.\ Vasudevan, J.\ Shlens, and Q.~V.\ Le,
+``Learning Transferable Architectures for Scalable Image Recognition,''
+in \textit{Proc.\ CVPR}, 2018.
+
+\bibitem{feurer2019hyperparameter}
+M.\ Feurer and F.\ Hutter,
+``Hyperparameter Optimization,''
+in \textit{Automated Machine Learning}, Springer, pp.~3--33, 2019.
+
+\bibitem{hestness2017deep}
+J.\ Hestness \textit{et al.},
+``Deep Learning Scaling is Predictable, Empirically,''
+\textit{arXiv preprint arXiv:1712.00409}, 2017.
+
+\bibitem{he2015delving}
+K.\ He, X.\ Zhang, S.\ Ren, and J.\ Sun,
+``Delving Deep into Rectifiers,''
+in \textit{Proc.\ ICCV}, 2015.
+
+\end{thebibliography}
+
+\end{document}

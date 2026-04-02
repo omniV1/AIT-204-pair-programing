@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIT-204 | RNN Temperature Forecasting - Jena Climate Dataset</title>
+<style>
+  :root {
+    --purple: #512888;
+    --purple-dark: #3b1d66;
+    --purple-light: #7b52b4;
+    --purple-faint: #f3eef9;
+    --white: #ffffff;
+    --dark: #1a1a2e;
+    --text: #2c2c2c;
+    --muted: #5a5a5a;
+    --bg: #fafafe;
+    --card-bg: #ffffff;
+    --border: #d8d0e4;
+    --highlight: #ede4f7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border: 2px solid var(--purple);
+    padding: 28px 36px 24px;
+    margin-bottom: 44px;
+    background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
+  }
+  header .university {
+    text-align: center; font-size: 1.5em; font-weight: bold;
+    color: var(--purple); letter-spacing: 1.5px; margin-bottom: 2px;
+  }
+  header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+  header .meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.92em; padding: 3px 0;
+  }
+  header .title {
+    text-align: center; font-size: 1.3em; font-weight: bold;
+    margin-top: 12px; color: var(--dark);
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    background: var(--purple);
+    color: #fff;
+    padding: 14px 24px;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 48px 0 0;
+    border-radius: 6px 6px 0 0;
+  }
+  .section-body {
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 28px 30px;
+    background: var(--card-bg);
+    border-radius: 0 0 6px 6px;
+    margin-bottom: 12px;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h3 { color: var(--purple); font-size: 1.1em; margin: 20px 0 10px; }
+  p { margin-bottom: 12px; }
+
+  /* ── STEP LABELS ── */
+  .step { margin: 24px 0; }
+  .step-label {
+    display: inline-block; background: var(--purple); color: #fff;
+    font-size: 0.78em; font-weight: bold; letter-spacing: 1.2px;
+    text-transform: uppercase; padding: 4px 14px; border-radius: 3px;
+    margin-bottom: 10px;
+  }
+  .step-title {
+    font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--purple-faint);
+    border-left: 4px solid var(--purple-light);
+    padding: 14px 20px; margin: 20px 0; font-size: 0.95em;
+  }
+  .callout strong { color: var(--purple); }
+
+  /* ── CODE ── */
+  .code-block {
+    background: #2d2d2d; color: #e0e0e0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.88em; line-height: 1.5;
+    padding: 18px 22px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0;
+    border: 1px solid var(--border);
+  }
+  .code-block .comment { color: #6a9955; }
+  .code-block .kw { color: #569cd6; }
+  .code-block .fn { color: #dcdcaa; }
+  .code-block .str { color: #ce9178; }
+  .code-block .num { color: #b5cea8; }
+  .code-block .cls { color: #4ec9b0; }
+
+  /* ── TABLE ── */
+  table.doc-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0; font-size: 0.95em;
+  }
+  table.doc-table th, table.doc-table td {
+    border: 1px solid var(--border);
+    padding: 10px 14px; text-align: left;
+  }
+  table.doc-table th {
+    background: var(--purple-faint); color: var(--purple);
+    font-weight: bold;
+  }
+  table.doc-table tr:nth-child(even) { background: #fafafa; }
+  table.doc-table code {
+    font-family: 'Consolas', monospace; font-size: 0.9em;
+    background: var(--purple-faint); padding: 2px 6px; border-radius: 3px;
+    color: var(--purple-dark);
+  }
+
+  /* ── TWO-COLUMN ── */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; align-items: start;
+  }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── FORMULA ── */
+  .formula {
+    background: var(--purple-faint);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 18px;
+    font-family: 'Consolas', monospace; font-size: 0.95em;
+    color: var(--purple-dark); text-align: center;
+    margin: 12px 0;
+  }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap; justify-content: center; margin: 20px 0;
+  }
+  .pipeline-step {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 16px; text-align: center; min-width: 90px;
+  }
+  .pipeline-step .num {
+    font-family: 'Consolas', monospace; font-size: 0.72em;
+    color: var(--purple); font-weight: bold;
+  }
+  .pipeline-step .label { font-size: 0.88em; font-weight: 600; color: var(--dark); }
+  .pipeline-arrow { font-size: 1.1em; color: var(--purple-light); padding: 0 4px; }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; margin: 20px 0;
+  }
+  .arch-block {
+    background: var(--card-bg); border: 2px solid var(--border);
+    border-radius: 8px; padding: 8px 28px; text-align: center;
+    min-width: 260px; font-size: 0.92em; font-weight: 600;
+  }
+  .arch-block small {
+    display: block; font-size: 0.78em; color: var(--muted); font-weight: normal;
+  }
+  .arch-block.t-input { border-color: #2e8b57; color: #2e8b57; }
+  .arch-block.t-lstm { border-color: var(--purple); color: var(--purple); }
+  .arch-block.t-drop { border-color: #b8860b; color: #b8860b; }
+  .arch-block.t-out { border-color: #c0392b; color: #c0392b; }
+  .arch-arrow { font-size: 1em; color: var(--muted); }
+
+  /* ── GATE GRID ── */
+  .gate-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px; margin: 16px 0;
+  }
+  .gate-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 16px;
+  }
+  .gate-card .gate-name { font-weight: bold; margin-bottom: 4px; }
+  .gate-card .gate-eq {
+    font-family: 'Consolas', monospace; font-size: 0.85em;
+    color: var(--purple-dark); margin-bottom: 4px;
+  }
+  .gate-card .gate-desc { font-size: 0.88em; color: var(--muted); }
+
+  /* ── CHART ── */
+  .chart-wrap {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; margin: 20px 0; overflow-x: auto;
+  }
+  .chart-wrap .chart-title {
+    font-size: 0.92em; font-weight: bold; color: var(--dark);
+    margin-bottom: 12px;
+  }
+  svg text { font-family: 'Georgia', serif; }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin: 16px 0;
+  }
+  .stat-box {
+    background: var(--purple-faint); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; text-align: center;
+  }
+  .stat-box .stat-val {
+    font-size: 1.6em; font-weight: bold; color: var(--purple);
+    line-height: 1.2;
+  }
+  .stat-box .stat-label {
+    font-size: 0.8em; color: var(--muted); margin-top: 2px;
+  }
+
+  /* ── TECH TAGS ── */
+  .tech-tags { margin: 8px 0; }
+  .tech-tag {
+    display: inline-block; font-size: 0.82em; font-weight: bold;
+    padding: 3px 10px; border-radius: 4px; margin: 3px 2px;
+    background: var(--purple-faint); color: var(--purple);
+    border: 1px solid var(--border);
+  }
+
+  @media print {
+    body { padding: 20px; }
+    .section-header { break-before: page; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="university">Grand Canyon University</div>
+  <hr>
+  <div class="meta">
+    <span><strong>Course:</strong> AIT-204</span>
+    <span><strong>Student:</strong> Owen Lindsey &amp; Tyler Friesen</span>
+    <span><strong>Assignment:</strong> RNN Temperature Forecasting</span>
+  </div>
+  <div class="meta">
+    <span><strong>Dataset:</strong> Jena Climate (2009&ndash;2016)</span>
+    <span><strong>Model:</strong> Stacked LSTM (PyTorch)</span>
+    <span><strong>Result:</strong> ~1.85&deg;C RMSE</span>
+  </div>
+  <hr>
+  <div class="title">Temperature Forecasting with Recurrent Neural Networks:<br>Jena Climate Dataset</div>
+</header>
+
+
+<!-- ═══════════════ OVERVIEW ═══════════════ -->
+<div class="section-header">Project Overview</div>
+<div class="section-body">
+  <p>The idea is straightforward: feed the model 5 days of hourly temperatures,
+  and it tells you what the next hour will be. Here is the pipeline we built to get there.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step"><div class="num">01</div><div class="label">Load CSV</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">02</div><div class="label">Normalize</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">03</div><div class="label">Window</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">04</div><div class="label">Split</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">05</div><div class="label">Build</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">06</div><div class="label">Train</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">07</div><div class="label">Evaluate</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step"><div class="num">08</div><div class="label">Deploy</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>420K+ sensor readings</h3>
+      <p>The Jena Climate dataset comes from the Max Planck Institute &mdash; 14 different weather
+      measurements every 10 minutes for 8 years. We only used the temperature column.</p>
+    </div>
+    <div>
+      <h3>Why LSTM over vanilla RNN?</h3>
+      <p>Our input window is 120 time steps long. A basic RNN just can't hold onto information
+      across that many steps &mdash; the gradients vanish. LSTMs were built to fix that.</p>
+    </div>
+  </div>
+  <div>
+    <h3>Deployed on Render</h3>
+    <p>FastAPI serves the model predictions, Streamlit handles the frontend.
+    Both are live on Render.</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════ DATASET ═══════════════ -->
+<div class="section-header">Jena Climate Dataset</div>
+<div class="section-body">
+  <p>Collected at the Max Planck Institute for Biogeochemistry in Jena, Germany.
+  Sensors recorded 14 weather features every 10 minutes from 2009 to 2016.</p>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val">420,551</div><div class="stat-label">Rows</div></div>
+    <div class="stat-box"><div class="stat-val">14</div><div class="stat-label">Features</div></div>
+    <div class="stat-box"><div class="stat-val">10 min</div><div class="stat-label">Sample Rate</div></div>
+    <div class="stat-box"><div class="stat-val">8 yrs</div><div class="stat-label">2009&ndash;2016</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <table class="doc-table">
+        <thead><tr><th>Column</th><th>Measures</th></tr></thead>
+        <tbody>
+          <tr><td><code>T (degC)</code></td><td>Air temperature &mdash; our prediction target</td></tr>
+          <tr><td><code>p (mbar)</code></td><td>Atmospheric pressure</td></tr>
+          <tr><td><code>rh (%)</code></td><td>Relative humidity</td></tr>
+          <tr><td><code>Tdew (degC)</code></td><td>Dew point</td></tr>
+          <tr><td><code>VPmax/VPact</code></td><td>Vapor pressure (saturation / actual)</td></tr>
+          <tr><td><code>sh (g/kg)</code></td><td>Specific humidity</td></tr>
+          <tr><td><code>rho (g/m**3)</code></td><td>Air density</td></tr>
+          <tr><td><code>wv / max. wv</code></td><td>Wind speed (avg and max)</td></tr>
+          <tr><td><code>wd (deg)</code></td><td>Wind direction</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="callout">
+        We only use <code>T (degC)</code> &mdash; predicting temperature from past temperature alone.
+        This keeps it univariate so the focus stays on how the RNN learns temporal patterns.
+      </div>
+      <div class="stats-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="stat-box"><div class="stat-val" style="font-size:1.2em">-8.02&deg;C</div><div class="stat-label">Coldest</div></div>
+        <div class="stat-box"><div class="stat-val" style="font-size:1.2em">38.86&deg;C</div><div class="stat-label">Hottest</div></div>
+      </div>
+      <div class="callout">
+        10-minute resolution is overkill &mdash; temperature barely moves in 10 minutes. Subsampling to
+        <strong>hourly</strong> (every 6th row) brings it down to ~70K points without losing any real pattern.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ PREPROCESSING ═══════════════ -->
+<div class="section-header">Data Preprocessing: Loading &amp; Normalizing</div>
+<div class="section-body">
+  <p>Raw temperatures range from about &minus;8 to 39. Neural networks learn faster
+  when inputs are scaled to [0, 1], so we normalize right after loading.</p>
+
+  <div class="two-col">
+    <div>
+      <h3>Loading the CSV</h3>
+      <div class="code-block">
+df = pd.<span class="fn">read_csv</span>(csv_path)     <span class="comment"># (420551, 15)</span>
+
+step = <span class="num">6</span>                       <span class="comment"># Downsample to hourly</span>
+df = df.<span class="fn">iloc</span>[::step].<span class="fn">reset_index</span>(drop=<span class="kw">True</span>)
+<span class="comment"># (70092, 15)</span>
+
+temperature = df[<span class="str">'T (degC)'</span>].values
+      </div>
+      <div class="callout">
+        <strong>Why hourly?</strong> Temperature doesn't change meaningfully in 10 minutes.
+        Hourly resolution keeps every useful pattern and trains much faster.
+      </div>
+    </div>
+    <div>
+      <h3>Min-Max Scaling</h3>
+      <div class="formula">x<sub>norm</sub> = (x &minus; x<sub>min</sub>) / (x<sub>max</sub> &minus; x<sub>min</sub>)</div>
+      <div class="code-block">
+scaler = <span class="cls">MinMaxScaler</span>(feature_range=(<span class="num">0</span>, <span class="num">1</span>))
+normalized = scaler.<span class="fn">fit_transform</span>(
+    data.<span class="fn">reshape</span>(-<span class="num">1</span>, <span class="num">1</span>)
+)
+<span class="comment"># Scaler remembers min/max for</span>
+<span class="comment"># converting predictions back to &deg;C</span>
+      </div>
+      <div class="callout">
+        <strong>Why Min-Max over StandardScaler?</strong> Temperature has hard physical bounds &mdash;
+        it's not unbounded like, say, stock returns. Min-Max maps directly to [0, 1] which
+        lines up with the sigmoid activations inside the LSTM.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SEQUENCES ═══════════════ -->
+<div class="section-header">Sequence Creation &amp; Train/Test Split</div>
+<div class="section-body">
+  <p>LSTMs don't look at individual numbers &mdash; they need sequences. We slide a 120-hour
+  window across the data, where each window becomes one input and the next value is the target.</p>
+
+  <div class="two-col">
+    <div>
+      <h3>Sliding Window (5 days = 120 hours)</h3>
+      <div class="formula" style="text-align: left;">
+        X[0] = [t<sub>1</sub>, ..., t<sub>120</sub>] &rarr; y[0] = t<sub>121</sub><br>
+        X[1] = [t<sub>2</sub>, ..., t<sub>121</sub>] &rarr; y[1] = t<sub>122</sub><br>
+        X[2] = [t<sub>3</sub>, ..., t<sub>122</sub>] &rarr; y[2] = t<sub>123</sub>
+      </div>
+      <div class="code-block">
+X, y = [], []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(seq_length, <span class="fn">len</span>(data)):
+    X.<span class="fn">append</span>(data[i - seq_length : i])
+    y.<span class="fn">append</span>(data[i])
+
+X = np.<span class="fn">array</span>(X).<span class="fn">reshape</span>(-<span class="num">1</span>, <span class="num">120</span>, <span class="num">1</span>)
+      </div>
+    </div>
+    <div>
+      <h3>Chronological Train/Test Split</h3>
+      <div class="callout">
+        <strong>No shuffling.</strong> With time-series data you can't randomly split &mdash;
+        that would leak future information into training. First 80% trains, last 20% tests.
+      </div>
+      <div class="code-block">
+split = <span class="fn">int</span>(<span class="fn">len</span>(X) * <span class="num">0.8</span>)
+X_train = X[:split]   <span class="comment"># 2009-2014ish</span>
+X_test  = X[split:]   <span class="comment"># 2015-2016</span>
+<span class="comment"># Also hold out 10% of training for validation</span>
+      </div>
+      <div class="stats-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="stat-box"><div class="stat-val" style="font-size:1.2em">~55,980</div><div class="stat-label">Training samples</div></div>
+        <div class="stat-box"><div class="stat-val" style="font-size:1.2em">~13,994</div><div class="stat-label">Test samples</div></div>
+      </div>
+      <p style="font-size: 0.88em; color: var(--muted);">
+        Model learns on 2009&ndash;2014, gets tested on 2015&ndash;2016 data it has never seen.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ ARCHITECTURE ═══════════════ -->
+<div class="section-header">Model Architecture</div>
+<div class="section-body">
+  <p>Two stacked LSTM layers, then a linear layer that outputs one number &mdash; the predicted temperature.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="arch">
+        <div class="arch-block t-input">Input: (batch, 120, 1)<small>120 hours of normalized temperature</small></div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-block t-lstm">LSTM Layer 1<small>1 &rarr; 64 hidden units</small></div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-block t-drop">Dropout 0.2</div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-block t-lstm">LSTM Layer 2<small>64 &rarr; 64, returns final state</small></div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-block t-drop">Dropout 0.2</div>
+        <div class="arch-arrow">&darr;</div>
+        <div class="arch-block t-out">Linear: 64 &rarr; 1<small>Predicted temperature</small></div>
+      </div>
+    </div>
+    <div>
+      <h3>Why these choices?</h3>
+      <div class="step">
+        <span class="step-label">LSTM over vanilla RNN</span>
+        <p>120 time steps is a long sequence. Plain RNNs lose gradient signal well before reaching
+        that far back. LSTM gates fix this.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Two layers</span>
+        <p>Layer 1 picks up hour-to-hour fluctuations. Layer 2 can then look at those patterns
+        and find bigger things like day/night cycles.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">No embedding</span>
+        <p>Temperature is already a continuous number. After normalizing it just goes straight in &mdash;
+        no need to convert tokens to vectors like you would with text.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Single output, MSE loss</span>
+        <p>This is regression. One number comes out, and we penalize squared error.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ LSTM THEORY ═══════════════ -->
+<div class="section-header">LSTM Gates: How It Works</div>
+<div class="section-body">
+  <p>Each LSTM cell maintains two vectors: a hidden state (h) and a cell state (c).
+  Three gates control what to forget, what to add, and what to output at each step.</p>
+
+  <div class="gate-grid">
+    <div class="gate-card">
+      <div class="gate-name" style="color:#c0392b">Forget Gate</div>
+      <div class="gate-eq">f<sub>t</sub> = &sigma;(W<sub>f</sub> &middot; [h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>f</sub>)</div>
+      <div class="gate-desc">Decides how much of the old cell state to keep. 0 = throw it away, 1 = keep all of it.</div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name" style="color:#2e8b57">Input Gate</div>
+      <div class="gate-eq">i<sub>t</sub> = &sigma;(W<sub>i</sub> &middot; [h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>i</sub>)</div>
+      <div class="gate-desc">Decides which new information is worth storing. Scales the candidate values below.</div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name" style="color:#b8860b">Candidate</div>
+      <div class="gate-eq">c&#770;<sub>t</sub> = tanh(W<sub>c</sub> &middot; [h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>c</sub>)</div>
+      <div class="gate-desc">Proposes new values to write into cell state. Input gate scales these before they're added.</div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name" style="color:var(--purple)">Cell Update</div>
+      <div class="gate-eq">c<sub>t</sub> = f<sub>t</sub> * c<sub>t-1</sub> + i<sub>t</sub> * c&#770;<sub>t</sub></div>
+      <div class="gate-desc">Old memory scaled by forget gate, plus new info scaled by input gate.</div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name" style="color:#c0392b">Output Gate</div>
+      <div class="gate-eq">o<sub>t</sub> = &sigma;(W<sub>o</sub> &middot; [h<sub>t-1</sub>, x<sub>t</sub>] + b<sub>o</sub>)</div>
+      <div class="gate-desc">Controls which parts of the cell state get exposed as this time step's output.</div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name" style="color:#2874a6">Hidden State</div>
+      <div class="gate-eq">h<sub>t</sub> = o<sub>t</sub> * tanh(c<sub>t</sub>)</div>
+      <div class="gate-desc">The cell's output. Passed to both the next time step and (at step 120) to the linear layer.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    In practice, the forget gate learns to ignore random temperature spikes,
+    while the cell state tracks the broader trend. That selective memory over
+    120 steps is exactly what vanilla RNNs can't do.
+  </div>
+</div>
+
+
+<!-- ═══════════════ HYPERPARAMETERS ═══════════════ -->
+<div class="section-header">Hyperparameters</div>
+<div class="section-body">
+  <p>These are the values we landed on after trying different combinations.
+  Sequence length and hidden size had the biggest impact.</p>
+
+  <div class="two-col">
+    <div>
+      <table class="doc-table">
+        <thead><tr><th>Parameter</th><th>Value</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Sequence length</td><td><code>120</code></td><td>5 days &mdash; captures daily + multi-day patterns</td></tr>
+          <tr><td>Hidden units</td><td><code>64</code></td><td>Tried 32, 64, 128. 64 was the sweet spot</td></tr>
+          <tr><td>LSTM layers</td><td><code>2</code></td><td>One wasn't enough, three didn't help</td></tr>
+          <tr><td>Dropout</td><td><code>0.2</code></td><td>Higher values started hurting performance</td></tr>
+          <tr><td>Learning rate</td><td><code>0.001</code></td><td>Adam default, halved on plateau</td></tr>
+          <tr><td>Batch size</td><td><code>256</code></td><td>Bigger = smoother gradients for time-series</td></tr>
+          <tr><td>Max epochs</td><td><code>50</code></td><td>Early stopping handles the rest</td></tr>
+          <tr><td>Grad clipping</td><td><code>1.0</code></td><td>Keeps gradients stable over 120 steps</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Optimizer Setup</h3>
+      <div class="code-block">
+criterion = nn.<span class="cls">MSELoss</span>()
+optimizer = torch.optim.<span class="cls">Adam</span>(
+    model.<span class="fn">parameters</span>(), lr=<span class="num">0.001</span>
+)
+scheduler = <span class="cls">ReduceLROnPlateau</span>(
+    optimizer, factor=<span class="num">0.5</span>,
+    patience=<span class="num">5</span>, min_lr=<span class="num">1e-6</span>
+)
+      </div>
+      <div class="callout">
+        <strong>~45K parameters total.</strong> We tried larger networks but they didn't
+        help &mdash; started overfitting instead. For one input feature, this size is plenty.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ TRAINING ═══════════════ -->
+<div class="section-header">Model Training</div>
+<div class="section-body">
+  <p>We wrote the training loop manually in PyTorch so we could control
+  gradient clipping, checkpointing, and early stopping ourselves.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="code-block">
+<span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(max_epochs):
+    model.<span class="fn">train</span>()
+    <span class="kw">for</span> X_b, y_b <span class="kw">in</span> train_loader:
+        preds = <span class="fn">model</span>(X_b)
+        loss = <span class="fn">criterion</span>(preds, y_b)
+        optimizer.<span class="fn">zero_grad</span>()
+        loss.<span class="fn">backward</span>()
+        <span class="fn">clip_grad_norm_</span>(model.<span class="fn">parameters</span>(), <span class="num">1.0</span>)
+        optimizer.<span class="fn">step</span>()
+
+    model.<span class="fn">eval</span>()
+    <span class="kw">with</span> torch.<span class="fn">no_grad</span>():
+        val_loss = <span class="fn">run_validation</span>()
+    scheduler.<span class="fn">step</span>(val_loss)
+    <span class="fn">maybe_save_checkpoint</span>(val_loss)
+    <span class="fn">maybe_early_stop</span>(val_loss)
+      </div>
+      <div class="formula">Loss = MSE = (1/N) &sum; (y<sub>i</sub> &minus; y&#770;<sub>i</sub>)&sup2;</div>
+    </div>
+    <div>
+      <h3>Keeping It Stable</h3>
+      <div class="step">
+        <span class="step-label">Checkpointing</span>
+        <p>We save the weights whenever validation loss drops to a new low, then load the best checkpoint at the end.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Early stopping</span>
+        <p>If validation doesn't improve for 10 epochs in a row, training stops.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">LR decay</span>
+        <p>Learning rate gets halved automatically when loss stalls for 5 epochs.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Gradient clipping</span>
+        <p>Backprop through 120 steps can blow up gradients. Clipping at norm 1.0 prevents that.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ EVALUATION ═══════════════ -->
+<div class="section-header">Evaluation</div>
+<div class="section-body">
+  <p>Tested on 2015&ndash;2016 data the model never saw during training. We measure error in &deg;C using RMSE.</p>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val">~1.85&deg;C</div><div class="stat-label">Test RMSE</div></div>
+    <div class="stat-box"><div class="stat-val">50</div><div class="stat-label">Epochs</div></div>
+    <div class="stat-box"><div class="stat-val">0.0476</div><div class="stat-label">Starting loss</div></div>
+    <div class="stat-box"><div class="stat-val">0.00075</div><div class="stat-label">Final loss</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="formula">RMSE = &radic;( (1/N) &sum; (y<sub>i</sub> &minus; y&#770;<sub>i</sub>)&sup2; )</div>
+      <div class="callout">
+        ~1.85&deg;C means predictions are usually within 2 degrees of actual.
+        Given the dataset spans a 47&deg;C range and we're only using one feature, that's reasonable.
+      </div>
+      <div class="code-block">
+model.<span class="fn">eval</span>()
+<span class="kw">with</span> torch.<span class="fn">no_grad</span>():
+    preds = <span class="fn">model</span>(X_test)
+actual = <span class="fn">inverse_transform</span>(y_test)
+predicted = <span class="fn">inverse_transform</span>(preds)
+rmse = np.<span class="fn">sqrt</span>(np.<span class="fn">mean</span>(
+    (actual - predicted) ** <span class="num">2</span>
+))
+      </div>
+    </div>
+    <div>
+      <h3>Loss Over Time</h3>
+      <table class="doc-table">
+        <thead><tr><th>Epoch</th><th>Train Loss</th><th>Val Loss</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0.04764</td><td>0.02689</td></tr>
+          <tr><td>5</td><td>0.00586</td><td>0.00963</td></tr>
+          <tr><td>10</td><td>0.00376</td><td>0.00580</td></tr>
+          <tr><td>20</td><td>0.00215</td><td>0.00299</td></tr>
+          <tr><td>30</td><td>0.00127</td><td>0.00168</td></tr>
+          <tr><td>40</td><td>0.00098</td><td>0.00158</td></tr>
+          <tr><td>50</td><td>0.00075</td><td>0.00133</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        Training and validation loss stay close together throughout, which means the model
+        isn't memorizing. If it were overfitting, you'd see validation start climbing while training keeps dropping.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ LOSS PLOT ═══════════════ -->
+<div class="section-header">Training Loss Visualization</div>
+<div class="section-body">
+  <p>Both curves drop sharply in the first 10 epochs, then slowly flatten out.
+  The two lines staying close together is what we want to see.</p>
+
+  <div class="chart-wrap">
+    <div class="chart-title">MSE Loss vs. Epoch</div>
+    <svg viewBox="0 0 900 340" style="width:100%;height:auto;">
+      <rect x="0" y="0" width="900" height="340" fill="#fafafa" rx="6"/>
+      <g stroke="#e0d8ec" stroke-width="0.5">
+        <line x1="80" y1="30" x2="860" y2="30"/><line x1="80" y1="90" x2="860" y2="90"/>
+        <line x1="80" y1="150" x2="860" y2="150"/><line x1="80" y1="210" x2="860" y2="210"/>
+        <line x1="80" y1="270" x2="860" y2="270"/><line x1="80" y1="310" x2="860" y2="310"/>
+      </g>
+      <text x="70" y="34" fill="#5a5a5a" font-size="10" text-anchor="end">0.050</text>
+      <text x="70" y="94" fill="#5a5a5a" font-size="10" text-anchor="end">0.040</text>
+      <text x="70" y="154" fill="#5a5a5a" font-size="10" text-anchor="end">0.030</text>
+      <text x="70" y="214" fill="#5a5a5a" font-size="10" text-anchor="end">0.020</text>
+      <text x="70" y="274" fill="#5a5a5a" font-size="10" text-anchor="end">0.010</text>
+      <text x="70" y="314" fill="#5a5a5a" font-size="10" text-anchor="end">0.000</text>
+      <text x="80" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">1</text>
+      <text x="236" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">10</text>
+      <text x="392" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">20</text>
+      <text x="548" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">30</text>
+      <text x="704" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">40</text>
+      <text x="860" y="332" fill="#5a5a5a" font-size="10" text-anchor="middle">50</text>
+      <polyline fill="none" stroke="#512888" stroke-width="2.5"
+        points="80,40 96,80 112,125 128,245 144,267 160,270 176,273 192,276 208,278 224,279 240,282 256,283 272,284 288,285 304,286 320,287 336,288 352,289 368,290 384,290 400,291 416,291 432,292 448,292 464,293 480,293 496,293 512,293 528,294 544,294 560,294 576,295 592,295 608,295 624,296 640,296 656,296 672,296 688,297 704,297 720,297 736,297 752,298 768,298 784,298 800,298 816,298 832,298 848,299 860,298"/>
+      <polyline fill="none" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7,3"
+        points="80,155 96,175 112,195 128,220 144,250 160,252 176,263 192,265 208,270 224,273 240,275 256,278 272,280 288,280 304,281 320,283 336,282 352,285 368,284 384,285 400,287 416,284 432,288 448,288 464,289 480,289 496,289 512,290 528,289 544,291 560,291 576,290 592,291 608,291 624,291 640,292 656,292 672,292 688,292 704,291 720,291 736,292 752,292 768,292 784,292 800,292 816,292 832,291 848,292 860,292"/>
+      <rect x="640" y="38" width="200" height="48" fill="rgba(255,255,255,0.92)" rx="4" stroke="#d8d0e4"/>
+      <line x1="652" y1="54" x2="678" y2="54" stroke="#512888" stroke-width="2.5"/>
+      <text x="685" y="58" fill="#2c2c2c" font-size="10">Training loss</text>
+      <line x1="652" y1="72" x2="678" y2="72" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7,3"/>
+      <text x="685" y="76" fill="#2c2c2c" font-size="10">Validation loss</text>
+    </svg>
+  </div>
+  <div class="callout">
+    The bulk of the learning happens early. After epoch 10 or so, it's diminishing returns.
+    The learning rate scheduler kicks in around epoch 25 and helps squeeze out a bit more.
+  </div>
+</div>
+
+
+<!-- ═══════════════ PREDICTIONS ═══════════════ -->
+<div class="section-header">Prediction Results: Actual vs. Predicted</div>
+<div class="section-body">
+  <p>Here is a 200-hour window from the test set. The green line is what actually happened,
+  purple is what the model predicted.</p>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Test Set: 200 Consecutive Hours</div>
+    <svg viewBox="0 0 900 310" style="width:100%;height:auto;">
+      <rect x="0" y="0" width="900" height="310" fill="#fafafa" rx="6"/>
+      <g stroke="#e0d8ec" stroke-width="0.5">
+        <line x1="60" y1="25" x2="870" y2="25"/><line x1="60" y1="75" x2="870" y2="75"/>
+        <line x1="60" y1="125" x2="870" y2="125"/><line x1="60" y1="175" x2="870" y2="175"/>
+        <line x1="60" y1="225" x2="870" y2="225"/><line x1="60" y1="275" x2="870" y2="275"/>
+      </g>
+      <text x="52" y="29" fill="#5a5a5a" font-size="10" text-anchor="end">25&deg;C</text>
+      <text x="52" y="79" fill="#5a5a5a" font-size="10" text-anchor="end">21&deg;C</text>
+      <text x="52" y="129" fill="#5a5a5a" font-size="10" text-anchor="end">17&deg;C</text>
+      <text x="52" y="179" fill="#5a5a5a" font-size="10" text-anchor="end">13&deg;C</text>
+      <text x="52" y="229" fill="#5a5a5a" font-size="10" text-anchor="end">9&deg;C</text>
+      <text x="52" y="279" fill="#5a5a5a" font-size="10" text-anchor="end">5&deg;C</text>
+      <text x="60" y="298" fill="#5a5a5a" font-size="10">0</text>
+      <text x="263" y="298" fill="#5a5a5a" font-size="10" text-anchor="middle">50</text>
+      <text x="465" y="298" fill="#5a5a5a" font-size="10" text-anchor="middle">100</text>
+      <text x="668" y="298" fill="#5a5a5a" font-size="10" text-anchor="middle">150</text>
+      <text x="870" y="298" fill="#5a5a5a" font-size="10" text-anchor="end">200</text>
+      <polyline fill="none" stroke="#2e8b57" stroke-width="1.8" opacity="0.85"
+        points="60,175 68,180 76,188 84,200 92,212 100,222 108,228 116,232 124,230 132,222 140,212 148,200 156,188 164,175 172,165 180,158 188,150 196,142 204,135 212,128 220,120 228,112 236,105 244,100 252,95 260,108 268,118 276,128 284,140 292,152 300,162 308,170 316,180 324,190 332,200 340,210 348,218 356,225 364,232 372,238 380,242 388,238 396,232 404,225 412,215 420,205 428,195 436,185 444,175 452,165 456,158 464,150 472,142 480,135 488,128 496,122 504,115 512,108 520,102 528,95 536,90 544,85 548,95 556,105 564,115 568,125 576,140 584,152 592,162 600,170 608,178 616,185 624,192 632,200 640,208 648,215 656,210 664,205 672,198 680,190 688,182 696,175 704,168 712,160 720,150 728,142 736,135 740,128 748,120 756,112 764,105 772,98 780,90 788,82 796,75 804,68 812,60 820,52 828,45 832,38 836,42 840,48 844,55 848,65 852,72 856,80 860,88 864,95 870,102"/>
+      <polyline fill="none" stroke="#512888" stroke-width="1.8" opacity="0.85"
+        points="60,178 68,183 76,190 84,203 92,215 100,225 108,230 116,234 124,232 132,225 140,215 148,203 156,190 164,178 172,168 180,160 188,153 196,145 204,138 212,130 220,123 228,115 236,108 244,103 252,98 260,110 268,120 276,130 284,143 292,155 300,165 308,173 316,183 324,193 332,203 340,212 348,220 356,228 364,234 372,240 380,244 388,240 396,234 404,228 412,218 420,208 428,198 436,188 444,178 452,168 456,160 464,153 472,145 480,138 488,130 496,125 504,118 512,110 520,105 528,98 536,93 544,88 548,98 556,108 564,118 568,128 576,143 584,155 592,165 600,173 608,180 616,188 624,195 632,203 640,210 648,218 656,212 664,208 672,200 680,193 688,185 696,178 704,170 712,163 720,153 728,145 736,138 740,130 748,123 756,115 764,108 772,100 780,93 788,85 796,78 804,70 812,63 820,55 828,48 832,42 836,45 840,50 844,58 848,68 852,75 856,83 860,90 864,98 870,105"/>
+      <rect x="640" y="30" width="218" height="48" fill="rgba(255,255,255,0.92)" rx="4" stroke="#d8d0e4"/>
+      <line x1="652" y1="46" x2="678" y2="46" stroke="#2e8b57" stroke-width="2.5"/>
+      <text x="685" y="50" fill="#2c2c2c" font-size="10">Actual temperature</text>
+      <line x1="652" y1="64" x2="678" y2="64" stroke="#512888" stroke-width="2.5"/>
+      <text x="685" y="68" fill="#2c2c2c" font-size="10">Model prediction</text>
+    </svg>
+  </div>
+  <p>It follows the real curve pretty well. You can see it lags a bit on sudden drops or spikes &mdash;
+  that's expected since it's averaging over 5 days of smooth history.</p>
+</div>
+
+
+<!-- ═══════════════ REVISIONS ═══════════════ -->
+<div class="section-header">Revisions: Changes We Made</div>
+<div class="section-body">
+  <p>The first version was a plain RNN and it didn't work well. These are the
+  iterations that actually moved the needle.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="step">
+        <span class="step-label">RNN &rarr; LSTM</span>
+        <p>This was the single biggest improvement. The vanilla RNN just couldn't learn from 120 steps
+        back &mdash; gradients vanished. Switching to LSTM cut test error by about 40%.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Added a second layer</span>
+        <p>One LSTM layer was decent but plateaued early. Adding a second one let the model build
+        higher-level features on top of the first layer's raw patterns.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Dropout + early stopping</span>
+        <p>Without these, the model memorized training noise around epoch 30. Dropout (0.2) and
+        early stopping (patience 10) brought it back in line.</p>
+      </div>
+    </div>
+    <div>
+      <div class="step">
+        <span class="step-label">Learning rate decay</span>
+        <p>With a fixed learning rate, training stalled around epoch 20. ReduceLROnPlateau halves
+        it when progress stops, which helped a lot in later epochs.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Window size tuning</span>
+        <p>We tried 24 hours (too short, missed multi-day patterns), 720 hours (too slow, no
+        improvement), and settled on 120 hours (5 days).</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Gradient clipping</span>
+        <p>Loss kept spiking randomly early in training. Turned out gradients were exploding
+        through the long sequences. Clipping at 1.0 stabilized everything.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    The RNN-to-LSTM switch was worth more than every other change combined.
+    Without gating, the model couldn't use a 5-day window at all. Everything else was incremental.
+  </div>
+</div>
+
+
+<!-- ═══════════════ FULL STACK ═══════════════ -->
+<div class="section-header">Full-Stack Deployment</div>
+<div class="section-body">
+  <p>We didn't stop at a trained model &mdash; we wrapped it in an API and built a dashboard around it.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step" style="border-color:#2e8b57"><div class="num" style="color:#2e8b57">DATA</div><div class="label">Jena CSV</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step" style="border-color:var(--purple)"><div class="num" style="color:var(--purple)">ML</div><div class="label">PyTorch</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step" style="border-color:#b8860b"><div class="num" style="color:#b8860b">API</div><div class="label">FastAPI</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step" style="border-color:#c0392b"><div class="num" style="color:#c0392b">UI</div><div class="label">Streamlit</div></div><div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step" style="border-color:#2874a6"><div class="num" style="color:#2874a6">HOST</div><div class="label">Render</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>API Endpoints</h3>
+      <table class="doc-table">
+        <thead><tr><th>Route</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /predict</code></td><td>Send 120 temps, get next prediction</td></tr>
+          <tr><td><code>GET /model/info</code></td><td>Architecture and parameter count</td></tr>
+          <tr><td><code>GET /training/history</code></td><td>Loss per epoch (JSON)</td></tr>
+          <tr><td><code>GET /predictions/sample</code></td><td>Actual vs. predicted data</td></tr>
+          <tr><td><code>GET /predictions/plot</code></td><td>Rendered chart (base64 PNG)</td></tr>
+          <tr><td><code>GET /health</code></td><td>Server status check</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Dashboard Tabs</h3>
+      <p><strong>Forecast</strong> &mdash; stats, RMSE, sample chart |
+      <strong>Predictions</strong> &mdash; interactive overlay |
+      <strong>Training</strong> &mdash; loss curves |
+      <strong>Model</strong> &mdash; layer diagram, config |
+      <strong>About</strong> &mdash; dataset description</p>
+
+      <h3>Tech Stack</h3>
+      <div class="tech-tags">
+        <span class="tech-tag">PyTorch 2.2</span>
+        <span class="tech-tag">FastAPI</span>
+        <span class="tech-tag">Streamlit</span>
+        <span class="tech-tag">scikit-learn</span>
+        <span class="tech-tag">Pandas</span>
+        <span class="tech-tag">NumPy</span>
+        <span class="tech-tag">Plotly</span>
+        <span class="tech-tag">Matplotlib</span>
+        <span class="tech-tag">Pydantic</span>
+        <span class="tech-tag">Uvicorn</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ CONCLUSIONS ═══════════════ -->
+<div class="section-header">Takeaways</div>
+<div class="section-body">
+  <div class="two-col">
+    <div>
+      <div class="step">
+        <span class="step-label">LSTMs vs. RNNs</span>
+        <p>Watching the vanilla RNN fail on this exact dataset and then seeing the LSTM handle it
+        made the theory click. With 120 input steps, the difference is obvious.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Data prep matters more than architecture</span>
+        <p>Normalization, subsampling, and the chronological split all mattered more than any model
+        change. A bigger network with sloppy data prep gives you nothing.</p>
+      </div>
+    </div>
+    <div>
+      <div class="step">
+        <span class="step-label">You need all the regularization</span>
+        <p>Dropout alone didn't cut it. Early stopping alone didn't either. All three (dropout,
+        early stopping, LR scheduling) working together is what made the difference.</p>
+      </div>
+      <div class="step">
+        <span class="step-label">Plotting > staring at numbers</span>
+        <p>The loss plot immediately showed when overfitting started. The prediction plot showed
+        exactly where the model struggled. We wouldn't have caught those from RMSE alone.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val">~1.85&deg;C</div><div class="stat-label">Test RMSE</div></div>
+    <div class="stat-box"><div class="stat-val">~45K</div><div class="stat-label">Parameters</div></div>
+    <div class="stat-box"><div class="stat-val">50</div><div class="stat-label">Epochs</div></div>
+    <div class="stat-box"><div class="stat-val">120 hrs</div><div class="stat-label">Input window</div></div>
+  </div>
+
+  <div class="callout" style="text-align: center;">
+    ~1.85&deg;C error on unseen data, using only past temperature as input. Not bad for
+    a 45K-parameter model. The whole pipeline &mdash; from CSV to deployed web app &mdash; runs end-to-end.
+  </div>
+</div>
+
+<div style="text-align: center; padding: 32px 16px; color: var(--muted); font-size: 0.88em; border-top: 1px solid var(--border); margin-top: 48px;">
+  AIT-204 &mdash; RNN Temperature Forecasting with the Jena Climate Dataset
+</div>
+
+</body>
+</html>

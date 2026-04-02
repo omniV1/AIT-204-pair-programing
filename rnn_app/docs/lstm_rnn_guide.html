@@ -1,969 +1,1495 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSTM &amp; RNN Guide — Temperature Forecasting with the Jena Climate Dataset</title>
-    <style>
-        :root {
-            --bg-primary: #0d0d1a;
-            --bg-secondary: #1a1a2e;
-            --bg-card: #1e1e3a;
-            --accent-purple: #7c6af5;
-            --accent-cyan: #6af5c8;
-            --accent-red: #f56a6a;
-            --accent-yellow: #f5d76a;
-            --text-primary: #e0e0f0;
-            --text-secondary: #aaaacc;
-            --border: #333355;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSTM &amp; RNN for Temperature Forecasting &mdash; Interactive Guide</title>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  <style>
+    :root {
+      --purple: #512888;
+      --purple-dark: #3b1d66;
+      --purple-light: #7b52b4;
+      --purple-faint: #f3eef9;
+      --white: #ffffff;
+      --dark: #1a1a2e;
+      --text: #2c2c2c;
+      --muted: #5a5a5a;
+      --bg: #fafafe;
+      --card-bg: #ffffff;
+      --border: #d8d0e4;
+      --highlight: #ede4f7;
+      --step-accent: #512888;
+      --correct: #2e7d32;
+      --incorrect: #c62828;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #16213e 100%);
-            color: var(--text-primary);
-            line-height: 1.7;
-            min-height: 100vh;
-        }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 40px 30px 80px;
+    }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 30px;
-        }
+    /* ── Header ── */
+    header {
+      border: 2px solid var(--purple);
+      padding: 28px 36px 24px;
+      margin-bottom: 44px;
+      background: linear-gradient(135deg, #fefefe 0%, #f0ecf5 100%);
+    }
+    header .university {
+      text-align: center; font-size: 1.5em; font-weight: bold;
+      color: var(--purple); letter-spacing: 1.5px; margin-bottom: 2px;
+    }
+    header hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+    header .meta {
+      display: flex; justify-content: space-between;
+      font-size: 0.92em; padding: 3px 0; flex-wrap: wrap; gap: 4px;
+    }
+    header .title {
+      text-align: center; font-size: 1.3em; font-weight: bold;
+      margin-top: 12px; color: var(--dark);
+    }
 
-        h1 {
-            text-align: center;
-            font-size: 2.2em;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
+    /* ── Sections ── */
+    .problem-header {
+      background: var(--purple); color: #fff;
+      padding: 14px 24px; font-size: 1.2em; font-weight: bold;
+      margin: 48px 0 0; border-radius: 6px 6px 0 0;
+    }
+    .problem-body {
+      border: 1px solid var(--border); border-top: none;
+      padding: 28px 30px; background: var(--card-bg);
+      border-radius: 0 0 6px 6px; margin-bottom: 12px;
+    }
+    .given-box {
+      background: var(--purple-faint); border-left: 4px solid var(--purple-light);
+      padding: 18px 22px; margin: 16px 0 28px; font-size: 1.05em; text-align: center;
+    }
 
-        .subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 1.1em;
-            margin-bottom: 40px;
-        }
+    /* ── Steps ── */
+    .step { margin: 32px 0; }
+    .step-label {
+      display: inline-block; background: var(--step-accent); color: #fff;
+      font-size: 0.78em; font-weight: bold; letter-spacing: 1.2px;
+      text-transform: uppercase; padding: 4px 14px; border-radius: 3px; margin-bottom: 10px;
+    }
+    .step-title { font-size: 1.1em; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
+    .step p { margin-bottom: 14px; }
 
-        h2 {
-            color: var(--accent-purple);
-            font-size: 1.6em;
-            margin-top: 50px;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--border);
-        }
+    /* ── Computation / Callout / Outcome ── */
+    .computation {
+      background: #fafafa; border: 1px solid var(--border); border-radius: 4px;
+      padding: 18px 22px; margin: 16px 0; font-size: 1.02em; text-align: center;
+    }
+    .computation .equation-label {
+      font-weight: bold; color: var(--purple); margin-bottom: 6px;
+      text-align: left; font-size: 0.92em;
+    }
+    .callout {
+      background: var(--purple-faint); border-left: 4px solid var(--purple-light);
+      padding: 14px 20px; margin: 20px 0; font-size: 0.95em;
+    }
+    .callout strong { color: var(--purple); }
+    .outcome {
+      background: #e8ddf5; border-left: 4px solid var(--purple-light);
+      padding: 14px 20px; margin: 20px 0;
+    }
+    .outcome-label {
+      font-weight: bold; font-size: 0.82em; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--purple); margin-bottom: 4px;
+    }
 
-        h3 {
-            color: var(--accent-cyan);
-            font-size: 1.2em;
-            margin-top: 30px;
-            margin-bottom: 10px;
-        }
+    /* ── Answer inputs ── */
+    .answer-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; margin: 14px 0; flex-wrap: wrap;
+    }
+    .answer-row input[type="number"],
+    .answer-row input[type="text"] {
+      width: 120px; padding: 8px 12px; font-size: 1.05em;
+      font-family: 'Georgia', serif; border: 2px solid var(--border);
+      border-radius: 4px; text-align: center;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      -moz-appearance: textfield;
+    }
+    .answer-row input::-webkit-outer-spin-button,
+    .answer-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .answer-row input:focus {
+      outline: none; border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(81,40,136,0.18);
+    }
+    .answer-row input.correct { border-color: var(--correct); background: #e8f5e9; }
+    .answer-row input.incorrect { border-color: var(--incorrect); background: #ffebee; }
 
-        p { margin-bottom: 15px; }
+    .btn {
+      padding: 8px 20px; font-size: 0.9em; font-family: 'Georgia', serif;
+      border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-check { background: var(--purple); color: #fff; }
+    .btn-check:hover { background: var(--purple-dark); }
+    .btn-hint { background: transparent; color: var(--purple); border: 1px solid var(--purple); }
+    .btn-hint:hover { background: rgba(81,40,136,0.08); }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 25px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
+    .feedback {
+      font-size: 0.92em; font-weight: bold; min-width: 24px;
+      transition: opacity 0.3s ease; opacity: 0;
+    }
+    .feedback.visible { opacity: 1; }
+    .feedback.correct { color: var(--correct); }
+    .feedback.incorrect { color: var(--incorrect); }
 
-        .card.highlight {
-            border-color: var(--accent-purple);
-            box-shadow: 0 4px 15px rgba(124, 106, 245, 0.2);
-        }
+    .hint-box {
+      background: var(--purple-faint); border: 1px dashed var(--purple-light);
+      border-radius: 4px; padding: 12px 18px; margin: 10px 0;
+      font-size: 0.92em; display: none; text-align: center;
+    }
+    .hint-box.visible { display: block; animation: fadeIn 0.3s ease; }
 
-        .card.info {
-            border-color: var(--accent-cyan);
-            background: rgba(106, 245, 200, 0.05);
-        }
+    /* ── Demo controls ── */
+    .demo-area {
+      background: var(--purple-faint); border: 1px solid var(--border);
+      border-radius: 6px; padding: 24px; margin: 24px 0; text-align: center;
+    }
+    .demo-area .demo-title {
+      font-weight: bold; font-size: 1em; color: var(--purple); margin-bottom: 16px;
+    }
+    .demo-controls {
+      margin-top: 18px; display: flex; justify-content: center;
+      gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    .btn-demo {
+      padding: 8px 22px; font-size: 0.88em; font-family: 'Georgia', serif;
+      background: var(--purple); color: #fff; border: none; border-radius: 4px; cursor: pointer;
+    }
+    .btn-demo:hover { background: var(--purple-dark); }
+    .btn-demo:disabled { background: #ccc; cursor: not-allowed; }
+    .demo-position {
+      font-size: 0.95em; color: var(--muted); min-width: 200px; text-align: center;
+    }
+    .demo-equation { margin-top: 14px; font-size: 0.95em; color: var(--text); min-height: 1.8em; }
 
-        .card.warning {
-            border-color: var(--accent-yellow);
-            background: rgba(245, 215, 106, 0.05);
-        }
+    /* ── Time-series grid ── */
+    .ts-grid {
+      display: flex; gap: 0; justify-content: center; margin: 4px 0; flex-wrap: wrap;
+    }
+    .ts-cell {
+      width: 52px; height: 44px; border: 1px solid #ccc; display: flex;
+      align-items: center; justify-content: center; font-size: 0.85em;
+      font-family: 'Georgia', serif; transition: background 0.4s ease, color 0.4s ease;
+      background: #fff; color: var(--text); flex-shrink: 0;
+    }
+    .ts-cell.active { background: #e8ddf5; color: #3b1d66; font-weight: bold; }
+    .ts-cell.target { background: #fce4ec; color: #c62828; font-weight: bold; border-color: #e57373; }
+    .ts-cell-label {
+      width: 52px; height: 24px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7em; color: var(--muted); flex-shrink: 0;
+    }
 
-        .card-title {
-            font-weight: bold;
-            color: var(--accent-purple);
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
+    /* ── LSTM gate explorer ── */
+    .lstm-diagram {
+      display: flex; justify-content: center; align-items: center;
+      gap: 20px; margin: 24px 0; flex-wrap: wrap;
+    }
+    .gate-box {
+      background: var(--card-bg); border: 2px solid var(--purple-light);
+      border-radius: 8px; padding: 16px 20px; min-width: 140px;
+      text-align: center; transition: all 0.3s ease; cursor: pointer;
+    }
+    .gate-box:hover { border-color: var(--purple); box-shadow: 0 4px 12px rgba(81,40,136,0.15); }
+    .gate-box.active-gate { border-color: var(--purple); background: var(--purple-faint); }
+    .gate-box .gate-icon { font-size: 1.8em; margin-bottom: 6px; }
+    .gate-box .gate-name { font-weight: bold; color: var(--purple); font-size: 0.95em; }
+    .gate-box .gate-symbol { font-size: 0.85em; color: var(--muted); margin-top: 2px; }
+    .gate-detail {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 20px 24px; margin: 16px 0; display: none; animation: fadeIn 0.3s ease;
+    }
+    .gate-detail.visible { display: block; }
+    .gate-detail h4 { color: var(--purple); margin-bottom: 10px; }
 
-        .math {
-            font-family: 'Cambria Math', 'Times New Roman', serif;
-            font-style: italic;
-            background: rgba(124, 106, 245, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline;
-        }
+    /* ── Normalization visual ── */
+    .norm-bar-container {
+      display: flex; align-items: flex-end; gap: 6px;
+      justify-content: center; margin: 20px 0; height: 140px;
+    }
+    .norm-bar {
+      width: 36px; border-radius: 4px 4px 0 0; transition: height 0.6s ease, background 0.6s ease;
+      display: flex; align-items: flex-start; justify-content: center;
+      font-size: 0.7em; padding-top: 4px; color: #fff; font-weight: bold;
+    }
 
-        .equation {
-            display: block;
-            text-align: center;
-            font-family: 'Cambria Math', 'Times New Roman', serif;
-            font-style: italic;
-            font-size: 1.1em;
-            background: rgba(124, 106, 245, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid var(--accent-purple);
-        }
+    /* ── Reference table ── */
+    .concepts-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .concepts-table th {
+      background: var(--purple); color: #fff; padding: 10px 16px;
+      text-align: left; font-size: 0.9em; letter-spacing: 0.5px;
+    }
+    .concepts-table td {
+      padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 0.92em;
+    }
+    .concepts-table tr:nth-child(even) td { background: #fafafa; }
 
-        pre {
-            background: #151525;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px 20px;
-            overflow-x: auto;
-            font-size: 0.9em;
-            line-height: 1.5;
-            margin: 15px 0;
-        }
+    hr.section-break { border: none; border-top: 2px solid var(--border); margin: 48px 0; }
 
-        code {
-            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-            color: var(--accent-cyan);
-        }
+    /* ── LSTM cell SVG ── */
+    .lstm-svg-container {
+      width: 100%; max-width: 700px; margin: 20px auto; text-align: center;
+    }
+    .lstm-svg-container svg { max-width: 100%; height: auto; }
 
-        pre code { color: var(--text-primary); }
+    /* ── Loss curve canvas ── */
+    .chart-container { width: 100%; max-width: 600px; margin: 20px auto; }
 
-        .diagram {
-            text-align: center;
-            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-            font-size: 0.85em;
-            background: #151525;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            line-height: 1.4;
-            white-space: pre;
-            overflow-x: auto;
-            color: var(--text-secondary);
-        }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        th, td {
-            padding: 10px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: rgba(124, 106, 245, 0.15);
-            color: var(--accent-purple);
-            font-weight: 600;
-        }
-
-        td { color: var(--text-primary); }
-
-        tr:hover td { background: rgba(124, 106, 245, 0.05); }
-
-        ul, ol {
-            margin: 10px 0 15px 25px;
-        }
-
-        li { margin-bottom: 6px; }
-
-        strong { color: var(--accent-cyan); }
-
-        .toc {
-            background: var(--bg-card);
-            border: 1px solid var(--accent-purple);
-            border-radius: 12px;
-            padding: 25px 30px;
-            margin: 30px 0;
-        }
-
-        .toc h3 {
-            color: var(--accent-purple);
-            margin-top: 0;
-        }
-
-        .toc a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .toc a:hover { color: var(--accent-cyan); }
-
-        .gate-box {
-            display: inline-block;
-            background: rgba(124, 106, 245, 0.15);
-            border: 1px solid var(--accent-purple);
-            border-radius: 8px;
-            padding: 8px 14px;
-            margin: 5px;
-            font-size: 0.95em;
-        }
-
-        .step-number {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
-            border-radius: 50%;
-            background: var(--accent-purple);
-            color: white;
-            font-weight: bold;
-            font-size: 0.9em;
-            margin-right: 10px;
-        }
-
-        .footer {
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 20px 15px; }
-            h1 { font-size: 1.6em; }
-            pre { font-size: 0.8em; }
-        }
-    </style>
+    @media (max-width: 600px) {
+      body { padding: 20px 14px 60px; }
+      .ts-cell { width: 40px; height: 36px; font-size: 0.75em; }
+      .gate-box { min-width: 110px; padding: 12px 14px; }
+      header .meta { flex-direction: column; }
+      .problem-header { font-size: 1em; padding: 12px 18px; }
+      .problem-body { padding: 18px 16px; }
+      .norm-bar { width: 28px; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
 
-        <h1>LSTM &amp; RNN Guide</h1>
-        <p class="subtitle">
-            Understanding Recurrent Neural Networks for Time-Series Temperature Forecasting<br>
-            Applied to the Jena Climate Dataset
-        </p>
-
-        <!-- TABLE OF CONTENTS -->
-        <div class="toc">
-            <h3>Table of Contents</h3>
-            <ol>
-                <li><a href="#rnn-fundamentals">RNN Fundamentals</a></li>
-                <li><a href="#vanishing-gradient">The Vanishing Gradient Problem</a></li>
-                <li><a href="#lstm-architecture">LSTM Architecture</a></li>
-                <li><a href="#time-series">Time-Series Forecasting with LSTMs</a></li>
-                <li><a href="#sliding-window">The Sliding Window Approach</a></li>
-                <li><a href="#normalization">Min-Max Normalization</a></li>
-                <li><a href="#training">Training the Model</a></li>
-                <li><a href="#evaluation">Evaluation: RMSE</a></li>
-                <li><a href="#jena-dataset">The Jena Climate Dataset</a></li>
-                <li><a href="#implementation">Our Implementation</a></li>
-                <li><a href="#hyperparameters">Hyperparameter Choices</a></li>
-                <li><a href="#observations">Observations and Results</a></li>
-                <li><a href="#references">References</a></li>
-            </ol>
-        </div>
-
-        <!-- SECTION 1: RNN FUNDAMENTALS -->
-        <h2 id="rnn-fundamentals">1. RNN Fundamentals</h2>
-
-        <p>
-            A <strong>Recurrent Neural Network (RNN)</strong> is a class of neural networks designed to process
-            <strong>sequential data</strong> — data where order matters. Unlike feedforward networks that treat each
-            input independently, RNNs maintain a <strong>hidden state</strong> that carries information from
-            previous timesteps, creating a form of memory.
-        </p>
-
-        <div class="card highlight">
-            <div class="card-title">Why Sequential Data Needs Special Treatment</div>
-            <p>
-                Consider predicting tomorrow's temperature. A standard neural network would look at today's
-                temperature in isolation. But temperature follows patterns — it was warm yesterday, cooling
-                today, so it might be cooler tomorrow. An RNN captures these <em>temporal dependencies</em>
-                by maintaining state across timesteps.
-            </p>
-        </div>
-
-        <h3>The RNN Cell</h3>
-        <p>At each timestep <span class="math">t</span>, an RNN cell takes two inputs:</p>
-        <ul>
-            <li><span class="math">x_t</span> — the current input (e.g., today's temperature)</li>
-            <li><span class="math">h_{t-1}</span> — the hidden state from the previous timestep (memory)</li>
-        </ul>
-
-        <p>And produces:</p>
-        <ul>
-            <li><span class="math">h_t</span> — the new hidden state (updated memory)</li>
-        </ul>
-
-        <div class="equation">
-            h_t = tanh(W_hh &middot; h_{t-1} + W_xh &middot; x_t + b_h)
-        </div>
-
-        <div class="diagram">
-       x_1          x_2          x_3          x_4
-        |            |            |            |
-   ┌────▼────┐  ┌────▼────┐  ┌────▼────┐  ┌────▼────┐
-   │  RNN    │──│  RNN    │──│  RNN    │──│  RNN    │
-   │  Cell   │  │  Cell   │  │  Cell   │  │  Cell   │
-   └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘
-        |            |            |            |
-       h_1          h_2          h_3          h_4
-                                               |
-                                          ┌────▼────┐
-                                          │  Output │
-                                          │  Layer  │
-                                          └────┬────┘
-                                               |
-                                              y_hat
-        </div>
-
-        <p>
-            The same weight matrices <span class="math">W_hh</span> and <span class="math">W_xh</span> are
-            shared across all timesteps. This parameter sharing is what makes RNNs efficient for sequences
-            of any length — the model size does not grow with sequence length.
-        </p>
-
-        <!-- SECTION 2: VANISHING GRADIENT -->
-        <h2 id="vanishing-gradient">2. The Vanishing Gradient Problem</h2>
-
-        <p>
-            While RNNs are theoretically capable of learning long-range dependencies, in practice they struggle.
-            During backpropagation through time (BPTT), gradients must flow through many timesteps. At each step,
-            the gradient is multiplied by the weight matrix and passed through the tanh derivative.
-        </p>
-
-        <div class="card warning">
-            <div class="card-title">The Core Problem</div>
-            <p>
-                When the tanh derivative (which is always &le; 1) and weight values are repeatedly multiplied
-                across many timesteps, the gradient either:
-            </p>
-            <ul>
-                <li><strong>Vanishes</strong> (approaches 0) — the network cannot learn from distant past inputs</li>
-                <li><strong>Explodes</strong> (grows extremely large) — training becomes unstable</li>
-            </ul>
-            <p>
-                For temperature forecasting with 120 hourly observations, a vanilla RNN would struggle to
-                learn patterns from 5 days ago because the gradient signal would effectively disappear
-                after passing through ~120 multiplication steps.
-            </p>
-        </div>
-
-        <p>This is precisely why <strong>LSTMs</strong> were invented.</p>
-
-        <!-- SECTION 3: LSTM ARCHITECTURE -->
-        <h2 id="lstm-architecture">3. LSTM Architecture</h2>
-
-        <p>
-            The <strong>Long Short-Term Memory (LSTM)</strong> network, introduced by Hochreiter &amp; Schmidhuber
-            (1997), solves the vanishing gradient problem with a carefully designed gating mechanism. Instead of
-            a single hidden state, an LSTM cell maintains two states:
-        </p>
-
-        <ul>
-            <li><strong>Cell state</strong> <span class="math">c_t</span> — the long-term memory highway</li>
-            <li><strong>Hidden state</strong> <span class="math">h_t</span> — the working memory / output</li>
-        </ul>
-
-        <h3>The Four Components of an LSTM Cell</h3>
-
-        <div class="card highlight">
-            <div class="card-title">1. Forget Gate</div>
-            <p>Decides what information to <em>discard</em> from the cell state.</p>
-            <div class="equation">f_t = &sigma;(W_f &middot; [h_{t-1}, x_t] + b_f)</div>
-            <p>
-                The sigmoid function &sigma; outputs values between 0 and 1.
-                A value of 0 means "completely forget this," and 1 means "completely keep this."
-                For temperature forecasting, the forget gate might learn to discard information from
-                unusually anomalous readings while retaining the general trend.
-            </p>
-        </div>
-
-        <div class="card highlight">
-            <div class="card-title">2. Input Gate</div>
-            <p>Decides what <em>new</em> information to store in the cell state.</p>
-            <div class="equation">i_t = &sigma;(W_i &middot; [h_{t-1}, x_t] + b_i)</div>
-            <div class="equation">&ctilde;_t = tanh(W_c &middot; [h_{t-1}, x_t] + b_c)</div>
-            <p>
-                The input gate has two parts: a sigmoid layer decides <em>which</em> values to update,
-                and a tanh layer creates a vector of <em>candidate</em> new values. Together, they
-                determine what new information enters the cell state.
-            </p>
-        </div>
-
-        <div class="card highlight">
-            <div class="card-title">3. Cell State Update</div>
-            <p>Combines the forget gate and input gate to update the long-term memory.</p>
-            <div class="equation">c_t = f_t * c_{t-1} + i_t * &ctilde;_t</div>
-            <p>
-                This is the key innovation: the cell state is updated through <em>addition</em>, not
-                multiplication. Gradients can flow through the addition operation without vanishing,
-                enabling the network to remember information across many timesteps.
-            </p>
-        </div>
-
-        <div class="card highlight">
-            <div class="card-title">4. Output Gate</div>
-            <p>Decides what part of the cell state to <em>output</em> as the hidden state.</p>
-            <div class="equation">o_t = &sigma;(W_o &middot; [h_{t-1}, x_t] + b_o)</div>
-            <div class="equation">h_t = o_t * tanh(c_t)</div>
-            <p>
-                The output gate filters the cell state to produce the hidden state, which serves as
-                both the output at this timestep and the input to the next LSTM cell.
-            </p>
-        </div>
-
-        <div class="diagram">
-                    Cell State Highway (c_{t-1} ──────────────► c_t)
-                         │                           ▲
-                         │     ┌─────────┐          │
-                         ├────►│  Forget  │──── × ───┤
-                         │     │  Gate    │          │
-                         │     └─────────┘          │
-                         │                    ┌─────┤
-                         │     ┌─────────┐    │     │
-                         ├────►│  Input   │── × ── + ─
-                         │     │  Gate    │    │
-                         │     └─────────┘    │
-                         │     ┌─────────┐    │
-                         ├────►│Candidate │────┘
-                         │     │  (tanh)  │
-                         │     └─────────┘
-                         │                        ┌─────────┐
-                         └───────────────────────►│  Output  │──► h_t
-                                                  │  Gate    │
-                              [h_{t-1}, x_t]      └─────────┘
-        </div>
-
-        <h3>Why LSTMs Work for Long Sequences</h3>
-        <p>
-            The cell state acts as a <strong>highway</strong> for gradient flow. During backpropagation,
-            the gradient passes through the cell state update equation:
-        </p>
-        <div class="equation">
-            &part;c_t / &part;c_{t-1} = f_t (+ other terms)
-        </div>
-        <p>
-            Since <span class="math">f_t</span> is controlled by a learned gate (not a fixed weight matrix),
-            the network can learn to keep the forget gate close to 1 for important long-term information,
-            allowing gradients to flow unimpeded across hundreds of timesteps.
-        </p>
-
-        <!-- SECTION 4: TIME-SERIES FORECASTING -->
-        <h2 id="time-series">4. Time-Series Forecasting with LSTMs</h2>
-
-        <p>
-            Time-series forecasting is the task of predicting future values based on past observations.
-            Temperature is a classic example — it follows daily cycles (warm during day, cool at night),
-            seasonal patterns (warm in summer, cold in winter), and weather-driven trends.
-        </p>
-
-        <div class="card info">
-            <div class="card-title">Classification vs. Regression</div>
-            <table>
-                <tr>
-                    <th>Aspect</th>
-                    <th>Text Generation (Classification)</th>
-                    <th>Temperature Forecasting (Regression)</th>
-                </tr>
-                <tr>
-                    <td>Input</td>
-                    <td>Sequence of word IDs (discrete integers)</td>
-                    <td>Sequence of temperature values (continuous floats)</td>
-                </tr>
-                <tr>
-                    <td>Embedding</td>
-                    <td>Required (word ID &rarr; dense vector)</td>
-                    <td>Not needed (values are already continuous)</td>
-                </tr>
-                <tr>
-                    <td>Output</td>
-                    <td>Probability distribution over vocabulary</td>
-                    <td>Single scalar value (predicted temperature)</td>
-                </tr>
-                <tr>
-                    <td>Loss Function</td>
-                    <td>CrossEntropyLoss</td>
-                    <td>Mean Squared Error (MSE)</td>
-                </tr>
-                <tr>
-                    <td>Evaluation</td>
-                    <td>Accuracy, Perplexity</td>
-                    <td>RMSE (Root Mean Squared Error)</td>
-                </tr>
-            </table>
-        </div>
-
-        <p>
-            The LSTM processes the sequence of past temperatures and its final hidden state
-            <span class="math">h_T</span> encodes the temporal patterns. A linear layer then projects
-            this encoding to a single predicted value.
-        </p>
-
-        <!-- SECTION 5: SLIDING WINDOW -->
-        <h2 id="sliding-window">5. The Sliding Window Approach</h2>
-
-        <p>
-            To train an LSTM for forecasting, we need to create input-output pairs from the raw time series.
-            The <strong>sliding window</strong> (or rolling window) approach does this by moving a fixed-size
-            window across the data:
-        </p>
-
-        <div class="diagram">
-Time Series: [t1, t2, t3, t4, t5, t6, t7, t8, t9, ...]
-
-Window size = 5:
-
-  Window 1: [t1, t2, t3, t4, t5]  →  target: t6
-  Window 2: [t2, t3, t4, t5, t6]  →  target: t7
-  Window 3: [t3, t4, t5, t6, t7]  →  target: t8
-  Window 4: [t4, t5, t6, t7, t8]  →  target: t9
-  ...
-        </div>
-
-        <p>
-            Each window becomes one training sample. The input <span class="math">X</span> is the window
-            of past values, and the target <span class="math">y</span> is the next value immediately following
-            the window.
-        </p>
-
-        <div class="card info">
-            <div class="card-title">Choosing Window Size</div>
-            <p>
-                In our implementation, we use a window of <strong>120 hourly observations</strong> (5 days).
-                This choice captures:
-            </p>
-            <ul>
-                <li><strong>Daily cycles</strong> — the 24-hour temperature oscillation (day/night)</li>
-                <li><strong>Multi-day trends</strong> — warming or cooling trends over several days</li>
-                <li><strong>Weather patterns</strong> — frontal systems that typically last 2-5 days</li>
-            </ul>
-            <p>
-                A window that is too short (e.g., 6 hours) would miss daily cycles. A window that is too
-                long (e.g., 30 days) would add computational cost without proportional benefit, as very
-                old data has diminishing predictive value for the next hour.
-            </p>
-        </div>
-
-        <!-- SECTION 6: NORMALIZATION -->
-        <h2 id="normalization">6. Min-Max Normalization</h2>
-
-        <p>
-            Neural networks learn most efficiently when input values are small and in a consistent range.
-            Raw temperature values in the Jena dataset range from approximately -23&deg;C to +37&deg;C.
-            <strong>Min-Max scaling</strong> transforms these to the range [0, 1]:
-        </p>
-
-        <div class="equation">
-            x_normalized = (x - x_min) / (x_max - x_min)
-        </div>
-
-        <p>For the inverse transformation (converting predictions back to &deg;C):</p>
-
-        <div class="equation">
-            x_original = x_normalized &times; (x_max - x_min) + x_min
-        </div>
-
-        <div class="card">
-            <div class="card-title">Why Normalize?</div>
-            <ul>
-                <li><strong>Gradient stability</strong> — Large input values produce large gradients, which can cause
-                    unstable training. Normalized values keep gradients in a manageable range.</li>
-                <li><strong>Faster convergence</strong> — When inputs are on a similar scale, the loss surface
-                    is more uniform, and gradient descent converges faster.</li>
-                <li><strong>Numerical precision</strong> — Float32 arithmetic is more precise near 0 than at
-                    large magnitudes.</li>
-            </ul>
-        </div>
-
-        <h3>Min-Max vs. Standard Scaling</h3>
-        <table>
-            <tr>
-                <th>Method</th>
-                <th>Formula</th>
-                <th>Range</th>
-                <th>Best For</th>
-            </tr>
-            <tr>
-                <td>Min-Max</td>
-                <td>(x - min) / (max - min)</td>
-                <td>[0, 1]</td>
-                <td>Bounded data, preserves distribution shape</td>
-            </tr>
-            <tr>
-                <td>Standard (Z-score)</td>
-                <td>(x - mean) / std</td>
-                <td>Unbounded</td>
-                <td>Gaussian-distributed data, outlier-resistant</td>
-            </tr>
-        </table>
-        <p>
-            We chose Min-Max scaling because temperature has natural physical bounds and we want the
-            output to be bounded, matching common neural network activation ranges.
-        </p>
-
-        <!-- SECTION 7: TRAINING -->
-        <h2 id="training">7. Training the Model</h2>
-
-        <p>Training optimizes the model's weights to minimize prediction error. Our training loop follows these steps for each epoch:</p>
-
-        <div class="card">
-            <p><span class="step-number">1</span><strong>Forward pass</strong> — Feed a batch of input sequences through the LSTM to get predictions.</p>
-        </div>
-        <div class="card">
-            <p><span class="step-number">2</span><strong>Loss computation</strong> — Calculate Mean Squared Error between predictions and actual values.</p>
-            <div class="equation">MSE = (1/N) &sum; (y_i - &ycirc;_i)&sup2;</div>
-        </div>
-        <div class="card">
-            <p><span class="step-number">3</span><strong>Backpropagation through time (BPTT)</strong> — Compute gradients of the loss with respect to all weights by unrolling the LSTM across timesteps.</p>
-        </div>
-        <div class="card">
-            <p><span class="step-number">4</span><strong>Gradient clipping</strong> — Cap gradient norms at 1.0 to prevent exploding gradients.</p>
-            <div class="equation">if ||g|| > 1.0:  g &larr; g &times; (1.0 / ||g||)</div>
-        </div>
-        <div class="card">
-            <p><span class="step-number">5</span><strong>Weight update</strong> — Apply the Adam optimizer to update weights.</p>
-            <div class="equation">W &larr; W - &alpha; &middot; &part;L/&part;W</div>
-        </div>
-
-        <h3>Training Strategies</h3>
-
-        <div class="card info">
-            <div class="card-title">Early Stopping</div>
-            <p>
-                We monitor validation loss after each epoch. If it does not improve for 10 consecutive
-                epochs, training stops early to prevent overfitting. The best model checkpoint (lowest
-                validation loss) is restored.
-            </p>
-        </div>
-
-        <div class="card info">
-            <div class="card-title">Learning Rate Scheduling</div>
-            <p>
-                We use <code>ReduceLROnPlateau</code> — if validation loss plateaus for 5 epochs,
-                the learning rate is halved. This allows fine-grained optimization as the model
-                approaches a minimum.
-            </p>
-        </div>
-
-        <div class="card info">
-            <div class="card-title">Chronological Data Split</div>
-            <p>
-                Time-series data must be split <em>chronologically</em>, not randomly. Random
-                splitting would leak future information into the training set (data leakage),
-                producing misleadingly good results. We use the earliest 80% for training and
-                the most recent 20% for testing.
-            </p>
-        </div>
-
-        <!-- SECTION 8: EVALUATION -->
-        <h2 id="evaluation">8. Evaluation: RMSE</h2>
-
-        <p>
-            <strong>Root Mean Squared Error (RMSE)</strong> is the standard evaluation metric for
-            regression tasks. It measures the average magnitude of prediction errors:
-        </p>
-
-        <div class="equation">
-            RMSE = &radic;( (1/N) &sum; (y_i - &ycirc;_i)&sup2; )
-        </div>
-
-        <div class="card info">
-            <div class="card-title">Why RMSE?</div>
-            <ul>
-                <li><strong>Same units</strong> — RMSE is in &deg;C, making it directly interpretable.
-                    An RMSE of 2.0 means "predictions are off by about 2&deg;C on average."</li>
-                <li><strong>Penalizes large errors</strong> — Squaring amplifies large deviations more than
-                    small ones, which is desirable (a 10&deg;C error is much worse than ten 1&deg;C errors).</li>
-                <li><strong>Differentiable</strong> — Compatible with gradient-based optimization
-                    (MSE is the square of RMSE).</li>
-            </ul>
-        </div>
-
-        <h3>Interpreting RMSE</h3>
-        <table>
-            <tr>
-                <th>RMSE (&deg;C)</th>
-                <th>Interpretation</th>
-            </tr>
-            <tr>
-                <td>&lt; 1.0</td>
-                <td>Excellent — predictions are very close to actual values</td>
-            </tr>
-            <tr>
-                <td>1.0 - 2.0</td>
-                <td>Good — typical for hourly temperature prediction</td>
-            </tr>
-            <tr>
-                <td>2.0 - 4.0</td>
-                <td>Moderate — room for improvement</td>
-            </tr>
-            <tr>
-                <td>&gt; 4.0</td>
-                <td>Poor — model may need more capacity or data</td>
-            </tr>
-        </table>
-
-        <!-- SECTION 9: JENA DATASET -->
-        <h2 id="jena-dataset">9. The Jena Climate Dataset</h2>
-
-        <p>
-            The Jena Climate dataset is a widely used benchmark for time-series forecasting, collected
-            by the weather station at the Max Planck Institute for Biogeochemistry in Jena, Germany.
-        </p>
-
-        <table>
-            <tr><th>Property</th><th>Value</th></tr>
-            <tr><td>Location</td><td>Jena, Germany (50.9&deg;N, 11.6&deg;E)</td></tr>
-            <tr><td>Period</td><td>January 1, 2009 &mdash; December 31, 2016</td></tr>
-            <tr><td>Recording Interval</td><td>Every 10 minutes</td></tr>
-            <tr><td>Total Observations</td><td>~420,000</td></tr>
-            <tr><td>Number of Features</td><td>14</td></tr>
-        </table>
-
-        <h3>Features in the Dataset</h3>
-        <table>
-            <tr><th>Column</th><th>Description</th><th>Unit</th></tr>
-            <tr><td>Date Time</td><td>Timestamp</td><td>DD.MM.YYYY HH:MM:SS</td></tr>
-            <tr><td>p (mbar)</td><td>Atmospheric pressure</td><td>mbar</td></tr>
-            <tr><td><strong>T (degC)</strong></td><td><strong>Air temperature (our target)</strong></td><td><strong>&deg;C</strong></td></tr>
-            <tr><td>Tpot (K)</td><td>Potential temperature</td><td>K</td></tr>
-            <tr><td>Tdew (degC)</td><td>Dew point temperature</td><td>&deg;C</td></tr>
-            <tr><td>rh (%)</td><td>Relative humidity</td><td>%</td></tr>
-            <tr><td>VPmax (mbar)</td><td>Saturation vapor pressure</td><td>mbar</td></tr>
-            <tr><td>VPact (mbar)</td><td>Actual vapor pressure</td><td>mbar</td></tr>
-            <tr><td>VPdef (mbar)</td><td>Vapor pressure deficit</td><td>mbar</td></tr>
-            <tr><td>sh (g/kg)</td><td>Specific humidity</td><td>g/kg</td></tr>
-            <tr><td>H2OC (mmol/mol)</td><td>Water vapor concentration</td><td>mmol/mol</td></tr>
-            <tr><td>rho (g/m**3)</td><td>Air density</td><td>g/m&sup3;</td></tr>
-            <tr><td>wv (m/s)</td><td>Wind speed</td><td>m/s</td></tr>
-            <tr><td>max. wv (m/s)</td><td>Maximum wind speed</td><td>m/s</td></tr>
-            <tr><td>wd (deg)</td><td>Wind direction</td><td>degrees</td></tr>
-        </table>
-
-        <div class="card">
-            <div class="card-title">Why Subsample to Hourly?</div>
-            <p>
-                The raw dataset at 10-minute intervals contains ~420,000 data points. Using all of them
-                with a window of 720 timesteps (5 days at 10-min resolution) would create an enormous
-                number of training sequences. By subsampling every 6th row, we get hourly data (~70,000
-                points) with a window of 120 timesteps (still 5 days). This dramatically reduces
-                computation while preserving the important temperature patterns.
-            </p>
-        </div>
-
-        <!-- SECTION 10: IMPLEMENTATION -->
-        <h2 id="implementation">10. Our Implementation</h2>
-
-        <h3>Model Architecture</h3>
-
-        <div class="diagram">
-Input: (batch, 120, 1) — 120 hours of normalized temperature
-               │
-        ┌──────▼──────┐
-        │   LSTM       │  hidden_size=64
-        │   Layer 1    │  processes all 120 timesteps
-        └──────┬──────┘
-               │
-        ┌──────▼──────┐
-        │   Dropout    │  p=0.2
-        └──────┬──────┘
-               │
-        ┌──────▼──────┐
-        │   LSTM       │  hidden_size=64
-        │   Layer 2    │  returns final hidden state h_T
-        └──────┬──────┘
-               │
-        ┌──────▼──────┐
-        │   Dropout    │  p=0.2
-        └──────┬──────┘
-               │
-        ┌──────▼──────┐
-        │   Linear     │  64 → 1
-        └──────┬──────┘
-               │
-Output: (batch, 1) — predicted temperature (normalized)
-        </div>
-
-        <h3>PyTorch Implementation</h3>
-
-        <pre><code>class TemperatureLSTM(nn.Module):
-    def __init__(self, input_size=1, hidden_units=64,
-                 num_layers=2, dropout_rate=0.2):
-        super().__init__()
-        self.lstm = nn.LSTM(
-            input_size=input_size,
-            hidden_size=hidden_units,
-            num_layers=num_layers,
-            batch_first=True,
-            dropout=dropout_rate if num_layers > 1 else 0.0
-        )
-        self.dropout = nn.Dropout(dropout_rate)
-        self.fc = nn.Linear(hidden_units, 1)
-
-    def forward(self, x):
-        # x: (batch, seq_len, 1) — normalized temperatures
-        out, (h, c) = self.lstm(x)
-        # h[-1]: final hidden state from last LSTM layer
-        final_hidden = self.dropout(h[-1])
-        return self.fc(final_hidden)  # (batch, 1)</code></pre>
-
-        <h3>Data Pipeline</h3>
-
-        <pre><code># 1. Load CSV
-df = pd.read_csv('jena_climate_2009_2016.csv')
-
-# 2. Subsample to hourly (every 6th row)
-df = df.iloc[::6].reset_index(drop=True)
-
-# 3. Extract temperature column
-temperature = df['T (degC)'].values
-
-# 4. Min-Max normalize to [0, 1]
-scaler = MinMaxScaler()
-normalized = scaler.fit_transform(temperature.reshape(-1, 1))
-
-# 5. Create sliding window sequences
-X, y = [], []
-for i in range(120, len(normalized)):
-    X.append(normalized[i-120:i])  # 120 past hours
-    y.append(normalized[i])         # next hour
-
-# 6. Chronological split (80/20)
-split = int(len(X) * 0.8)
-X_train, X_test = X[:split], X[split:]
-y_train, y_test = y[:split], y[split:]</code></pre>
-
-        <!-- SECTION 11: HYPERPARAMETERS -->
-        <h2 id="hyperparameters">11. Hyperparameter Choices</h2>
-
-        <table>
-            <tr>
-                <th>Parameter</th>
-                <th>Value</th>
-                <th>Rationale</th>
-            </tr>
-            <tr>
-                <td>Sequence length</td>
-                <td>120 hours (5 days)</td>
-                <td>Captures daily cycles and multi-day weather trends</td>
-            </tr>
-            <tr>
-                <td>Hidden units</td>
-                <td>64</td>
-                <td>Sufficient capacity for univariate forecasting without overfitting</td>
-            </tr>
-            <tr>
-                <td>LSTM layers</td>
-                <td>2</td>
-                <td>Stacking enables hierarchical feature extraction (short-term + long-term patterns)</td>
-            </tr>
-            <tr>
-                <td>Dropout</td>
-                <td>0.2</td>
-                <td>Mild regularization; prevents memorizing noise in temperature readings</td>
-            </tr>
-            <tr>
-                <td>Batch size</td>
-                <td>256</td>
-                <td>Large enough for stable gradient estimates; small enough to fit in memory</td>
-            </tr>
-            <tr>
-                <td>Learning rate</td>
-                <td>0.001</td>
-                <td>Standard Adam default; reduced automatically by scheduler on plateau</td>
-            </tr>
-            <tr>
-                <td>Subsample step</td>
-                <td>6 (hourly)</td>
-                <td>Reduces dataset from 420k to 70k points while preserving patterns</td>
-            </tr>
-            <tr>
-                <td>Optimizer</td>
-                <td>Adam</td>
-                <td>Adaptive learning rates per parameter; robust to hyperparameter choices</td>
-            </tr>
-        </table>
-
-        <!-- SECTION 12: OBSERVATIONS -->
-        <h2 id="observations">12. Observations and Results</h2>
-
-        <div class="card">
-            <div class="card-title">Key Observations</div>
-            <ol>
-                <li>
-                    <strong>Daily patterns are learned quickly</strong> — The model captures the 24-hour
-                    temperature cycle within the first few epochs, as this is the strongest signal in the data.
-                </li>
-                <li>
-                    <strong>Seasonal trends require more data</strong> — The model sees seasonal variation
-                    across the 5+ years of data. The chronological test split means the test set contains
-                    weather patterns not seen in training (the most recent years).
-                </li>
-                <li>
-                    <strong>Extreme temperatures are harder</strong> — The model tends to under-predict
-                    temperature spikes and over-predict cold snaps, as these events are less frequent
-                    in the training data.
-                </li>
-                <li>
-                    <strong>Subsampling to hourly is effective</strong> — 10-minute resolution adds
-                    noise without meaningful additional information for next-hour prediction.
-                </li>
-                <li>
-                    <strong>Two LSTM layers outperform one</strong> — The second layer helps capture
-                    hierarchical patterns (intra-day variation on layer 1, multi-day trends on layer 2).
-                </li>
-            </ol>
-        </div>
-
-        <h3>Potential Improvements</h3>
-        <ul>
-            <li><strong>Multivariate input</strong> — Include pressure, humidity, and wind speed as additional
-                features. These variables influence temperature and could improve predictions.</li>
-            <li><strong>Attention mechanisms</strong> — Allow the model to attend to specific past timesteps
-                rather than relying on a compressed hidden state.</li>
-            <li><strong>Longer prediction horizons</strong> — Predict 24 or 48 hours ahead instead of just
-                the next hour, using a sequence-to-sequence architecture.</li>
-            <li><strong>Ensemble methods</strong> — Train multiple models with different hyperparameters and
-                average their predictions for more robust forecasting.</li>
-            <li><strong>Transformer-based models</strong> — Modern architectures like the Temporal Fusion
-                Transformer can outperform LSTMs on complex time-series tasks.</li>
-        </ul>
-
-        <!-- SECTION 13: REFERENCES -->
-        <h2 id="references">13. References</h2>
-
-        <ol>
-            <li>Hochreiter, S., &amp; Schmidhuber, J. (1997). Long Short-Term Memory.
-                <em>Neural Computation</em>, 9(8), 1735-1780.</li>
-            <li>Graves, A. (2012). <em>Supervised Sequence Labelling with Recurrent Neural Networks</em>.
-                Springer.</li>
-            <li>Chollet, F. (2017). <em>Deep Learning with Python</em>. Manning Publications.
-                Chapter 6: Deep learning for text and sequences.</li>
-            <li>Goodfellow, I., Bengio, Y., &amp; Courville, A. (2016). <em>Deep Learning</em>.
-                MIT Press. Chapter 10: Sequence Modeling.</li>
-            <li>Max Planck Institute for Biogeochemistry. Jena Climate Dataset.
-                Department of Biogeochemical Integration.</li>
-            <li>PyTorch Documentation. torch.nn.LSTM.
-                PyTorch Foundation.</li>
-        </ol>
-
-        <div class="footer">
-            <p>AIT-204 — LSTM Temperature Forecasting with the Jena Climate Dataset</p>
-        </div>
-
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header>
+    <div class="university">Grand Canyon University</div>
+    <hr>
+    <div class="meta">
+      <span><strong>Course:</strong> AIT-204</span>
+      <span><strong>Instructor:</strong> Professor Artzi</span>
     </div>
+    <div class="meta">
+      <span><strong>Authors:</strong> Owen Lindsey &amp; Tyler Friesen</span>
+      <span><strong>Date:</strong> March 2026</span>
+    </div>
+    <div class="meta">
+      <span><strong>Assignment:</strong> RNN for Temperature Forecasting Using the Jena Climate Dataset</span>
+    </div>
+    <div class="meta">
+      <span><strong>Due:</strong> March 22, 2026, 11:59 PM</span>
+    </div>
+    <hr>
+    <div class="title">LSTM &amp; RNN for Temperature Forecasting &mdash; Interactive Guide</div>
+  </header>
+
+
+  <!-- ════════════════ SECTION 1: RNN FUNDAMENTALS ════════════════ -->
+  <div class="problem-header" id="sec1">Section 1 &mdash; Recurrent Neural Networks (RNN) Fundamentals</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">What Makes an RNN "Recurrent"?</div>
+      <p>
+        Unlike feed-forward networks that process each input independently, a
+        <strong>Recurrent Neural Network (RNN)</strong> maintains a <em>hidden state</em>
+        that carries information from one time step to the next. This gives the network
+        a form of <strong>memory</strong>.
+      </p>
+      <p>At each time step $t$, the RNN computes:</p>
+      <div class="computation">
+        $$ h_t = \tanh(W_{xh} \cdot x_t + W_{hh} \cdot h_{t-1} + b_h) $$
+      </div>
+      <p>where:</p>
+      <ul style="margin-left: 24px; margin-bottom: 14px;">
+        <li>$x_t$ is the input at time step $t$</li>
+        <li>$h_{t-1}$ is the hidden state from the previous step</li>
+        <li>$W_{xh}$ and $W_{hh}$ are learnable weight matrices</li>
+        <li>$b_h$ is a bias term</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Interactive</span>
+      <div class="step-title">RNN Unrolled Through Time</div>
+      <p>
+        Click the buttons below to step through how an RNN processes a sequence
+        of temperature readings. Watch how the hidden state $h$ accumulates information.
+      </p>
+      <div class="demo-area" id="rnn-unroll-demo">
+        <div class="demo-title">RNN Processing a Temperature Sequence</div>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;" id="rnn-steps-visual">
+        </div>
+        <div class="demo-equation" id="rnn-equation" style="margin-top:14px; font-size:0.95em;"></div>
+        <div class="demo-controls">
+          <button class="btn-demo" id="rnn-prev" onclick="rnnStep(-1)">&#9664; Previous</button>
+          <span class="demo-position" id="rnn-pos">Step 0 / 5</span>
+          <button class="btn-demo" id="rnn-next" onclick="rnnStep(1)">Next &#9654;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Problem</span>
+      <div class="step-title">The Vanishing Gradient Problem</div>
+      <p>
+        When RNNs are trained on long sequences, gradients shrink exponentially as
+        they are backpropagated through time. If the gradient at step $T$ is:
+      </p>
+      <div class="computation">
+        $$ \frac{\partial L}{\partial h_1} = \frac{\partial L}{\partial h_T} \cdot \prod_{t=2}^{T} \frac{\partial h_t}{\partial h_{t-1}} $$
+      </div>
+      <p>
+        Each factor $\frac{\partial h_t}{\partial h_{t-1}}$ is typically less than 1.
+        After multiplying many such factors, the gradient approaches <strong>zero</strong>,
+        making it impossible for the network to learn long-range dependencies.
+      </p>
+      <div class="callout">
+        <strong>Why this matters for weather:</strong> Temperature patterns often depend on conditions
+        from days or weeks earlier. A standard RNN cannot "remember" that far back.
+        This is exactly why LSTMs were invented.
+      </div>
+
+      <p style="margin-top: 20px;">
+        <strong>Practice:</strong> If each gradient factor is 0.5 and we backpropagate through 10 time steps,
+        what is the remaining gradient magnitude? ($0.5^{10}$)
+      </p>
+      <div class="hint-box" id="hint-vanish">
+        <strong>Hint:</strong> $0.5^{10} = \frac{1}{2^{10}} = \frac{1}{1024}$
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="text" id="ans-vanish" placeholder="e.g. 0.00098">
+        <button class="btn btn-check" onclick="checkAnswer('vanish')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('vanish')">Hint</button>
+        <span class="feedback" id="fb-vanish"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      RNNs process sequences with memory via hidden states, but suffer from vanishing gradients
+      on long sequences. LSTMs solve this with gating mechanisms.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 2: LSTM ARCHITECTURE ════════════════ -->
+  <div class="problem-header" id="sec2">Section 2 &mdash; LSTM Architecture &amp; Gates</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">The LSTM Cell</div>
+      <p>
+        An <strong>LSTM (Long Short-Term Memory)</strong> cell adds a <em>cell state</em> $C_t$
+        that acts like a conveyor belt &mdash; information flows through it with minimal
+        modification. Three <strong>gates</strong> control what information enters, stays, or
+        leaves the cell state.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Interactive</span>
+      <div class="step-title">Explore the LSTM Gates</div>
+      <p>Click each gate below to see its equation and role:</p>
+
+      <div class="lstm-diagram">
+        <div class="gate-box" onclick="showGate('forget')" id="gate-forget">
+          <div class="gate-icon">&#128682;</div>
+          <div class="gate-name">Forget Gate</div>
+          <div class="gate-symbol">$f_t$</div>
+        </div>
+        <div class="gate-box" onclick="showGate('input')" id="gate-input">
+          <div class="gate-icon">&#128229;</div>
+          <div class="gate-name">Input Gate</div>
+          <div class="gate-symbol">$i_t$</div>
+        </div>
+        <div class="gate-box" onclick="showGate('output')" id="gate-output">
+          <div class="gate-icon">&#128228;</div>
+          <div class="gate-name">Output Gate</div>
+          <div class="gate-symbol">$o_t$</div>
+        </div>
+      </div>
+
+      <div class="gate-detail" id="detail-forget">
+        <h4>Forget Gate &mdash; What to Discard</h4>
+        <p>The forget gate decides which information from the previous cell state to throw away.
+        It outputs a value between 0 (completely forget) and 1 (completely keep) for each dimension.</p>
+        <div class="computation">
+          $$ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) $$
+        </div>
+        <p>
+          <strong>Temperature example:</strong> If the model learned that yesterday's pressure reading is no
+          longer relevant for today's temperature prediction, the forget gate will output values near 0 for
+          those dimensions, effectively erasing that information.
+        </p>
+      </div>
+
+      <div class="gate-detail" id="detail-input">
+        <h4>Input Gate &mdash; What to Store</h4>
+        <p>The input gate has two parts: a sigmoid layer that decides <em>which</em> values to update,
+        and a tanh layer that creates a vector of <em>candidate</em> new values.</p>
+        <div class="computation">
+          $$ i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) $$
+          $$ \tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C) $$
+        </div>
+        <p>The cell state is then updated:</p>
+        <div class="computation">
+          $$ C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t $$
+        </div>
+        <p>
+          <strong>Temperature example:</strong> When a cold front arrives, the input gate recognizes this
+          as important new information and writes it into the cell state for future predictions.
+        </p>
+      </div>
+
+      <div class="gate-detail" id="detail-output">
+        <h4>Output Gate &mdash; What to Output</h4>
+        <p>The output gate controls which parts of the cell state become the hidden state
+        (the actual output of this time step).</p>
+        <div class="computation">
+          $$ o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) $$
+          $$ h_t = o_t \odot \tanh(C_t) $$
+        </div>
+        <p>
+          <strong>Temperature example:</strong> The cell state may contain long-term seasonal trend data,
+          but the output gate only passes the information relevant for the next hour's prediction.
+        </p>
+      </div>
+    </div>
+
+    <!-- LSTM diagram SVG -->
+    <div class="step">
+      <span class="step-label">Visual</span>
+      <div class="step-title">LSTM Cell Architecture Diagram</div>
+      <div class="lstm-svg-container">
+        <svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" style="font-family:Georgia,serif;">
+          <!-- Cell state line -->
+          <line x1="50" y1="60" x2="650" y2="60" stroke="#512888" stroke-width="3"/>
+          <text x="30" y="55" font-size="13" fill="#512888" font-weight="bold">C</text>
+          <polygon points="645,55 655,60 645,65" fill="#512888"/>
+
+          <!-- Hidden state line -->
+          <line x1="50" y1="280" x2="650" y2="280" stroke="#7b52b4" stroke-width="2" stroke-dasharray="6,3"/>
+          <text x="25" y="275" font-size="13" fill="#7b52b4" font-weight="bold">h</text>
+          <polygon points="645,275 655,280 645,285" fill="#7b52b4"/>
+
+          <!-- Forget gate -->
+          <rect x="120" y="120" width="100" height="60" rx="8" fill="#e8ddf5" stroke="#512888" stroke-width="2"/>
+          <text x="170" y="147" text-anchor="middle" font-size="13" fill="#512888" font-weight="bold">Forget</text>
+          <text x="170" y="167" text-anchor="middle" font-size="12" fill="#5a5a5a">f_t</text>
+          <line x1="170" y1="120" x2="170" y2="68" stroke="#512888" stroke-width="1.5"/>
+          <circle cx="170" cy="60" r="10" fill="#fff" stroke="#512888" stroke-width="2"/>
+          <text x="170" y="64" text-anchor="middle" font-size="14" fill="#512888" font-weight="bold">x</text>
+          <line x1="170" y1="180" x2="170" y2="280" stroke="#7b52b4" stroke-width="1" stroke-dasharray="4,2"/>
+
+          <!-- Input gate -->
+          <rect x="280" y="120" width="100" height="60" rx="8" fill="#e8ddf5" stroke="#512888" stroke-width="2"/>
+          <text x="330" y="147" text-anchor="middle" font-size="13" fill="#512888" font-weight="bold">Input</text>
+          <text x="330" y="167" text-anchor="middle" font-size="12" fill="#5a5a5a">i_t . tanh</text>
+          <line x1="330" y1="120" x2="330" y2="68" stroke="#512888" stroke-width="1.5"/>
+          <circle cx="330" cy="60" r="10" fill="#fff" stroke="#512888" stroke-width="2"/>
+          <text x="330" y="64" text-anchor="middle" font-size="14" fill="#512888" font-weight="bold">+</text>
+          <line x1="330" y1="180" x2="330" y2="280" stroke="#7b52b4" stroke-width="1" stroke-dasharray="4,2"/>
+
+          <!-- Output gate -->
+          <rect x="460" y="120" width="100" height="60" rx="8" fill="#e8ddf5" stroke="#512888" stroke-width="2"/>
+          <text x="510" y="147" text-anchor="middle" font-size="13" fill="#512888" font-weight="bold">Output</text>
+          <text x="510" y="167" text-anchor="middle" font-size="12" fill="#5a5a5a">o_t</text>
+          <line x1="510" y1="120" x2="510" y2="68" stroke="#512888" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <line x1="510" y1="180" x2="510" y2="270" stroke="#7b52b4" stroke-width="1.5"/>
+          <circle cx="510" cy="280" r="10" fill="#fff" stroke="#7b52b4" stroke-width="2"/>
+          <text x="510" y="284" text-anchor="middle" font-size="14" fill="#7b52b4" font-weight="bold">x</text>
+
+          <!-- Labels -->
+          <text x="80" y="320" font-size="12" fill="#5a5a5a">x_t (input)</text>
+          <text x="570" y="320" font-size="12" fill="#5a5a5a">h_t (output)</text>
+          <text x="560" y="45" font-size="12" fill="#5a5a5a">C_t (cell state)</text>
+
+          <!-- Input arrows from bottom -->
+          <line x1="120" y1="330" x2="120" y2="240" stroke="#5a5a5a" stroke-width="1"/>
+          <polygon points="120,240 116,248 124,248" fill="#5a5a5a"/>
+          <line x1="120" y1="240" x2="170" y2="180" stroke="#5a5a5a" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="120" y1="240" x2="330" y2="180" stroke="#5a5a5a" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="120" y1="240" x2="510" y2="180" stroke="#5a5a5a" stroke-width="1" stroke-dasharray="3,2"/>
+        </svg>
+      </div>
+      <p style="text-align:center; font-size:0.9em; color:var(--muted);">
+        The cell state (top line) flows through with minimal changes. Gates control information flow.
+      </p>
+    </div>
+
+    <!-- Practice problem -->
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">Gate Computation</div>
+      <p>If $\sigma(z) = 0.8$ (forget gate output) and the previous cell state value is $C_{t-1} = 5.0$,
+      what is the "kept" portion after the forget gate? (Compute $f_t \cdot C_{t-1}$)</p>
+      <div class="hint-box" id="hint-gate">
+        <strong>Hint:</strong> Simply multiply: $0.8 \times 5.0$
+      </div>
+      <div class="answer-row">
+        <span>Your answer:</span>
+        <input type="number" id="ans-gate" placeholder="___" step="any">
+        <button class="btn btn-check" onclick="checkAnswer('gate')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('gate')">Hint</button>
+        <span class="feedback" id="fb-gate"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      LSTMs use three gates (forget, input, output) to selectively control information flow,
+      solving the vanishing gradient problem and enabling learning over long sequences.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 3: JENA CLIMATE DATASET ════════════════ -->
+  <div class="problem-header" id="sec3">Section 3 &mdash; The Jena Climate Dataset</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Data</span>
+      <div class="step-title">Dataset Overview</div>
+      <p>
+        The <strong>Jena Climate Dataset</strong> was recorded by the Max Planck Institute
+        for Biogeochemistry from 2009 to 2016. It contains <strong>~420,000 observations</strong>
+        sampled every <strong>10 minutes</strong> across 14 weather features.
+      </p>
+      <div class="given-box">
+        <strong>Key Features:</strong> Temperature (T), Atmospheric Pressure (p),
+        Humidity (rh), Wind Speed (wv), Wind Direction (wd), and more.<br>
+        <strong>Target:</strong> Temperature in degrees Celsius (T (degC))
+      </div>
+
+      <table class="concepts-table" style="margin-top:16px;">
+        <thead>
+          <tr><th>Property</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Time Range</td><td>January 2009 &ndash; December 2016</td></tr>
+          <tr><td>Sampling Interval</td><td>Every 10 minutes</td></tr>
+          <tr><td>Total Observations</td><td>~420,551 rows</td></tr>
+          <tr><td>Number of Features</td><td>14 weather measurements</td></tr>
+          <tr><td>Subsampling</td><td>Every 6th row = 1 observation per hour</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">Subsampling Calculation</div>
+      <p>
+        The raw data has one observation every 10 minutes. We subsample by taking every 6th row.
+        How many observations per day do we have after subsampling?
+      </p>
+      <div class="hint-box" id="hint-subsample">
+        <strong>Hint:</strong> After subsampling, we have 1 observation per hour.
+        There are 24 hours in a day.
+      </div>
+      <div class="answer-row">
+        <span>Observations per day:</span>
+        <input type="number" id="ans-subsample" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('subsample')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('subsample')">Hint</button>
+        <span class="feedback" id="fb-subsample"></span>
+      </div>
+
+      <p style="margin-top:24px;">
+        Our model uses a sequence length of <strong>120 time steps</strong> (hourly observations).
+        How many days of data does each input sequence represent?
+      </p>
+      <div class="hint-box" id="hint-seqdays">
+        <strong>Hint:</strong> $120 \text{ hours} \div 24 \text{ hours/day}$
+      </div>
+      <div class="answer-row">
+        <span>Days per sequence:</span>
+        <input type="number" id="ans-seqdays" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('seqdays')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('seqdays')">Hint</button>
+        <span class="feedback" id="fb-seqdays"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      The Jena Climate dataset provides rich, high-resolution weather data. After subsampling to
+      hourly intervals, each 120-step sequence covers 5 days of temperature history.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 4: NORMALIZATION ════════════════ -->
+  <div class="problem-header" id="sec4">Section 4 &mdash; Min-Max Normalization</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">Why Normalize?</div>
+      <p>
+        Neural networks learn best when input features are on a similar scale.
+        Temperature ranges from roughly &minus;20&deg;C to +40&deg;C, while atmospheric
+        pressure ranges from 900 to 1100 mbar. Without normalization, the model
+        would be dominated by the larger-scale features.
+      </p>
+      <p><strong>Min-Max Normalization</strong> scales each feature to the range $[0, 1]$:</p>
+      <div class="computation">
+        $$ x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}} $$
+      </div>
+    </div>
+
+    <!-- Interactive normalization demo -->
+    <div class="step">
+      <span class="step-label">Interactive</span>
+      <div class="step-title">Watch Normalization in Action</div>
+      <p>Click the button to see raw temperature values transform to normalized values:</p>
+
+      <div class="demo-area">
+        <div class="demo-title">Temperature Normalization (Min = &minus;10&deg;C, Max = 35&deg;C)</div>
+        <div style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-end;">
+          <div>
+            <div style="font-weight:bold; font-size:0.85em; color:var(--muted); text-align:center; margin-bottom:8px;" id="norm-label">
+              Raw Values (&deg;C)
+            </div>
+            <div class="norm-bar-container" id="norm-bars"></div>
+          </div>
+        </div>
+        <div class="demo-controls">
+          <button class="btn-demo" onclick="toggleNormalization()">
+            <span id="norm-btn-text">Normalize</span>
+          </button>
+        </div>
+        <div class="demo-equation" id="norm-equation"></div>
+      </div>
+    </div>
+
+    <!-- Practice problem -->
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">Compute a Normalized Value</div>
+      <p>
+        Given: $x = 20$&deg;C, $x_{\min} = -10$&deg;C, $x_{\max} = 35$&deg;C.<br>
+        What is $x_{\text{norm}}$? (Round to 4 decimal places)
+      </p>
+      <div class="hint-box" id="hint-norm">
+        <strong>Hint:</strong> $\frac{20 - (-10)}{35 - (-10)} = \frac{30}{45}$
+      </div>
+      <div class="answer-row">
+        <span>$x_{\text{norm}}$ =</span>
+        <input type="text" id="ans-norm" placeholder="0.____">
+        <button class="btn btn-check" onclick="checkAnswer('norm')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('norm')">Hint</button>
+        <span class="feedback" id="fb-norm"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      Min-Max normalization scales all features to $[0, 1]$, ensuring no single feature
+      dominates the learning process. This is critical for stable LSTM training.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 5: SLIDING WINDOW ════════════════ -->
+  <div class="problem-header" id="sec5">Section 5 &mdash; Sliding Window &amp; Sequence Creation</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">Creating Input-Target Pairs</div>
+      <p>
+        Time-series forecasting requires converting a flat sequence of values into
+        <strong>input-target pairs</strong>. We use a <em>sliding window</em> approach:
+        given a window of $L$ consecutive observations, the model uses them to predict
+        the <strong>next</strong> value.
+      </p>
+      <div class="computation">
+        $$
+        \text{Input: } [x_t, x_{t+1}, \ldots, x_{t+L-1}] \quad \rightarrow \quad \text{Target: } x_{t+L}
+        $$
+      </div>
+    </div>
+
+    <!-- Interactive sliding window demo -->
+    <div class="step">
+      <span class="step-label">Interactive</span>
+      <div class="step-title">Sliding Window Demo</div>
+      <p>
+        Watch a window of size <strong>4</strong> slide across a temperature sequence.
+        The <span style="color:#3b1d66; font-weight:bold;">purple cells</span> are the input;
+        the <span style="color:#c62828; font-weight:bold;">red cell</span> is the prediction target.
+      </p>
+
+      <div class="demo-area" id="sliding-demo">
+        <div class="demo-title">Sliding Window (L = 4) on Hourly Temperatures</div>
+        <div>
+          <div class="ts-grid" id="ts-labels"></div>
+          <div class="ts-grid" id="ts-cells"></div>
+        </div>
+        <div class="demo-equation" id="slide-equation"></div>
+        <div class="demo-controls">
+          <button class="btn-demo" id="slide-prev" onclick="slideStep(-1)">&#9664; Previous</button>
+          <span class="demo-position" id="slide-pos">Window 1 / 7</span>
+          <button class="btn-demo" id="slide-next" onclick="slideStep(1)">Next &#9654;</button>
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn-demo" onclick="slideAutoPlay()">&#9654; Auto-Play</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice -->
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">How Many Sequences?</div>
+      <p>
+        If you have $N = 1000$ observations and a window size of $L = 120$,
+        how many input-target pairs can you create?
+      </p>
+      <div class="hint-box" id="hint-nseq">
+        <strong>Hint:</strong> The formula is $N - L$. The last window starts at position
+        $N - L$ and predicts the final observation.
+      </div>
+      <div class="answer-row">
+        <span>Number of sequences:</span>
+        <input type="number" id="ans-nseq" placeholder="___">
+        <button class="btn btn-check" onclick="checkAnswer('nseq')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('nseq')">Hint</button>
+        <span class="feedback" id="fb-nseq"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      The sliding window converts a flat time series into supervised learning pairs.
+      Each window of 120 hourly observations (5 days) predicts the next hour's temperature.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 6: MODEL ARCHITECTURE ════════════════ -->
+  <div class="problem-header" id="sec6">Section 6 &mdash; Model Architecture &amp; Training</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Architecture</span>
+      <div class="step-title">Our LSTM Model</div>
+      <p>The temperature forecasting model uses a <strong>stacked LSTM</strong> architecture:</p>
+
+      <div class="given-box" style="text-align:left;">
+        <strong>Layer 1:</strong> LSTM &mdash; input_size=1, hidden_size=64, num_layers=2, dropout=0.2<br>
+        <strong>Layer 2:</strong> Linear (Fully Connected) &mdash; 64 &rarr; 1 (single temperature output)<br><br>
+        <strong>Loss Function:</strong> MSE (Mean Squared Error)<br>
+        <strong>Optimizer:</strong> Adam (lr = 0.001)<br>
+        <strong>Scheduler:</strong> ReduceLROnPlateau (patience=5, factor=0.5)
+      </div>
+
+      <p>
+        <strong>Why stacked LSTMs?</strong> The first LSTM layer learns lower-level temporal patterns
+        (hourly fluctuations), while the second layer captures higher-level patterns
+        (multi-day trends). This hierarchical representation is similar to how deeper CNN layers
+        capture more abstract spatial features.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">Loss Function &mdash; Mean Squared Error</div>
+      <p>
+        For regression tasks (predicting a continuous value like temperature),
+        we use <strong>MSE</strong>:
+      </p>
+      <div class="computation">
+        $$ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$
+      </div>
+      <p>
+        where $y_i$ is the actual temperature and $\hat{y}_i$ is the model's prediction.
+        Squaring the errors penalizes large mistakes more heavily than small ones.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Interactive</span>
+      <div class="step-title">Training Loss Simulator</div>
+      <p>
+        Click "Train" to watch a simulated training process. Observe how the training loss
+        and validation loss decrease over epochs, and how the learning rate drops when
+        progress stalls.
+      </p>
+      <div class="demo-area">
+        <div class="demo-title">Simulated Training Progress</div>
+        <div class="chart-container">
+          <canvas id="loss-chart" width="580" height="280"></canvas>
+        </div>
+        <div id="train-info" style="font-size:0.9em; color:var(--muted); margin-top:8px;">
+          Click "Train" to begin simulation
+        </div>
+        <div class="demo-controls">
+          <button class="btn-demo" id="train-btn" onclick="simulateTraining()">&#9654; Train</button>
+          <button class="btn-demo" onclick="resetTraining()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice -->
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">MSE Calculation</div>
+      <p>
+        Given actual temperatures $[20, 22, 18]$ and predictions $[19, 23, 17]$,
+        what is the MSE?
+      </p>
+      <div class="hint-box" id="hint-mse">
+        <strong>Hint:</strong> Errors: $(20-19)^2=1$, $(22-23)^2=1$, $(18-17)^2=1$. Average them.
+      </div>
+      <div class="answer-row">
+        <span>MSE =</span>
+        <input type="number" id="ans-mse" placeholder="___" step="any">
+        <button class="btn btn-check" onclick="checkAnswer('mse')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('mse')">Hint</button>
+        <span class="feedback" id="fb-mse"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      The stacked LSTM model with dropout and learning rate scheduling provides robust
+      temperature predictions by learning hierarchical temporal patterns.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 7: EVALUATION ════════════════ -->
+  <div class="problem-header" id="sec7">Section 7 &mdash; Evaluation &amp; RMSE</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">Root Mean Squared Error (RMSE)</div>
+      <p>
+        While MSE is used for training, we evaluate with <strong>RMSE</strong> because it
+        returns an error value in the <em>same units as the target</em> (degrees Celsius),
+        making it interpretable.
+      </p>
+      <div class="computation">
+        $$ \text{RMSE} = \sqrt{\text{MSE}} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2} $$
+      </div>
+      <p>
+        An RMSE of 2.5 means the model's predictions are, on average, about 2.5&deg;C away
+        from the true temperature.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Concept</span>
+      <div class="step-title">Chronological Train/Test Split</div>
+      <p>
+        Unlike classification tasks where data can be shuffled, time-series data must
+        maintain temporal order. We use a <strong>chronological split</strong>:
+      </p>
+      <div class="given-box" style="text-align:left;">
+        <strong>Training Set:</strong> First 90% of the data (2009 &ndash; mid 2015)<br>
+        <strong>Test Set:</strong> Last 10% of the data (mid 2015 &ndash; 2016)
+      </div>
+      <div class="callout">
+        <strong>Why no shuffle?</strong> Shuffling would leak future information into the training set.
+        The model must only learn from past data to predict the future &mdash;
+        just like in a real deployment scenario.
+      </div>
+
+      <!-- Interactive train/test split visualizer -->
+      <div class="demo-area" style="margin-top:20px;">
+        <div class="demo-title">Chronological Train/Test Split</div>
+        <div style="display:flex; height:40px; border-radius:6px; overflow:hidden; margin:12px 0;">
+          <div id="split-train" style="background:var(--purple); width:90%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85em; font-weight:bold; transition:width 0.5s ease; cursor:pointer;" onclick="adjustSplit(-5)">
+            Training (90%)
+          </div>
+          <div id="split-test" style="background:var(--purple-light); width:10%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85em; font-weight:bold; transition:width 0.5s ease; cursor:pointer;" onclick="adjustSplit(5)">
+            Test (10%)
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.8em; color:var(--muted);">
+          <span>2009</span>
+          <span id="split-year">mid 2015</span>
+          <span>2016</span>
+        </div>
+        <p style="font-size:0.85em; margin-top:10px; color:var(--muted);">
+          Click the bars to adjust the split ratio. Notice how the split point year changes.
+        </p>
+      </div>
+    </div>
+
+    <!-- Practice -->
+    <div class="step">
+      <span class="step-label">Practice</span>
+      <div class="step-title">RMSE Calculation</div>
+      <p>
+        From the previous section, you computed MSE = 1. What is the RMSE?
+      </p>
+      <div class="hint-box" id="hint-rmse">
+        <strong>Hint:</strong> $\text{RMSE} = \sqrt{\text{MSE}} = \sqrt{1}$
+      </div>
+      <div class="answer-row">
+        <span>RMSE =</span>
+        <input type="number" id="ans-rmse" placeholder="___" step="any">
+        <button class="btn btn-check" onclick="checkAnswer('rmse')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('rmse')">Hint</button>
+        <span class="feedback" id="fb-rmse"></span>
+      </div>
+
+      <p style="margin-top:24px;">
+        If the model produces an RMSE of 0.04 on <em>normalized</em> data (range 0&ndash;1),
+        and the original temperature range was &minus;10&deg;C to 35&deg;C (range = 45&deg;C),
+        what is the RMSE in actual degrees Celsius?
+      </p>
+      <div class="hint-box" id="hint-rmse-real">
+        <strong>Hint:</strong> Multiply normalized RMSE by the range: $0.04 \times 45$
+      </div>
+      <div class="answer-row">
+        <span>RMSE (&deg;C) =</span>
+        <input type="number" id="ans-rmse-real" placeholder="___" step="any">
+        <button class="btn btn-check" onclick="checkAnswer('rmse-real')">Check</button>
+        <button class="btn btn-hint" onclick="toggleHint('rmse-real')">Hint</button>
+        <span class="feedback" id="fb-rmse-real"></span>
+      </div>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Section Outcome</div>
+      RMSE provides interpretable error measurements in the original units. Chronological
+      splitting ensures the model is evaluated fairly on unseen future data.
+    </div>
+  </div>
+
+  <hr class="section-break">
+
+  <!-- ════════════════ SECTION 8: HYPERPARAMETERS & REFERENCE ════════════════ -->
+  <div class="problem-header" id="sec8">Section 8 &mdash; Hyperparameters &amp; Quick Reference</div>
+  <div class="problem-body">
+
+    <div class="step">
+      <span class="step-label">Reference</span>
+      <div class="step-title">Hyperparameter Summary</div>
+      <table class="concepts-table">
+        <thead>
+          <tr><th style="width:30%;">Hyperparameter</th><th style="width:15%;">Value</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sequence Length</strong></td>
+            <td>120</td>
+            <td>5 days of hourly data as input context</td>
+          </tr>
+          <tr>
+            <td><strong>Hidden Units</strong></td>
+            <td>64</td>
+            <td>Capacity of the LSTM hidden state</td>
+          </tr>
+          <tr>
+            <td><strong>Number of Layers</strong></td>
+            <td>2</td>
+            <td>Stacked LSTMs for hierarchical features</td>
+          </tr>
+          <tr>
+            <td><strong>Dropout Rate</strong></td>
+            <td>0.2</td>
+            <td>Regularization to prevent overfitting</td>
+          </tr>
+          <tr>
+            <td><strong>Batch Size</strong></td>
+            <td>256</td>
+            <td>Number of sequences per gradient update</td>
+          </tr>
+          <tr>
+            <td><strong>Learning Rate</strong></td>
+            <td>0.001</td>
+            <td>Step size for Adam optimizer</td>
+          </tr>
+          <tr>
+            <td><strong>LR Schedule</strong></td>
+            <td>ReduceLROnPlateau</td>
+            <td>Halves LR after 5 epochs without improvement</td>
+          </tr>
+          <tr>
+            <td><strong>Early Stopping</strong></td>
+            <td>Patience = 10</td>
+            <td>Stops training if no val_loss improvement</td>
+          </tr>
+          <tr>
+            <td><strong>Subsample Step</strong></td>
+            <td>6</td>
+            <td>Take every 6th row (10-min to hourly)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="step">
+      <span class="step-label">Reference</span>
+      <div class="step-title">Key Concepts Summary</div>
+      <table class="concepts-table">
+        <thead>
+          <tr><th style="width:35%;">Concept</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RNN</strong></td>
+            <td>Neural network with recurrent connections that maintains hidden state across time steps</td>
+          </tr>
+          <tr>
+            <td><strong>LSTM</strong></td>
+            <td>Advanced RNN cell with forget, input, and output gates that controls information flow through a cell state</td>
+          </tr>
+          <tr>
+            <td><strong>Vanishing Gradient</strong></td>
+            <td>Gradients shrink exponentially during backpropagation through time, preventing learning of long-range dependencies</td>
+          </tr>
+          <tr>
+            <td><strong>Sliding Window</strong></td>
+            <td>Technique that creates input-target pairs by moving a fixed-size window across the time series</td>
+          </tr>
+          <tr>
+            <td><strong>Min-Max Normalization</strong></td>
+            <td>Scales features to $[0,1]$ range using $(x - x_{\min}) / (x_{\max} - x_{\min})$</td>
+          </tr>
+          <tr>
+            <td><strong>Chronological Split</strong></td>
+            <td>Train/test split that preserves temporal order to avoid data leakage</td>
+          </tr>
+          <tr>
+            <td><strong>RMSE</strong></td>
+            <td>Square root of MSE; gives error in original units for interpretability</td>
+          </tr>
+          <tr>
+            <td><strong>ReduceLROnPlateau</strong></td>
+            <td>Scheduler that reduces learning rate when validation loss stops improving</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="outcome">
+      <div class="outcome-label">Guide Complete</div>
+      You now understand the full pipeline: from raw Jena Climate data through normalization,
+      sliding window creation, LSTM processing, training with MSE loss, and evaluation with RMSE.
+      These concepts form the foundation for deploying a real-time temperature forecasting system.
+    </div>
+  </div>
+
+  <!-- ════════════════ JAVASCRIPT ════════════════ -->
+  <script>
+    /* ─── Answer key ─── */
+    const answers = {
+      'vanish':    { value: 0.000977, tolerance: 0.001,  msg: '0.5^10 = 0.000977' },
+      'gate':      { value: 4,        tolerance: 0.01,   msg: '0.8 x 5.0 = 4.0' },
+      'subsample': { value: 24,       tolerance: 0,      msg: '24 observations per day' },
+      'seqdays':   { value: 5,        tolerance: 0,      msg: '120 hours / 24 = 5 days' },
+      'norm':      { value: 0.6667,   tolerance: 0.01,   msg: '30/45 = 0.6667' },
+      'nseq':      { value: 880,      tolerance: 0,      msg: '1000 - 120 = 880' },
+      'mse':       { value: 1,        tolerance: 0.01,   msg: '(1+1+1)/3 = 1.0' },
+      'rmse':      { value: 1,        tolerance: 0.01,   msg: 'sqrt(1) = 1.0' },
+      'rmse-real': { value: 1.8,      tolerance: 0.1,    msg: '0.04 x 45 = 1.8 deg C' },
+    };
+
+    function checkAnswer(id) {
+      const input = document.getElementById('ans-' + id);
+      const fb = document.getElementById('fb-' + id);
+      const val = parseFloat(input.value);
+      const ans = answers[id];
+
+      if (isNaN(val)) {
+        fb.textContent = 'Enter a number';
+        fb.className = 'feedback visible incorrect';
+        return;
+      }
+
+      if (Math.abs(val - ans.value) <= ans.tolerance) {
+        input.className = (input.className.replace(/correct|incorrect/g, '') + ' correct').trim();
+        fb.textContent = 'Correct! ' + ans.msg;
+        fb.className = 'feedback visible correct';
+      } else {
+        input.className = (input.className.replace(/correct|incorrect/g, '') + ' incorrect').trim();
+        fb.textContent = 'Try again';
+        fb.className = 'feedback visible incorrect';
+      }
+    }
+
+    function toggleHint(id) {
+      const hint = document.getElementById('hint-' + id);
+      hint.classList.toggle('visible');
+    }
+
+    /* ─── RNN Unroll Demo ─── */
+    const rnnTemps = [15.2, 16.1, 17.3, 18.0, 16.8, 15.5];
+    let rnnPos = 0;
+
+    function initRNNDemo() {
+      const container = document.getElementById('rnn-steps-visual');
+      let html = '';
+      for (let i = 0; i < rnnTemps.length; i++) {
+        html += '<div style="text-align:center; min-width:70px;">';
+        html += '<div style="font-size:0.75em; color:var(--muted);">t=' + i + '</div>';
+        html += '<div id="rnn-node-' + i + '" style="width:56px; height:56px; border-radius:50%; ' +
+                'border:2px solid var(--border); display:flex; align-items:center; justify-content:center; ' +
+                'font-size:0.8em; transition:all 0.4s ease; margin:0 auto;">' + rnnTemps[i] + '</div>';
+        if (i < rnnTemps.length - 1) {
+          html += '<div style="color:var(--purple); font-size:1.2em; margin-top:4px;">&#8594;</div>';
+        }
+        html += '</div>';
+      }
+      container.innerHTML = html;
+      updateRNN();
+    }
+
+    function updateRNN() {
+      for (let i = 0; i < rnnTemps.length; i++) {
+        const node = document.getElementById('rnn-node-' + i);
+        if (i < rnnPos) {
+          node.style.background = 'var(--purple-faint)';
+          node.style.borderColor = 'var(--purple-light)';
+          node.style.fontWeight = 'bold';
+          node.style.boxShadow = 'none';
+        } else if (i === rnnPos) {
+          node.style.background = '#e8ddf5';
+          node.style.borderColor = 'var(--purple)';
+          node.style.fontWeight = 'bold';
+          node.style.boxShadow = '0 0 10px rgba(81,40,136,0.3)';
+        } else {
+          node.style.background = '#fff';
+          node.style.borderColor = 'var(--border)';
+          node.style.fontWeight = 'normal';
+          node.style.boxShadow = 'none';
+        }
+      }
+      document.getElementById('rnn-pos').textContent =
+        'Step ' + rnnPos + ' / ' + (rnnTemps.length - 1);
+      document.getElementById('rnn-equation').innerHTML =
+        'h<sub>' + rnnPos + '</sub> = tanh(W<sub>xh</sub> &middot; ' + rnnTemps[rnnPos] +
+        ' + W<sub>hh</sub> &middot; h<sub>' + Math.max(0, rnnPos - 1) + '</sub> + b)';
+      document.getElementById('rnn-prev').disabled = rnnPos <= 0;
+      document.getElementById('rnn-next').disabled = rnnPos >= rnnTemps.length - 1;
+    }
+
+    function rnnStep(dir) {
+      rnnPos = Math.max(0, Math.min(rnnTemps.length - 1, rnnPos + dir));
+      updateRNN();
+      if (rnnPos === rnnTemps.length - 1) {
+      }
+    }
+
+    /* ─── Normalization Demo ─── */
+    const rawTemps = [-5, 5, 12, 20, 28, 33];
+    const normMin = -10, normMax = 35;
+    let isNormalized = false;
+
+    function initNormDemo() {
+      const container = document.getElementById('norm-bars');
+      container.innerHTML = '';
+      rawTemps.forEach(function(t, i) {
+        const bar = document.createElement('div');
+        bar.className = 'norm-bar';
+        bar.id = 'norm-bar-' + i;
+        const rawH = Math.max(10, ((t - normMin) / (normMax - normMin)) * 130);
+        bar.style.height = rawH + 'px';
+        bar.style.background = 'var(--purple)';
+        bar.textContent = t + '\u00B0';
+        container.appendChild(bar);
+      });
+    }
+
+    function toggleNormalization() {
+      isNormalized = !isNormalized;
+      var label = document.getElementById('norm-label');
+      var btnText = document.getElementById('norm-btn-text');
+      var eq = document.getElementById('norm-equation');
+
+      rawTemps.forEach(function(t, i) {
+        var bar = document.getElementById('norm-bar-' + i);
+        if (isNormalized) {
+          var norm = ((t - normMin) / (normMax - normMin));
+          var h = Math.max(10, norm * 130);
+          bar.style.height = h + 'px';
+          bar.style.background = 'var(--purple-light)';
+          bar.textContent = norm.toFixed(2);
+        } else {
+          var rawH = Math.max(10, ((t - normMin) / (normMax - normMin)) * 130);
+          bar.style.height = rawH + 'px';
+          bar.style.background = 'var(--purple)';
+          bar.textContent = t + '\u00B0';
+        }
+      });
+
+      if (isNormalized) {
+        label.textContent = 'Normalized Values [0, 1]';
+        btnText.textContent = 'Show Raw';
+        eq.textContent = 'x_norm = (x - (-10)) / (35 - (-10)) = (x + 10) / 45';
+      } else {
+        label.textContent = 'Raw Values (\u00B0C)';
+        btnText.textContent = 'Normalize';
+        eq.textContent = '';
+      }
+    }
+
+    /* ─── Sliding Window Demo ─── */
+    const slideData = [12.1, 13.4, 14.2, 15.7, 16.3, 14.8, 13.9, 12.5, 11.8, 13.2, 14.6];
+    const windowSize = 4;
+    const maxSlidePos = slideData.length - windowSize - 1;
+    let slidePos = 0;
+
+    function initSlideDemo() {
+      var labelsRow = document.getElementById('ts-labels');
+      var cellsRow = document.getElementById('ts-cells');
+      labelsRow.innerHTML = '';
+      cellsRow.innerHTML = '';
+
+      slideData.forEach(function(val, i) {
+        var label = document.createElement('div');
+        label.className = 'ts-cell-label';
+        label.textContent = 't' + i;
+        labelsRow.appendChild(label);
+
+        var cell = document.createElement('div');
+        cell.className = 'ts-cell';
+        cell.id = 'ts-' + i;
+        cell.textContent = val;
+        cellsRow.appendChild(cell);
+      });
+      updateSlide();
+    }
+
+    function updateSlide() {
+      slideData.forEach(function(_, i) {
+        var cell = document.getElementById('ts-' + i);
+        cell.className = 'ts-cell';
+        if (i >= slidePos && i < slidePos + windowSize) {
+          cell.classList.add('active');
+        }
+        if (i === slidePos + windowSize) {
+          cell.classList.add('target');
+        }
+      });
+
+      var inputVals = slideData.slice(slidePos, slidePos + windowSize).map(function(v) { return v.toFixed(1); });
+      var target = slideData[slidePos + windowSize].toFixed(1);
+      document.getElementById('slide-equation').innerHTML =
+        'Input: [' + inputVals.join(', ') + '] &rarr; Target: <strong>' + target + '</strong>';
+      document.getElementById('slide-pos').textContent =
+        'Window ' + (slidePos + 1) + ' / ' + (maxSlidePos + 1);
+      document.getElementById('slide-prev').disabled = slidePos <= 0;
+      document.getElementById('slide-next').disabled = slidePos >= maxSlidePos;
+    }
+
+    function slideStep(dir) {
+      slidePos = Math.max(0, Math.min(maxSlidePos, slidePos + dir));
+      updateSlide();
+      if (slidePos === maxSlidePos) {
+      }
+    }
+
+    function slideAutoPlay() {
+      slidePos = 0;
+      updateSlide();
+      var interval = setInterval(function() {
+        if (slidePos >= maxSlidePos) { clearInterval(interval); return; }
+        slidePos++;
+        updateSlide();
+      }, 800);
+    }
+
+    /* ─── LSTM Gate Explorer ─── */
+    function showGate(gate) {
+      ['forget', 'input', 'output'].forEach(function(g) {
+        document.getElementById('gate-' + g).classList.remove('active-gate');
+        document.getElementById('detail-' + g).classList.remove('visible');
+      });
+      document.getElementById('gate-' + gate).classList.add('active-gate');
+      document.getElementById('detail-' + gate).classList.add('visible');
+    }
+
+    /* ─── Train/Test Split Adjuster ─── */
+    let splitPct = 90;
+    function adjustSplit(delta) {
+      splitPct = Math.max(50, Math.min(95, splitPct + delta));
+      document.getElementById('split-train').style.width = splitPct + '%';
+      document.getElementById('split-train').textContent = 'Training (' + splitPct + '%)';
+      document.getElementById('split-test').style.width = (100 - splitPct) + '%';
+      document.getElementById('split-test').textContent = 'Test (' + (100 - splitPct) + '%)';
+      var year = 2009 + (2016 - 2009) * (splitPct / 100);
+      var yearStr = year < 2015 ? 'early ' + Math.round(year) : (year > 2015.5 ? 'late ' + Math.round(year) : 'mid ' + Math.round(year));
+      document.getElementById('split-year').textContent = yearStr;
+    }
+
+    /* ─── Training Loss Simulator ─── */
+    let trainRunning = false;
+
+    function simulateTraining() {
+      if (trainRunning) return;
+      trainRunning = true;
+      document.getElementById('train-btn').disabled = true;
+
+      var canvas = document.getElementById('loss-chart');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width, H = canvas.height;
+      var pad = { top: 30, right: 20, bottom: 40, left: 60 };
+      var plotW = W - pad.left - pad.right;
+      var plotH = H - pad.top - pad.bottom;
+
+      var epochs = 30;
+      var trainLosses = [];
+      var valLosses = [];
+      var lr = 0.001;
+      var epoch = 0;
+
+      function genLoss(e, base, noise) {
+        return base * Math.exp(-0.12 * e) + noise * (Math.random() - 0.3) * Math.exp(-0.05 * e) + 0.02;
+      }
+
+      function drawChart() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#fafafa';
+        ctx.fillRect(0, 0, W, H);
+
+        // Axes
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, H - pad.bottom);
+        ctx.lineTo(W - pad.right, H - pad.bottom);
+        ctx.stroke();
+
+        // Y-axis labels
+        ctx.fillStyle = '#5a5a5a';
+        ctx.font = '11px Georgia';
+        ctx.textAlign = 'right';
+        for (var i = 0; i <= 5; i++) {
+          var y = pad.top + (plotH / 5) * i;
+          var val = (1.0 - i * 0.2).toFixed(1);
+          ctx.fillText(val, pad.left - 8, y + 4);
+          ctx.strokeStyle = '#eee';
+          ctx.beginPath();
+          ctx.moveTo(pad.left, y);
+          ctx.lineTo(W - pad.right, y);
+          ctx.stroke();
+        }
+
+        // Axis labels
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#5a5a5a';
+        ctx.fillText('Epoch', W / 2, H - 5);
+        ctx.save();
+        ctx.translate(14, H / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Loss', 0, 0);
+        ctx.restore();
+
+        // Legend
+        ctx.fillStyle = '#512888';
+        ctx.fillRect(pad.left + 10, pad.top + 5, 14, 3);
+        ctx.fillStyle = '#5a5a5a';
+        ctx.textAlign = 'left';
+        ctx.fillText('Train Loss', pad.left + 30, pad.top + 10);
+        ctx.fillStyle = '#e57373';
+        ctx.fillRect(pad.left + 120, pad.top + 5, 14, 3);
+        ctx.fillStyle = '#5a5a5a';
+        ctx.fillText('Val Loss', pad.left + 140, pad.top + 10);
+
+        if (trainLosses.length === 0) return;
+
+        function drawLine(data, color) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          data.forEach(function(v, idx) {
+            var x = pad.left + (idx / (epochs - 1)) * plotW;
+            var yPos = pad.top + (1 - v) * plotH;
+            if (idx === 0) ctx.moveTo(x, yPos); else ctx.lineTo(x, yPos);
+          });
+          ctx.stroke();
+        }
+
+        drawLine(trainLosses, '#512888');
+        drawLine(valLosses, '#e57373');
+
+        // X tick marks
+        ctx.fillStyle = '#5a5a5a';
+        ctx.textAlign = 'center';
+        var step = Math.max(1, Math.floor(trainLosses.length / 6));
+        for (var j = 0; j < trainLosses.length; j += step) {
+          var xPos = pad.left + (j / (epochs - 1)) * plotW;
+          ctx.fillText(j + 1, xPos, H - pad.bottom + 16);
+        }
+      }
+
+      drawChart();
+
+      var interval = setInterval(function() {
+        if (epoch >= epochs) {
+          clearInterval(interval);
+          trainRunning = false;
+          document.getElementById('train-btn').disabled = false;
+          document.getElementById('train-info').textContent =
+            'Training complete! Final val_loss: ' + valLosses[valLosses.length - 1].toFixed(4) +
+            '  |  LR: ' + lr.toExponential(1);
+          return;
+        }
+
+        var tl = genLoss(epoch, 0.85, 0.08);
+        var vl = genLoss(epoch, 0.9, 0.12);
+        trainLosses.push(Math.min(1, Math.max(0, tl)));
+        valLosses.push(Math.min(1, Math.max(0, vl)));
+
+        if (epoch > 0 && epoch % 8 === 0) lr *= 0.5;
+
+        document.getElementById('train-info').textContent =
+          'Epoch ' + (epoch + 1) + '/' + epochs +
+          '  |  train_loss: ' + tl.toFixed(4) +
+          '  |  val_loss: ' + vl.toFixed(4) +
+          '  |  lr: ' + lr.toExponential(1);
+
+        drawChart();
+        epoch++;
+      }, 200);
+    }
+
+    function resetTraining() {
+      trainRunning = false;
+      var canvas = document.getElementById('loss-chart');
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fafafa';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('train-info').textContent = 'Click "Train" to begin simulation';
+      document.getElementById('train-btn').disabled = false;
+    }
+
+    /* ─── Initialize all demos on load ─── */
+    window.addEventListener('DOMContentLoaded', function() {
+      initRNNDemo();
+      initNormDemo();
+      initSlideDemo();
+    });
+  </script>
+
 </body>
 </html>
