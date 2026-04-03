@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.16)  2 APR 2026 12:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.16)  3 APR 2026 12:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -607,25 +607,26 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 4.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 4.
- [2])
+)
 \tf@toc=\write4
 \openout4 = `paper.toc'.
 
- [3] [4] [5]
+ [2] [3] [4]
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 192.
+nput line 196.
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 193.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 197.
+ [5]
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 227.
- [6] [7] [8] [9]
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 232.
+ [6] [7] [8]
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 3
-78.
+81.
 
 (C:\Users\Owenl\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-[10] [11] [12] [13] [14] [15] [16] (paper.aux)
+[9] [10] [11] [12] [13] [14] [15] [16] (paper.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -634,13 +635,13 @@ Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: EDD8EE2501B8AD54A3F46290AD64E825;5570.
  ) 
 Here is how much of TeX's memory you used:
- 14538 strings out of 467867
- 217028 string characters out of 5418334
- 766020 words of memory out of 5000000
- 42978 multiletter control sequences out of 15000+600000
+ 14530 strings out of 467867
+ 216940 string characters out of 5418334
+ 770030 words of memory out of 5000000
+ 42981 multiletter control sequences out of 15000+600000
  693759 words of font info for 142 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,13n,84p,862b,2036s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,13n,84p,872b,1374s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\Owenl\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt
 1000.pk><C:/Users/Owenl/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
 ts/cm/cmex10.pfb><C:/Users/Owenl/AppData/Local/Programs/MiKTeX/fonts/type1/publ
@@ -654,9 +655,9 @@ ta/Local/Programs/MiKTeX/fonts/type1/urw/symbol/usyr.pfb><C:/Users/Owenl/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/Owenl/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/Owenl/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on paper.pdf (17 pages, 239751 bytes).
+Output written on paper.pdf (17 pages, 238471 bytes).
 PDF statistics:
- 618 PDF objects out of 1000 (max. 8388607)
- 230 named destinations out of 1000 (max. 500000)
+ 606 PDF objects out of 1000 (max. 8388607)
+ 219 named destinations out of 1000 (max. 500000)
  241 words of extra memory for PDF output out of 10000 (max. 10000000)
 

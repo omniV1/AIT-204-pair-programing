@@ -39,7 +39,7 @@
   framexleftmargin=1.5em,
   aboveskip=0.8em,
   belowskip=0.8em,
-  float=H                      % Keep listings from floating away
+  captionpos=t                  % Caption above listing
 }
 
 % ── Tables & Floats ──
@@ -63,7 +63,7 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\color{gray}AIT-204: Neural Network Optimization}
+\fancyhead[L]{\small\color{gray}AIT-204 Deep Learning: Neural Network Optimization}
 \fancyhead[R]{\small\color{gray}Lindsey \& Friesen}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -97,7 +97,7 @@ Tuning Strategies Across Architectures}\\[1.4cm]
 {\large
 \begin{tabular}{rl}
 \textbf{Authors:} & Owen Lindsey \& Tyler Friesen \\[6pt]
-\textbf{Course:} & AIT-204 --- Artificial Intelligence \\[6pt]
+\textbf{Course:} & AIT-204 --- Deep Learning \\[6pt]
 \textbf{Instructor:} & Professor Artzi \\[6pt]
 \textbf{Date:} & April 2026 \\
 \end{tabular}
@@ -113,12 +113,15 @@ Tuning Strategies Across Architectures}\\[1.4cm]
 \section*{Abstract}
 \addcontentsline{toc}{section}{Abstract}
 
-Getting a neural network to actually work well turns out to be just as hard as designing one. In this paper, we dig into the research behind neural network optimization --- what makes the biggest difference in performance, how developers approach the tuning process, and whether there is a one-size-fits-all strategy or if architectures like CNNs, RNNs, and standard ANNs each need their own playbook. We pulled from several recent papers and surveys to piece together a practical picture of the current landscape. What we found is that while the broad strokes of tuning (get your learning rate right, regularize, don't skip data cleaning) apply everywhere, each architecture has its own quirks and failure modes that you have to account for. We include mathematical background and Python code throughout to keep things grounded.
+Getting a neural network to actually work well turns out to be just as hard as designing one. In this paper, we dig into the research behind neural network optimization, specifically what makes the biggest difference in performance, how developers approach the tuning process, and whether there is a one-size-fits-all strategy or if architectures like CNNs, RNNs, and standard ANNs each need their own playbook. We pulled from several recent papers and surveys to piece together a practical picture of the current landscape. What we found is that while the broad strokes of tuning (get your learning rate right, regularize, don't skip data cleaning) apply everywhere, each architecture has its own quirks and failure modes that you have to account for. We include mathematical background and Python code throughout to keep things grounded.
 
 \textbf{Keywords:} neural network optimization, hyperparameter tuning, learning rate scheduling, regularization, deep learning
 
 \newpage
+{
+\setlength{\parskip}{2pt}%        % Tighten TOC spacing to fit one page
 \tableofcontents
+}
 \newpage
 
 % ═══════════════════════════════════════════════════
@@ -128,7 +131,7 @@ Getting a neural network to actually work well turns out to be just as hard as d
 
 Anyone who has trained a neural network knows the feeling: you set up your model, hit train, and watch the loss curve do something completely unexpected. Maybe it flatlines. Maybe it spikes. Maybe it looks great on training data and falls apart on anything new. The gap between ``I have a neural network'' and ``I have a neural network that actually works'' is where tuning lives, and it is a bigger gap than most introductory courses let on.
 
-The core problem is that training a deep network means searching a massive, non-convex loss landscape full of local minima, saddle points, and flat regions \cite{goodfellow2016deep}. On top of that, the hyperparameter space is huge --- learning rate, batch size, depth, width, dropout, optimizer, weight initialization --- and these all interact with each other in ways that are hard to predict. Change the learning rate and suddenly your batch size choice matters differently. Add dropout and maybe you need a higher learning rate to compensate.
+The core problem is that training a deep network means searching a massive, non-convex loss landscape full of local minima, saddle points, and flat regions \cite{goodfellow2016deep}. On top of that, the hyperparameter space is huge (learning rate, batch size, depth, width, dropout, optimizer, weight initialization) and these all interact with each other in ways that are hard to predict. Change the learning rate and suddenly your batch size choice matters differently. Add dropout and maybe you need a higher learning rate to compensate.
 
 Different architectures make this even more complicated. A CNN processes spatial data with shared filters. An RNN carries hidden state across time steps. A basic feedforward ANN just maps inputs to outputs layer by layer. Each of these has its own set of things that tend to go wrong and its own bag of tricks for fixing them.
 
@@ -153,13 +156,13 @@ Yu and Zhu \cite{yu2020hyper} put together a solid survey of hyperparameter opti
 
 \subsection{Learning Rate and Optimization Algorithms}
 
-Pretty much every source we looked at agreed on one thing: the learning rate is the single most important hyperparameter \cite{goodfellow2016deep}. Smith \cite{smith2018disciplined} takes this further with the idea of ``super-convergence'' --- training with surprisingly large learning rates using a cyclical schedule, and getting both faster convergence and better final performance. The learning rate range test he describes (sweep from tiny to huge, plot the loss, pick a value just below the minimum) has become a go-to technique.
+Pretty much every source we looked at agreed on one thing: the learning rate is the single most important hyperparameter \cite{goodfellow2016deep}. Smith \cite{smith2018disciplined} takes this further with the idea of ``super-convergence,'' where training with surprisingly large learning rates using a cyclical schedule, and getting both faster convergence and better final performance. The learning rate range test he describes (sweep from tiny to huge, plot the loss, pick a value just below the minimum) has become a go-to technique.
 
-On the optimizer side, adaptive methods like Adam \cite{kingma2015adam} have become the default starting point because they are less sensitive to the initial learning rate. But there is an interesting counterpoint from Wilson et al.\ \cite{wilson2017marginal}, who show that well-tuned SGD with momentum often matches or beats Adam on test accuracy. The catch is ``well-tuned'' --- SGD needs more careful scheduling to get there.
+On the optimizer side, adaptive methods like Adam \cite{kingma2015adam} have become the default starting point because they are less sensitive to the initial learning rate. But there is an interesting counterpoint from Wilson et al.\ \cite{wilson2017marginal}, who show that well-tuned SGD with momentum often matches or beats Adam on test accuracy. The catch is ``well-tuned,'' since SGD needs more careful scheduling to get there.
 
 \subsection{Regularization and Generalization}
 
-Overfitting is the constant enemy, and the research covers several ways to fight it. Dropout \cite{srivastava2014dropout} randomly shuts off neurons during training, which works like training a bunch of smaller networks and averaging them. Batch normalization \cite{ioffe2015batch} normalizes layer inputs and has the nice side effect of smoothing the loss landscape, which lets you use higher learning rates. Luo et al.\ \cite{luo2019adaptive} found that adjusting regularization strength during training can outperform keeping it fixed, which makes sense --- the model's needs change as it learns.
+Overfitting is the constant enemy, and the research covers several ways to fight it. Dropout \cite{srivastava2014dropout} randomly shuts off neurons during training, which works like training a bunch of smaller networks and averaging them. Batch normalization \cite{ioffe2015batch} normalizes layer inputs and has the nice side effect of smoothing the loss landscape, which lets you use higher learning rates. Luo et al.\ \cite{luo2019adaptive} found that adjusting regularization strength during training can outperform keeping it fixed, which makes sense because the model's needs change as it learns.
 
 \subsection{Architecture-Specific Optimization}
 
@@ -178,7 +181,7 @@ Not everything matters equally. Based on the research, we can roughly rank the f
 
 \subsection{Data Quality and Quantity}
 
-This comes first for a reason. We have seen this firsthand in our own class projects --- no amount of architecture tweaking or hyperparameter tuning saves a model trained on messy data.
+This comes first for a reason. We have seen this firsthand in our own class projects, and no amount of architecture tweaking or hyperparameter tuning saves a model trained on messy data.
 
 Deep networks are hungry for data, and performance tends to follow a power law with dataset size: $\text{error} \propto n^{-\alpha}$, where $\alpha$ depends on the problem \cite{hestness2017deep}. Label noise is especially damaging; even 5--10\% mislabeled examples can drop accuracy by several points.
 
@@ -189,6 +192,7 @@ Preprocessing matters too. Normalizing inputs to zero mean and unit variance is 
 
 Without this, features on different scales pull the gradient in uneven directions and convergence slows way down. Here is how it looks in PyTorch:
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Data normalization in PyTorch}]
 import torch
 
@@ -200,6 +204,7 @@ train_std  = X_train.std(dim=0)
 X_train_norm = (X_train - train_mean) / (train_std + 1e-8)
 X_test_norm  = (X_test - train_mean) / (train_std + 1e-8)
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Architecture Design}
 
@@ -209,7 +214,7 @@ Choosing the right architecture is really about matching the model's inductive b
 
 \textbf{Capacity.} Too few parameters and the model underfits. Too many and it memorizes training noise. Finding the sweet spot is a recurring theme in tuning.
 
-\textbf{Skip connections.} Residual connections \cite{he2016deep} were a breakthrough for training deep networks. The idea is straightforward --- let the gradient bypass layers through an identity shortcut:
+\textbf{Skip connections.} Residual connections \cite{he2016deep} were a breakthrough for training deep networks. The idea is straightforward: let the gradient bypass layers through an identity shortcut:
 \begin{equation}
     \mathbf{y} = \mathcal{F}(\mathbf{x}, \{W_i\}) + \mathbf{x}
 \end{equation}
@@ -263,11 +268,11 @@ where $\hat{m}_t$ and $\hat{v}_t$ are bias-corrected versions. This is especiall
 
 After going through the literature, we think the most useful way to present this is as a step-by-step process. It is tempting to just start tweaking things, but a structured approach saves a lot of wasted time.
 
-\needspace{8\baselineskip}
-\textbf{Step 1 --- Establish a baseline.} Start with something simple and known to work. Use default hyperparameters. The goal here is just to get a model that trains without crashing and does better than random.
+\textbf{Step 1: Establish a baseline.} Start with something simple and known to work. Use default hyperparameters. The goal here is just to get a model that trains without crashing and does better than random.
 
-\textbf{Step 2 --- Verify the pipeline.} This one is easy to skip and painful when you do. Feed the model a tiny batch (32 samples) and train until it memorizes them. If the loss does not go to near-zero, you have a bug --- not a tuning problem.
+\textbf{Step 2: Verify the pipeline.} This one is easy to skip and painful when you do. Feed the model a tiny batch (32 samples) and train until it memorizes them. If the loss does not go to near-zero, you have a bug, not a tuning problem.
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Sanity check: can the model memorize a small batch?}]
 model = SimpleNet(input_dim=10, hidden_dim=128, output_dim=1)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
@@ -281,35 +286,31 @@ for epoch in range(200):
     optimizer.step()
 # If loss doesn't approach 0, something is broken
 \end{lstlisting}
+\end{minipage}
 
-\textbf{Step 3 --- Find the right learning rate.} Smith's learning rate range test \cite{smith2018disciplined} is the go-to here. Sweep the LR from very small (1e-7) to very large (10) over a few hundred iterations, and plot loss vs.\ LR. Pick a value about one order of magnitude below where loss is lowest.
+\textbf{Step 3: Find the right learning rate.} Smith's learning rate range test \cite{smith2018disciplined} is the go-to here. Sweep the LR from very small (1e-7) to very large (10) over a few hundred iterations, and plot loss vs.\ LR. Pick a value about one order of magnitude below where loss is lowest.
 
+\textbf{Step 4: Regularize.} Watch the gap between training and validation loss. When training loss keeps dropping but validation loss stalls or rises, you are overfitting. Add dropout, weight decay, or data augmentation rather than shrinking the model.
+
+\textbf{Step 5: Scale up.} Gradually increase model capacity (more layers, more units). Keep monitoring that train/val gap. Use a learning rate schedule, as the one-cycle policy in particular has been shown to enable much faster convergence \cite{smith2018disciplined}.
+
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Learning rate range test}]
 from torch.optim.lr_scheduler import ExponentialLR
-
-lr_min, lr_max = 1e-7, 10
-num_steps = 300
-gamma = (lr_max / lr_min) ** (1 / num_steps)
-
-optimizer = optim.SGD(model.parameters(), lr=lr_min)
-scheduler = ExponentialLR(optimizer, gamma=gamma)
-
+lr_min, lr_max, steps = 1e-7, 10, 300
+gamma = (lr_max / lr_min) ** (1 / steps)
+opt = optim.SGD(model.parameters(), lr=lr_min)
+sched = ExponentialLR(opt, gamma=gamma)
 lrs, losses = [], []
-for step in range(num_steps):
+for step in range(steps):
     X_b, y_b = next(iter(train_loader))
     loss = criterion(model(X_b), y_b)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-    scheduler.step()
-    lrs.append(optimizer.param_groups[0]['lr'])
+    opt.zero_grad(); loss.backward(); opt.step(); sched.step()
+    lrs.append(opt.param_groups[0]['lr'])
     losses.append(loss.item())
 # Plot lrs vs losses -- pick lr just below the dip
 \end{lstlisting}
-
-\textbf{Step 4 --- Regularize.} Watch the gap between training and validation loss. When training loss keeps dropping but validation loss stalls or rises, you are overfitting. Add dropout, weight decay, or data augmentation rather than shrinking the model.
-
-\textbf{Step 5 --- Scale up.} Gradually increase model capacity (more layers, more units). Keep monitoring that train/val gap. Use a learning rate schedule --- the one-cycle policy in particular has been shown to enable much faster convergence \cite{smith2018disciplined}.
+\end{minipage}
 
 \subsection{Learning Rate Schedules}
 
@@ -325,6 +326,7 @@ $\eta_t = \eta_0 \cdot \gamma^{\lfloor t / s \rfloor}$
 
 \textbf{One-cycle} ramps up and then back down, and is behind the ``super-convergence'' results Smith reported:
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={One-cycle policy in PyTorch}]
 from torch.optim.lr_scheduler import OneCycleLR
 
@@ -343,6 +345,7 @@ for epoch in range(100):
         optimizer.step()
         scheduler.step()  # call per batch, not per epoch
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Early Stopping}
 
@@ -355,7 +358,7 @@ Early stopping is the simplest form of regularization: track validation loss, an
 
 It is worth setting realistic expectations. Tuning is not going to hand you a perfect model.
 
-\textbf{Diminishing returns.} The first round of serious tuning --- getting the learning rate right, choosing an appropriate architecture, cleaning the data --- captures the bulk of the gains. Everything after that is incremental. We saw this pattern repeatedly in the literature, and it matches our experience in class projects.
+\textbf{Diminishing returns.} The first round of serious tuning (getting the learning rate right, choosing an appropriate architecture, cleaning the data) captures the bulk of the gains. Everything after that is incremental. We saw this pattern repeatedly in the literature, and it matches our experience in class projects.
 
 \textbf{Trade-offs everywhere.} Accuracy, speed, and memory are in tension. A bigger model might be more accurate but slower to train and deploy. Tuning explores this trade-off space, but it does not eliminate it.
 
@@ -375,31 +378,32 @@ The workflow from Section~4.1 applies broadly. But once you get past the basics,
 Feedforward networks are the simplest starting point. For tabular data, they are still competitive with more exotic architectures. The main tuning considerations:
 
 \begin{itemize}
-    \item \textbf{Width over depth.} For tabular tasks, 2--4 layers with plenty of hidden units tends to work better than going very deep.
-    \item \textbf{He initialization} keeps the variance of activations stable across layers: $W \sim \mathcal{N}(0, \sqrt{2/n_{\text{in}}})$
-    \item \textbf{Dropout} in the 0.1--0.5 range is the primary regularizer.
-    \item \textbf{Main failure mode:} overfitting on small datasets.
+    \item \textbf{Width over depth.} For tabular tasks, 2--4 layers with plenty of hidden units tends to work better than going very deep. Research suggests that for structured/tabular data, the benefit of adding layers drops off sharply after about 4, while increasing width continues to help.
+    \item \textbf{He initialization} keeps the variance of activations stable across layers: $W \sim \mathcal{N}(0, \sqrt{2/n_{\text{in}}})$. Without proper initialization, activations either explode or vanish as they propagate through the network, making training slow or impossible.
+    \item \textbf{Dropout} in the 0.1--0.5 range is the primary regularizer. Higher values work better for larger, more overfit-prone networks; lower values are safer when you are not sure.
+    \item \textbf{Batch normalization} after each linear layer stabilizes training and lets you push the learning rate higher. The pattern is Linear $\rightarrow$ BatchNorm $\rightarrow$ ReLU $\rightarrow$ Dropout.
+    \item \textbf{Main failure mode:} overfitting on small datasets. MLPs have no built-in inductive bias like spatial locality (CNNs) or temporal structure (RNNs), so they rely entirely on the data to learn useful representations.
 \end{itemize}
 
+The listing below shows what a well-tuned feedforward network looks like in practice, pulling together He initialization, batch normalization, and dropout in a clean pattern:
+
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={A well-structured feedforward network}]
 class TunedANN(nn.Module):
     def __init__(self, in_dim, hidden=256, out=10, drop=0.3):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(in_dim, hidden),
-            nn.BatchNorm1d(hidden), nn.ReLU(),
-            nn.Dropout(drop),
+            nn.BatchNorm1d(hidden), nn.ReLU(), nn.Dropout(drop),
             nn.Linear(hidden, hidden),
-            nn.BatchNorm1d(hidden), nn.ReLU(),
-            nn.Dropout(drop),
+            nn.BatchNorm1d(hidden), nn.ReLU(), nn.Dropout(drop),
             nn.Linear(hidden, out))
-        for m in self.modules():       # He init
+        for m in self.modules():                       # He init
             if isinstance(m, nn.Linear):
                 nn.init.kaiming_normal_(m.weight)
-
-    def forward(self, x):
-        return self.net(x)
+    def forward(self, x): return self.net(x)
 \end{lstlisting}
+\end{minipage}
 
 \subsection{CNNs}
 
@@ -410,6 +414,7 @@ CNNs are where transfer learning really shines. For most vision tasks, starting 
     \item Unfreeze later layers and fine-tune with a smaller LR ($\sim$1e-4 to 1e-5).
 \end{enumerate}
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Transfer learning with progressive unfreezing}]
 model = models.resnet18(weights='IMAGENET1K_V1')
 
@@ -431,8 +436,9 @@ opt = optim.Adam([
     {'params': model.layer4.parameters(), 'lr': 1e-4},
     {'params': model.fc.parameters(), 'lr': 1e-3}])
 \end{lstlisting}
+\end{minipage}
 
-Data augmentation (random crops, flips, color jitter) is also essential for CNNs --- it effectively multiplies your dataset and is one of the cheapest forms of regularization.
+Data augmentation (random crops, flips, color jitter) is also essential for CNNs because it effectively multiplies your dataset and is one of the cheapest forms of regularization.
 
 \subsection{RNNs / LSTMs / GRUs}
 
@@ -446,10 +452,11 @@ Recurrent networks have unique challenges. The repeated matrix multiplications a
     \end{cases}
 \end{equation}
 
-We used this in our own LSTM temperature forecasting project earlier this semester and it made a noticeable difference --- without clipping, training was erratic.
+We used this in our own LSTM temperature forecasting project earlier this semester and it made a noticeable difference. Without clipping, training was erratic.
 
 \textbf{Use LSTMs or GRUs} instead of vanilla RNNs for anything longer than about 20--30 time steps. The gating mechanisms are specifically designed to let gradients flow over longer distances.
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={LSTM training with gradient clipping}]
 class TunedLSTM(nn.Module):
     def __init__(self, in_dim, hidden=128, layers=2, drop=0.2):
@@ -474,6 +481,7 @@ for epoch in range(num_epochs):
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Comparing the Three}
 
@@ -510,6 +518,7 @@ Manually trying different hyperparameter combinations does not scale. Bayesian o
 \end{equation}
 where $\alpha$ is an acquisition function like Expected Improvement. In practice, Optuna makes this surprisingly easy:
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Hyperparameter search with Optuna}]
 import optuna
 
@@ -526,11 +535,13 @@ study = optuna.create_study(direction='minimize')
 study.optimize(objective, n_trials=100)
 print(f"Best: {study.best_params}")
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Mixed-Precision Training}
 
 Modern GPUs can do math in 16-bit floating point about twice as fast as 32-bit, and PyTorch's AMP (Automatic Mixed Precision) makes it easy to take advantage of this:
 
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={Mixed-precision training}]
 from torch.cuda.amp import autocast, GradScaler
 
@@ -543,6 +554,7 @@ for X_b, y_b in train_loader:
     scaler.step(opt)
     scaler.update()
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Experiment Tracking and Reproducibility}
 
@@ -571,6 +583,7 @@ Everything in tuning ultimately connects back to the bias-variance trade-off:
 
 Making the model more complex reduces bias but increases variance. Regularization does the opposite. The tuning process is, at its core, about finding the sweet spot between these two forces for your particular problem.
 
+\newpage
 % ═══════════════════════════════════════════════════
 %  9. CONCLUSION
 % ═══════════════════════════════════════════════════
